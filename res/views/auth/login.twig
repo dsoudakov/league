@@ -1,0 +1,145 @@
+{% extends 'templates/default.twig' %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+	<div class="container center-block center-position">    
+		<div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">           <!-- Div Panel -->
+				<div class="panel panel-success" >
+					<!-- Panel Heading -->
+					<div class="panel-heading">
+						<div class="panel-title"><strong>Forest Hill Tennis League Sign-In</strong></div>
+					</div><!-- End panel heading -->
+					
+					<!-- Panel body -->
+					<div class="panel-body" >
+						{% if global_error %}
+            			<div class="alert alert-danger">
+            				{{ global_error }}
+            			</div>
+        				{% endif %}
+
+        {% if flash.getMessages() and not global_error %}
+	        {% for k, messages in flash.getMessages() %}
+	        	{% for message in flash.getMessages()[k] %}
+		        	{% if k == 'global' %}
+		        		<div class="alert alert-success">{{ message }}</div>
+		        	{% else %}
+		        		<div class="alert alert-danger">{{ message }}</div>
+		        	{% endif %}
+	        	{% endfor %}
+	        {% endfor %}
+        {% endif %}
+     
+						<form action="{{ path_for('login.post') }}" 
+								id="loginForm" 
+								method="post" 
+								class="form-horizontal" 
+								role="form">
+							
+							<!-- Username -->
+							<div class="input-group input-email">
+								<span class="input-group-addon">
+									<i class="glyphicon glyphicon-envelope"></i></span>
+									<input type="text" 
+											name="identifier" 
+											id="identifier" 
+											class="form-control" 
+											placeholder="email" 
+											value="{{ session.loginemail }}"
+			></div>
+			{% if app.v.errors().has('identifier') %} 
+			<div class="bg-warning">
+			{{ app.v.errors().has('identifier') }} 
+			</div>
+			{% endif %}
+							
+								
+							<!-- Password -->
+							<div class="input-group input-password">
+								<span class="input-group-addon">
+									<i class="glyphicon glyphicon-lock"></i></span>
+									<input type="password" 
+											name="password" 
+											id="password" 
+											class="form-control" 
+											placeholder="password">
+							</div>
+			{% if app.v.errors().has('password') %}
+			<div class="bg-warning">
+			 {{ app.v.errors().has('password') }}
+			</div>
+			{% endif %}
+							<div class="input-group checkbox-remember">
+								<div class="checkbox checkbox-success checkbox-circle">
+									<input type="checkbox" name="remember" id="remember" {{ session.checked }}						
+									><label for="remember" data-toggle="tooltip" title="Save your login for a week!">Remember me</label>
+								</div>
+							</div>
+
+							<div class="form-group login-button">
+								<div class="col-sm-12 controls">
+									<div>
+										<input type="submit" 
+										 		value="Login" 
+										 		class="btn btn-success btn-lg btn-block">
+									</div>
+								</div>
+							</div>
+							
+							<a href="{{ path_for('password.recover') }}" 
+ 								data-toggle="tooltip" title="Click here to recover your password!">Forgot your password?</a><br />
+							<a href="{{ path_for('register') }}" 
+ 								data-toggle="tooltip" title="Register">Register.</a> 						
+
+ 								{% include 'auth/csrf.inc' %}		
+
+						</form><!-- ENd form -->     
+					</div><!-- ENd panel body -->
+			</div><!-- End panel group -->  
+		</div>
+	</div>
+{% endblock %}
+
+{% block js %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
+<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
+
+<script>
+$(function () {
+	//$('[data-toggle="popover"]').popover({
+	//	placement: 'right',
+	//	trigger: 'hover',
+	//});
+
+	$('[data-toggle="tooltip"]').tooltip({
+		placement: 'bottom',
+		trigger: 'hover focus',
+	});
+
+	$( "#loginForm" ).validate({
+		rules: {
+			identifier: {
+				required: true,
+				email: true
+			},
+			password: {
+				required: true,
+			},			
+		},
+		tooltip_options: {
+			identifier: { 
+				placement: 'bottom'
+			},
+			password: { 
+				placement: 'bottom',
+			},
+		}
+	});
+})
+</script>
+
+{{ parent() }}
+{% endblock %}

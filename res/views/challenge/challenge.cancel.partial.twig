@@ -1,0 +1,8 @@
+<form method="post" action="challenge/cancel/{{ challengeid }}">
+
+<label for="challengeCancelNote">Cancel reason:</label> <textarea class="form-control" maxlegth="200" rows="10" cols="20" name="challengeCancelNote" id="challengeCancelNote" placeholder="Why? (required)"></textarea> 
+<br />
+<input type="submit" class="btn btn-primary" value="Submit"> 
+
+{% include 'auth/csrf.inc' %} 
+</form>

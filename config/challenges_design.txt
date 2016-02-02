@@ -1,0 +1,29 @@
+table issuedchallenges
+
+fields:
+	id
+	challengerid (id of user)
+	challengedids (json array of ids)
+	challengedate
+	challengenote
+	challengestatus
+	issuedatdatetime
+
+table acceptedchallenges
+
+fields:
+	id
+	issuedchallengeid
+	acceptedbyid
+	proposedtime
+	acceptednote
+	acceptedatdatetime
+
+table scheduledchallenges
+
+fields:
+
+	id
+	acceptedchallengeid
+	acceptedtime
+	scheduledatdatetime

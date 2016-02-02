@@ -1,0 +1,302 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+<style>
+  body { padding-top: 50px; }
+
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+        {% if flash.getMessages() %}
+          {% for k, messages in flash.getMessages() %}
+            {% for message in flash.getMessages()[k] %}
+              {% if k == 'global' %}
+                <div class="alert alert-success">{{ message }}</div>
+              {% else %}
+                <div class="alert alert-danger">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+
+        {% if errors %}
+          <div class="alert alert-danger">Profile NOT updated! Check errors.</div>
+        {% endif %}
+
+
+{% block nav %}
+  {{ parent() }}
+{% endblock nav %}
+
+    </div>
+    <div class="col-md-8">
+      <div class="panel">
+          <div class="panel-heading">
+            <div class="panel-title">
+              <strong>My profile ({{ user.email }})</strong>
+            </div>
+          </div><!-- End panel heading -->
+          
+          <!-- Panel body -->
+          <div class="panel-body" >
+            <form class="form-horizontal" 
+                  method="post" 
+                  id="profileForm" 
+                  action="{{ path_for('profile.post') }}">
+            <fieldset>
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="first_name">First name</label>  
+              <div class="col-xs-8 col-md-3">
+                <input id="first_name" 
+                        name="first_name" 
+                        type="text" 
+                        placeholder="First name" 
+                        class="form-control" 
+                        value="{{ rendered( request.getParam('first_name'), app.auth.user.first_name) }}">
+                        {% if errors.has('first_name') %}
+                        <div class="label label-danger">
+                         {{ errors.first('first_name') }} 
+                        </div>
+                        {% endif %}
+              </div>
+            </div>
+
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="last_name">Last name</label>  
+              <div class="col-xs-8 col-md-3">
+              <input id="last_name" 
+                      name="last_name" 
+                      type="text" 
+                      placeholder="Last name" 
+                      class="form-control input-md"
+                      value="{{ rendered( request.getParam('last_name'), app.auth.user.last_name ) }}"
+                      >
+                      {% if errors.has('last_name') %}
+                        <div class="label label-danger">
+                         {{ errors.first('last_name') }} 
+                        </div>
+                        {% endif %}
+              </div>
+            </div>
+
+            <!-- Select Basic -->
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="sex">Sex</label>
+              <div class="col-xs-8 col-md-3">
+                <select id="sex" name="sex" class="form-control">
+                  <option {{ value_selected('n/s', 'sex') }}>n/s</option>
+                  <option {{ value_selected('Male', 'sex') }}>Male</option>
+                  <option {{ value_selected('Female', 'sex') }}>Female</option>
+                </select>
+                    {% if errors.has('sex') %}
+                    <div class="label label-danger">
+                     {{ errors.first('sex') }} 
+                    </div>
+                    {% endif %}
+              </div>
+            </div>
+
+            <!-- Select Basic -->
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="hand">Hand</label>
+              <div class="col-xs-8 col-md-3">
+                <select id="hand" name="hand" class="form-control">
+                  <option {{ value_selected('n/s','hand')           }}>n/s</option>
+                  <option {{ value_selected('Right','hand')         }}>Right</option>
+                  <option {{ value_selected('Left','hand')          }}>Left</option>
+                  <option {{ value_selected('Ambidextrous','hand')  }}>Ambidextrous</option>
+                    {% if errors.has('hand') %}
+                    <div class="label label-danger">
+                     {{ errors.first('hand') }} 
+                    </div>
+                    {% endif %}
+                </select>
+              </div>
+            </div>
+
+            <!-- Select Basic -->
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="skill7">Skill level (NTRP 7.0 system)</label>
+              <div class="col-xs-8 col-md-3">
+                <select id="skill7" name="skill7" class="form-control">
+                  <option {{ value_selected('n/a', 'skill7') }}>n/a</option>
+                  <option {{ value_selected('1.0', 'skill7') }}>1.0</option>
+                  <option {{ value_selected('1.5', 'skill7') }}>1.5</option>
+                  <option {{ value_selected('2.0', 'skill7') }}>2.0</option>
+                  <option {{ value_selected('2.5', 'skill7') }}>2.5</option>
+                  <option {{ value_selected('3.0', 'skill7') }}>3.0</option>
+                  <option {{ value_selected('3.5', 'skill7') }}>3.5</option>
+                  <option {{ value_selected('4.0', 'skill7') }}>4.0</option>
+                  <option {{ value_selected('4.5', 'skill7') }}>4.5</option>
+                  <option {{ value_selected('5.0', 'skill7') }}>5.0</option>
+                  <option {{ value_selected('5.5', 'skill7') }}>5.5</option>
+                  <option {{ value_selected('6.0 - 7.0', 'skill7') }}>6.0 - 7.0</option>
+                </select>
+                    {% if errors.has('skill7') %}
+                    <div class="label label-danger">
+                     {{ errors.first('skill7') }} 
+                    </div>
+                    {% endif %}                
+              </div>
+            </div>
+
+            <!-- Select Basic -->
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="skillOTA">Skill level (OTA Adult)</label>
+              <div class="col-xs-8 col-md-3">
+                <select id="skillOTA" name="skillOTA" class="form-control">
+                  <option {{ value_selected('n/a', 'skillOTA') }}>n/a</option>
+                  <option {{ value_selected('2.5', 'skillOTA') }}>2.5</option>
+                  <option {{ value_selected('3.0', 'skillOTA') }}>3.0</option>
+                  <option {{ value_selected('3.5', 'skillOTA') }}>3.5</option>
+                  <option {{ value_selected('4.0', 'skillOTA') }}>4.0</option>
+                  <option {{ value_selected('4.5', 'skillOTA') }}>4.5</option>
+                  <option {{ value_selected('5.0', 'skillOTA') }}>5.0</option>
+                  <option {{ value_selected('Open', 'skillOTA') }}>Open</option>
+                </select>
+                    {% if errors.has('skillOTA') %}
+                    <div class="label label-danger">
+                     {{ errors.first('skillOTA') }} 
+                    </div>
+                    {% endif %}                 
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="divisionprimary">Primary division</label>
+              <div class="col-xs-8 col-md-3">
+                    {{ auth.genDivisionSelect('divisionprimary', 'primary')|raw }}
+                    {% if not auth.user.divisionprimary %}
+                    <div class="alert alert-sm alert-warning alert-dismissible">
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>                    
+
+                      WARNING: You will be able to join primary division once per season. Choose wisely.
+                    </div>
+                    {% endif %}
+                    {% if errors.has('divisionprimary') %}
+                    <div class="label label-danger">
+                     {{ errors.first('divisionprimary') }} 
+                    </div>
+                    {% endif %}                 
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="divisionprimary">Secondary division</label>
+              <div class="col-xs-8 col-md-3">
+                    {{ auth.genDivisionSelect('divisionsecondary', 'secondary')|raw }}
+                    {% if not auth.user.divisionsecondary %}
+                    <div class="alert alert-sm alert-warning alert-dismissible">
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                      WARNING: You will be able to join secondary division once per season. Choose wisely.
+                    </div>
+                    {% endif %}                    
+                    {% if errors.has('divisionsecondary') %}
+                    <div class="label label-danger">
+                     {{ errors.first('divisionsecondary') }} 
+                    </div>
+                    {% endif %}                 
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="donotnotifyme">On vacation</label>
+              <div class="col-xs-8 col-md-3">
+                <select id="donotnotifyme" name="donotnotifyme" class="form-control">
+                  <option value="0" {{ value_selected('0', 'donotnotifyme') }}>No</option>
+                  <option value="1" {{ value_selected('1', 'donotnotifyme') }}>Yes</option>
+                </select> 
+                (turns off challenge notifications emails)
+                    {% if errors.has('donotnotifyme') %}
+                    <div class="label label-danger">
+                     {{ errors.first('donotnotifyme') }} 
+                    </div>
+                    {% endif %}                 
+              </div>
+            </div>            
+            <!-- Button -->
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="submit"></label>
+              <div class="col-xs-8 col-md-3">
+                <button id="submit" name="submit" class="btn btn-primary">Update</button>
+              </div>
+              
+            </div>
+            {% include 'auth/csrf.inc' %} 
+            </fieldset>
+</form>    
+</div>  
+</div>  
+    </div>
+    <div class="col-md-2">
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
+<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
+<script>
+  $(function () {
+
+    $('[data-toggle="tooltip"]').tooltip({
+      placement: 'bottom',
+      trigger: 'hover focus',
+    });
+
+    $( "#profileForm" ).validate({
+      rules: {
+        first_name: {
+         //required: true,
+         //maxlength: 30,
+        },
+        last_name: {
+          required: true,
+          maxlength: 30,
+        },
+        sex: {
+          required: true,
+          maxlength: 10,
+        },
+        hand: {
+          required: true,
+          maxlength: 15,
+        },
+        skill7: {
+          required: true,
+          maxlength: 15,
+        },        
+        skillOTA: {
+          required: true,
+          maxlength: 15,
+        },        
+      },
+
+      tooltip_options: {
+        first_name: { 
+          placement: 'bottom'
+        },
+        last_name: { 
+          placement: 'bottom'
+        },
+        sex: { 
+          placement: 'bottom'
+        },
+      }
+    });
+  })
+</script>
+{{ parent() }}
+{% endblock %}

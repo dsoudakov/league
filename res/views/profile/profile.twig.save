@@ -1,0 +1,115 @@
+
+<div class="container center-block center-position">    
+  <div class="panel panel-success">
+    <div class="panel-heading">
+      <div class="panel-title">
+        <strong>Player's profile</strong>
+      </div>
+    </div>
+
+<form class="form-horizontal">
+<fieldset>
+
+<!-- Form Name -->
+
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-xs-3 control-label" for="firstname">First name</label>  
+  <div class="col-xs-6 col-md-3">
+    <input id="firstname" name="firstname" type="text" placeholder="First name" class="form-control">
+  </div>
+</div>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-xs-3 control-label" for="lastname">Last name</label>  
+  <div class="col-xs-6  col-md-3">
+  <input id="lastname" name="lastname" type="text" placeholder="Last name" class="form-control input-md">
+    
+  </div>
+  
+</div>
+
+<!-- Select Basic -->
+<div class="form-group">
+  <label class="col-xs-3 control-label" for="sex">Sex</label>
+  <div class="col-xs-6 col-md-3">
+    <select id="sex" name="sex" class="form-control">
+      <option value="1">n/s</option>
+      <option value="2">Male</option>
+      <option value="3">Female</option>
+    </select>
+  </div>
+  
+</div>
+
+<!-- Select Basic -->
+<div class="form-group">
+  <label class="col-xs-3 control-label" for="hand">Hand</label>
+  <div class="col-xs-6 col-md-3">
+    <select id="hand" name="hand" class="form-control">
+      <option value="1">n/s</option>
+      <option value="2">Right</option>
+      <option value="3">Left</option>
+      <option value="4">Ambidextrous</option>
+    </select>
+  </div>
+  
+</div>
+
+<!-- Select Basic -->
+<div class="form-group">
+  
+
+  <label class="col-xs-3 control-label" for="level7">Skill level (NTRP 7.0 system)</label>
+  <div class="col-xs-6  col-md-3">
+    <select id="level7" name="level7" class="form-control">
+      <option value="1">n/a</option>
+      <option value="2">1.0</option>
+      <option value="3">1.5</option>
+      <option value="4">2.0</option>
+      <option value="5">2.5</option>
+      <option value="6">3.0</option>
+      <option value="7">3.5</option>
+      <option value="8">4.0</option>
+      <option value="9">4.5</option>
+      <option value="10">5.0</option>
+      <option value="11">5.5</option>
+      <option value="12">6.0 - 7.0</option>
+    </select>
+  </div>
+  
+</div>
+
+<!-- Select Basic -->
+<div class="form-group">
+  <label class="col-xs-3 control-label" for="level5">Skill level (OTA Adult)</label>
+  <div class="col-xs-6 col-md-3">
+    <select id="level5" name="level5" class="form-control">
+      <option value="1">n/a</option>
+      <option value="2">2.5</option>
+      <option value="3">3.0</option>
+      <option value="4">3.5</option>
+      <option value="5">4.0</option>
+      <option value="6">4.5</option>
+      <option value="7">5</option>
+      <option value="8">Open</option>
+    </select>
+  </div>
+  
+</div>
+
+<!-- Button -->
+<div class="form-group">
+  <label class="col-xs-3 control-label" for="submit"></label>
+  <div class="col-xs-6 col-md-3">
+    <button id="submit" name="submit" class="btn btn-primary">Update</button>
+  </div>
+  
+</div>
+
+</fieldset>
+</form>
+</div>
+</div>

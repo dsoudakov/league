@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forest Hill Tennis League | FHTL</title>
+<link rel="icon" href="{{SITEROOT}}/favicon.ico">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<link href="{{SITEROOT}}/res/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+{% include 'cssjs.inc' %}
+
+<style type="text/css">
+    .input-username, 
+    .input-password, 
+    .checkbox_remember, 
+    .login-button {
+        margin-top:15px;
+    }
+
+    .spacer {
+        margin-top: 40px;
+        opacity: 0;
+    }
+
+    .ofh {
+      width: 100%;
+      height: 100%; 
+      position: fixed;
+      overflow: hidden;
+      z-index: -1000;
+      background-size: cover;
+      opacity: 0.2;
+    }
+
+    @media (min-width: 601px) {
+      .ofhbg {
+          background-image: url('{{SITEROOT}}/res/img/optimized-birdview.png');
+        }
+    }
+
+    @media (max-width: 600px) {
+      .ofhbg {      
+           background-image: url('{{SITEROOT}}/res/img/optimized-birdview-m.png');
+        }
+    }
+
+    @media (max-width: 390px) {
+      [class*="col-"] custom1 {
+        padding-right: 0;
+        padding-left: 0;
+      }
+
+      .container {
+        padding-right: 0;
+        padding-left: 0;
+      }
+
+    }
+
+    .center-position {
+          position: relative;
+          transform: translateY(10%);
+    }
+
+    .tooltip-inner {
+        min-width: 110px;
+    }
+
+
+</style>
+{% block head %}
+<style>
+  body { padding-top: 50px; }
+
+  .borderless tbody tr td, .borderless tbody tr th, .borderless thead tr th {
+      border: none;
+  }  
+  .wrapme {
+    table-layout: fixed;
+    word-wrap: break-word;
+  }
+
+  .well2 {
+    background: rgb(0, 204, 153);
+  }
+
+  .well3 {
+    background: rgb(255, 0, 0);
+    color:rgb(255,255,255);
+  }
+
+
+  .table {
+    margin-bottom:0;
+  }
+
+
+</style>
+{% endblock %}
+
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+</head>
+  <body>
+    <div class="container-fluid ofh ofhbg"></div>
+
+      {% block title %}{% endblock %}
+      {% block content %}{% endblock %}
+
+    </div>
+
+    <script src="{{SITEROOT}}/res/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+  {% block js %}    
+
+    <script type="text/javascript">
+      jQuery.extend(jQuery.validator.messages, {
+          // required: "This field is required.",
+          // remote: "Please fix this field.",
+          // email: "Please enter a valid email address.",
+          // url: "Please enter a valid URL.",
+          // date: "Please enter a valid date.",
+          // dateISO: "Please enter a valid date (ISO).",
+          // number: "Please enter a valid number.",
+          // digits: "Please enter only digits.",
+          // creditcard: "Please enter a valid credit card number.",
+          equalTo: "Passwords do not match.",
+          // accept: "Please enter a value with a valid extension.",
+          // maxlength: jQuery.validator.format("Please enter no more than {0} characters."),
+          // minlength: jQuery.validator.format("Please enter at least {0} characters."),
+          // rangelength: jQuery.validator.format("Please enter a value between {0} and {1} characters long."),
+          // range: jQuery.validator.format("Please enter a value between {0} and {1}."),
+          // max: jQuery.validator.format("Please enter a value less than or equal to {0}."),
+          // min: jQuery.validator.format("Please enter a value greater than or equal to {0}.")
+      });
+    </script>
+
+  {% endblock %}
+  </body>
+</html>

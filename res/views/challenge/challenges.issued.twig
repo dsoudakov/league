@@ -1,0 +1,214 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+{{parent()}}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.css"/>
+
+{% endblock head %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+        {% if flash.getMessages() %}
+          {% for k, messages in flash.getMessages() %}
+            {% for message in flash.getMessages()[k] %}
+              {% if k == 'global' %}
+                <div class="alert alert-success">
+                  <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  {{ message }}
+                </div>
+              {% else %}
+                <div class="alert alert-danger">
+                  <button type="button" class="close" data-dismiss="alert">&times;</button>
+                  {{ message }}
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+
+
+{% block nav %}
+  {{ parent() }}
+{% endblock nav %}
+
+    </div>
+    <div class="col-md-8">
+      <div class="panel">
+          <div class="panel-heading">
+            <div class="panel-title">
+              <h2><strong>Current Open Challenges</strong></h2>
+            </div>
+          </div>
+          
+          <!-- Panel body -->
+          <div class="panel-body">
+            
+                  <div class="table-responsive">
+                    <table id="challengesissuedtable" class="display wrapme table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                    <th></th>
+                    <th>Challenger</th>
+                    <th>Date</th>
+                    <th>Division</th>
+                    <th>Note</th>
+                    </tr>
+                    </thead>
+
+                    <tfoot>
+                    <tr>
+                    <th></th>
+                    <th>Challenger</th>
+                    <th>Date</th>
+                    <th>Division</th>
+                    <th>Note</th>
+                    </tr>
+                    </tfoot>
+                    </table>
+                  </div>
+
+
+  	          		
+  	          	</div>
+  	          </div>
+      
+    </div>
+    <div class="col-md-2">
+    	Right column. Open challenges.
+    </div>
+  </div>
+</div>
+
+<div id="acceptModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-primary" style="
+          height: 50px;
+          border-top-left-radius: 5px; 
+          border-top-right-radius: 5px;
+      ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Accept a challenge</h4>
+      </div>
+      <div class="modal-body">
+        <div class="modal-body-inner1"></div>
+        <div class="modal-body-inner2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="noteModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-success" style="border-top-left-radius: 5px; border-top-right-radius: 5px;">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Challenge details</h4>
+      </div>
+      <div class="modal-body">
+        <div class="modal-body-inner1"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock content %}
+
+{% block js %}
+
+<script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.js"></script>
+
+<script type="text/javascript">
+
+  $(document).ready(function() {
+
+     var items = [];
+      
+      $.getJSON( "{{ path_for('challenges.issued.get.json')}}", function( data ) {
+      
+        $.each( data, function( key, val ) {
+          var item = [];
+          
+          var userid = {{ user.id }};
+          var userpid = {{ user.divisionprimary }};
+          var usersid = {{ user.divisionsecondary }};
+
+          if (userpid == data[key]['challenge_in_division'] || usersid == data[key]['challenge_in_division']) {
+
+            if (userid == data[key]['acceptedbyuserid']) {
+                if (data[key]['cancelnote']) {
+
+                    item.push('<a class="btn btn-sm btn-block btn-danger disabled" href="">Cancelled (you)</a>');
+
+                } else {
+                    if (data[key]['confirmed'] == 1) {
+                        item.push('<a class="btn btn-sm btn-block btn-success disabled" href="">Confirmed</a>');
+                    } else {
+                        item.push('<a class="btn btn-sm btn-block btn-warning disabled" href="">Accepted</a>');
+                    }
+                }
+            } else {
+              item.push(
+                '<a class="btn btn-sm btn-block btn-primary" data-toggle="modal" data-target="#acceptModal" data-remote="false" href="/challenge/accept/' +  data[key]['challengeid'] + '">Accept</a>'
+              );
+            }
+          } else {
+            item.push('Not in your division');
+          }
+
+          item.push(data[key]['challenger'] );
+          item.push(data[key]['challengedate'] );
+          item.push(data[key]['challengeddivision'] );
+        item.push( '<a class="btn btn-sm btn-block btn-primary" data-toggle="modal" data-target="#noteModal" data-remote="false" href="/challenge/details/' + data[key]['challengeid'] + '" title="' + data[key]['challengenote'] + '">Note</a>');
+         // item.push('');
+          items.push(item);
+
+        });
+
+        if (items.length <= 10) {
+          var opts =  {
+
+            "order": [[ 2, "desc" ]],
+            "paging":   false,
+            "info":     false,
+            "searching": false,
+          };
+        }
+        
+        var oTable = $('#challengesissuedtable').dataTable(opts);
+        oTable.fnClearTable();
+
+        for(var i = 0; i < items.length; i++) { 
+            oTable.fnAddData([ items[i][0], items[i][1], items[i][2], items[i][3], items[i][4] ]);
+        }; 
+      
+      });
+
+
+    $("#acceptModal").on("show.bs.modal", function(e) {
+        var link = $(e.relatedTarget);
+        var link_text = link.attr("href");
+        var new_link = link_text.replace('accept', 'details');
+        $(this).find(".modal-body-inner1").load(new_link);
+        $(this).find(".modal-body-inner2").load(link.attr("href"));
+    });
+
+    $("#noteModal").on("show.bs.modal", function(e) {
+        var link = $(e.relatedTarget);
+        var link_text = link.attr("href");
+        var new_link = link_text.replace('accept', 'details');
+        $(this).find(".modal-body-inner1").load(new_link);
+    });
+});
+
+</script>
+
+{% endblock js %}

@@ -1,0 +1,8 @@
+<form method="post" action="challenge/delete/{{ challengeid }}">
+
+<label>Are you sure?</label>
+<br />
+<input type="submit" class="btn btn-primary" value="Delete"> 
+
+{% include 'auth/csrf.inc' %} 
+</form>

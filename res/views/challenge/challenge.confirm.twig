@@ -1,0 +1,16 @@
+{% if c.accancelnote %}
+
+    <h4>Sorry, opponent cancelled!</h4>
+
+{% else %}
+
+<form method="post" action="challenge/confirm/{{ challengeid }}">
+
+<label for="challengeConfirmNote">Confirm note:</label> <textarea class="form-control" maxlegth="200" rows="10" cols="20" name="challengeConfirmNote" id="challengeConfirmNote" placeholder="Propose a start time... (optional)"></textarea> 
+<br />
+<input type="submit" class="btn btn-primary" value="Confirm"> 
+
+{% include 'auth/csrf.inc' %} 
+</form>
+
+{% endif %}

@@ -1,0 +1,8 @@
+<form method="post" action="challenge/accept/{{ challengeid }}">
+
+<label for="challengeAcceptNote">Accept note:</label> <textarea class="form-control" maxlegth="200" rows="10" cols="20" name="challengeAcceptNote" id="challengeAcceptNote" placeholder="Propose a start time... (required)"></textarea> 
+<br />
+<input type="submit" class="btn btn-primary" value="Accept"> 
+
+{% include 'auth/csrf.inc' %} 
+</form>

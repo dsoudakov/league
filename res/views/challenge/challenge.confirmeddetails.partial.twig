@@ -1,0 +1,74 @@
+{% if challenges %}
+	{% for c in challenges %}
+
+        {% if c.accancelnote %}
+
+            <div class="well well-sm well3">
+                <table class="table wrapme table-condensed borderless" cellspacing="0">
+                    <tbody>
+                        <tr><td><label>Cancelled (by opponent):</label></td><td>{{ c.challenger }}</td></tr>
+                        <tr><td><label>Cancel note:</label></td><td>{{ c.accancelnote }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        {% else %}
+
+            {% if c.confirmed == 1 %}
+
+                    {% if c.cancelnote %}
+
+                        <div class="well well-sm well3">
+                        <h4>Cancelled (by you):</h4>
+
+                    {% else %}
+
+                        <div class="well well-sm well2">
+                        <h4>Accepted and confirmed:</h4>
+
+                    {% endif %}
+
+                    <table class="table wrapme table-condensed borderless" cellspacing="0">
+                    <tbody>
+                    <tr><td><label>Accepted by:</label></td><td>{{ c.challenger }}</td></tr>
+                    <tr><td><label>Accepted at:</label></td><td>{{ c.acceptedat }}</td></tr>
+                    <tr><td><label>Accept note:</label></td><td>{{ c.acceptednote }}</td></tr>
+                    <tr><td><label>Confirmed at:</label></td><td>{{ c.confirmedat }}</td></tr>
+                    <tr><td><label>Confirm note:</label></td><td>{{ c.confirmnote }}</td></tr>
+
+                    {% if c.cancelnote or c.accancelnote %}
+                        <tr><td><label>Cancel note:</label></td><td>{{ c.accancelnote }}</td></tr>
+                    {% endif %}
+
+                    </tbody>
+                    </table>
+                    </div>
+
+            {% else %}
+
+                <div class="well well-sm">
+                    <h4>Accepted only (not confirmed):
+                    {% if c.userid == user.id and not c.cancelnote %}
+                        <a data-toggle="modal" data-target="#confirmModal" data-remote="false"
+                           class="btn btn-sm btn-warning"
+                           href="/challenge/confirm/{{ c.acceptedchallengeid }}">Confirm</a>
+                    {% endif %}
+                    </h4>
+                    <table class="table wrapme table-condensed borderless" cellspacing="0">
+                    <tbody>
+                    <tr><td><label>Accepted by:</label></td><td>{{ c.challenger }}</td></tr>
+                    <tr><td><label>Accepted at:</label></td><td>{{ c.acceptedat }}</td></tr>
+                    <tr><td><label>Accept note:</label></td><td>{{ c.acceptednote }}</td></tr>
+                    </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        {% endif %}
+	{% endfor %}
+{% else %}
+			<table class="table wrapme table-condensed borderless" cellspacing="0">
+			<tbody>
+			<tr><td><label>Challenge is not accepted by anyone yet.</label></td></tr>
+			</tbody>
+			</table>
+{% endif %}

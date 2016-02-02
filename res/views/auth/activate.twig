@@ -1,0 +1,24 @@
+{% extends 'templates/default.twig' %}
+
+{% block head %}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endblock %}
+
+{% block content %}
+	<div class="container center-block center-position">    
+		<div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">           <!-- Div Panel -->
+			<div class="panel panel-primary" >
+				<!-- Panel Heading -->
+				<div class="panel-heading">
+					<div class="panel-title"><strong>Forest Hill Tennis League Activation</strong></div>
+				</div><!-- End panel heading -->
+				
+				<!-- Panel body -->
+				<div class="panel-body">
+				<h2>{{ activation_status }}</h2> <br />
+				<a class="btn btn-primary" href="{{ path_for('login') }}">Login.</a> 	
+				</div><!-- ENd panel body -->
+			</div><!-- End panel group -->  
+		</div>
+	</div>
+{% endblock %}

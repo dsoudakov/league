@@ -1,0 +1,124 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+{{parent()}}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.css"/>
+
+{% endblock head %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+        {% if flash.getMessages() %}
+          {% for k, messages in flash.getMessages() %}
+            {% for message in flash.getMessages()[k] %}
+              {% if k == 'global' %}
+                <div class="alert alert-success">{{ message }}</div>
+              {% else %}
+                <div class="alert alert-danger">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+
+
+{% block nav %}
+  {{ parent() }}
+{% endblock nav %}
+
+    </div>
+    <div class="col-md-8">
+      <div class="panel">
+          <div class="panel-heading">
+            <div class="panel-title">
+              <h2><strong>My Challenge Details</strong></h2>
+            </div>
+          </div>
+          
+          <!-- Panel body -->
+          <div class="panel-body">
+                  <div class="table-responsive">
+                    <table id="detailschallengesmytable" class="display wrapme table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                    <th></th>
+                    <th>Date</th>
+                    <th>Division</th>
+                    <th>Note</th>
+                    <th># Accepted/Confirmed</th>
+                    <th>Created At</th>
+                    </tr>
+                    </thead>
+
+                    <tfoot>
+                    <tr>
+                    <th></th>
+                    <th>Date</th>
+                    <th>Division</th>
+                    <th>Note</th>
+                    <th># Accepted/Confirmed</th>
+                    <th>Created At</th>
+                    </tr>
+                    </tfoot>
+                    </table>
+                  </div>
+
+  	          	</div>
+      </div>  
+    </div>
+    <div class="col-md-2">
+    	Right column. My challenges.
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+
+{% block js %}
+
+<script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.js"></script>
+
+<script type="text/javascript">
+
+  $(document).ready(function() {
+
+    var detailschallengesmytable = $('#detailschallengesmytable').dataTable();
+
+    var items2 = [];
+      
+      $.getJSON( "{{ path_for('challengedetailsjson', [ 'challengeid' => challengeid ]) }}", function( data ) {
+      
+        $.each( data, function( key, val ) {
+        var item2 = [];
+     
+        item2.push('<a class="btn btn-warning" href="/challenge/details/' + data[key]['challengeid'] + '">Info</a>');
+        item2.push(data[key]['challengedate'] );
+        item2.push(data[key]['challenger'] );
+        item2.push(data[key]['challengeddivision'] );
+        item2.push(data[key]['challengenote'] );
+        items2.push(item2);
+
+      });
+
+         detailschallengesmytable.fnClearTable();
+
+        for(var i = 0; i < items2.length; i++) { 
+            detailschallengesmytable.fnAddData([ items2[i][0], 
+                                                  items2[i][1], 
+                                                  items2[i][2], 
+                                                  items2[i][3],
+                                                  items2[i][4] ]);
+        }; 
+      
+      });
+
+});
+
+</script>
+
+{% endblock js %}

@@ -1,0 +1,14 @@
+Status: {{ app.status|raw }} <br />
+Test view. <br /><br />
+
+<form action="{{ path_for('form.submit') }}" method="post">
+  Login/Email:<br>
+  <input type="text" name="idetifier" value="">
+  <br>
+  Password:<br>
+  <input type="password" name="password" value=""><br>
+  <input type="checkbox" name="remember" id="remember">
+  <label for="remember">Remember me</label>
+  <br><br>
+  <input type="submit" value="Login">
+</form>

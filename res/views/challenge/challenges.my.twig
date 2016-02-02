@@ -1,0 +1,687 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+{{parent()}}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.css"/>
+
+{% endblock head %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+        {% if flash.getMessages() %}
+          {% for k, messages in flash.getMessages() %}
+            {% for message in flash.getMessages()[k] %}
+              {% if k == 'global' %}
+                <div class="alert alert-success">{{ message }}</div>
+              {% else %}
+                <div class="alert alert-danger">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+
+
+{% block nav %}
+  {{ parent() }}
+{% endblock nav %}
+
+    </div>
+    <div class="col-md-8">
+      <div class="panel">
+          <div class="panel-heading">
+            <div class="panel-title">
+              <h2><strong>My Challenges</strong></h2>
+            </div>
+          </div>
+          
+          <!-- Panel body -->
+          <div class="panel-body">
+                  <div class="table-responsive">
+                    <table id="challengesmytable" class="display table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                    <th></th>
+                    <th>Date</th>
+                    <th>Division</th>
+                    <th># Accepted/Confirmed/Cancelled</th>
+                    <th># challenged</th>
+                    </tr>
+                    </thead>
+
+                    <tfoot>
+                    <tr>
+                    <th></th>
+                    <th>Date</th>
+                    <th>Division</th>
+                    <th># Accepted/Confirmed/Cancelled</th>
+                    <th># challenged</th>
+                    </tr>
+                    </tfoot>
+                    </table>
+                  </div>
+                <h2><strong>Challenges Accepted by Me</strong></h2>
+                  <br />
+                  <div class="table-responsive">
+                    <table id="acceptedchallengesmytable" class="display table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>VS</th>                                        
+                    <th>Division</th>
+                    </tr>
+                    </thead>
+
+                    <tfoot>
+                    <tr>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>VS</th>                                        
+                    <th>Division</th>
+                    </tr>
+                    </tfoot>
+                    </table>
+                  </div>   
+                <h2><strong>My Challenges Status</strong></h2>
+                  <br />
+                  <div class="table-responsive">
+                    <table id="mychallengesstatustable" class="display wrapme table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Accepted By</th>                                        
+                    <th>Division</th>
+                    <th># challenged</th>
+                    </tr>
+                    </thead>
+
+                    <tfoot>
+                    <tr>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Accepted By</th>                                        
+                    <th>Division</th>
+                    <th># challenged</th>
+                    </tr>
+                    </tfoot>
+                    </table>
+                  </div>                                      
+  	          	</div>
+      </div>  
+    </div>
+    <div class="col-md-2">
+    	Right column. My challenges.
+    </div>
+  </div>
+</div>
+
+<div id="challengeDetailsModal" class="modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-primary" style="
+          height: 50px;
+          border-top-left-radius: 5px; 
+          border-top-right-radius: 5px;
+      ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Challenge Details</h4>
+      </div>
+      <div class="modal-body">
+          <div id="loading1">
+              <img src="/res/img/loader.gif">
+          </div>
+        <div class="modal-body-inner1"></div>
+        <div class="modal-body-inner2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="confirmModal" class="modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-warning" style="
+          height: 50px;
+          border-top-left-radius: 5px; 
+          border-top-right-radius: 5px;
+      ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><strong>Confirm a challenge</strong></h4>
+      </div>
+      <div class="modal-body">
+          <div id="loading1">
+              <img src="/res/img/loader.gif">
+          </div>
+        <div class="modal-body-inner1"></div>
+        <div class="modal-body-inner2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="deleteModal" class="modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-danger" style="
+          height: 50px;
+          border-top-left-radius: 5px; 
+          border-top-right-radius: 5px;
+      ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><strong>Delete challenge?</strong></h4>
+      </div>
+      <div class="modal-body">
+          <div id="loading1">
+              <img src="/res/img/loader.gif">
+          </div>
+        <div class="modal-body-inner1"></div>
+        <div class="modal-body-inner2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="cancelModal" class="modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-danger" style="
+          height: 50px;
+          border-top-left-radius: 5px; 
+          border-top-right-radius: 5px;
+      ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><strong>Cancel challenge?</strong></h4>
+      </div>
+      <div class="modal-body">
+          <div id="loading1">
+              <img src="/res/img/loader.gif">
+          </div>
+        <div class="modal-body-inner1"></div>
+        <div class="modal-body-inner2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="cancelAcceptedModal" class="modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-danger" style="
+          height: 50px;
+          border-top-left-radius: 5px; 
+          border-top-right-radius: 5px;
+      ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><strong>Cancel accepted challenge?</strong></h4>
+      </div>
+      <div class="modal-body">
+          <div id="loading1">
+            <img src="/res/img/loader.gif">
+          </div>
+        <div class="modal-body-inner1">
+        </div>
+        <div class="modal-body-inner2">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+
+{% block js %}
+
+<script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.js"></script>
+
+<script type="text/javascript">
+
+  $(document).ready(function() {
+
+     var items = [];
+      
+      $.getJSON( "{{ path_for('challenges.my.get.json')}}", function( data ) {
+      
+        $.each( data, function( key, val ) {
+        var item = [];
+     
+      if (data[key]['confirmed'] == 1 ) {
+
+        if (data[key]['cancelnote']) {
+          item.push('<a class="btn btn-sm btn-danger disabled">Cancelled</a>');
+        } else {
+          item.push('<a data-loaded="false" data-toggle="modal" data-target="#cancelModal" data-remote="false"  class="btn btn-sm btn-info" href="/challenge/cancel/'
+            + data[key]['challengeid'] 
+            + '">Cancel</a>');
+        }
+      } else {
+        item.push('<a data-toggle="modal" data-target="#deleteModal" data-remote="false" class="btn btn-sm btn-warning" href="/challenge/delete/' 
+          + data[key]['challengeid'] 
+          + '">Delete</a>');
+      }
+        item.push( '<a href="/challenge/details/' + data[key]['challengeid'] + '" data-toggle="modal" data-target="#challengeDetailsModal" data-remote="false" class="btn btn-sm btn-primary">' + data[key]['challengedate'] + '</a>' );
+        item.push(data[key]['challengeddivision'] );
+
+        item.push(
+            '<a class="btn disabled btn-sm btn-warning" href="/challenge/details/'
+            + data[key]['challengeid']
+            + '"> ' + data[key]['numofacceptedchallenges'] + ' </a> / '
+            + '<a class="btn disabled btn-sm btn-success" href="/challenge/details/'
+            + data[key]['challengeid']
+            + '"> ' + data[key]['numofconfirmedchallenges'] + ' </a> / '
+            + '<a class="btn disabled btn-sm btn-danger" href="/challenge/details/'
+            + data[key]['challengeid']
+            + '"> ' + data[key]['numofcancelledchallenges'] + ' </a>'
+        );
+
+        if (data[key]['numofplayers'] ) {
+          item.push(data[key]['numofplayers'] );
+        } else {
+
+          item.push('all');
+        }
+
+        items.push(item);
+
+      });
+
+        if (items.length <= 10) {
+          var opts =  {
+            "oLanguage": {
+              "sZeroRecords": "No records"
+            },
+            "order": [[ 1, "desc" ]],
+            "paging":   false,
+            "info":     false,
+            "searching": false,
+          };
+        }
+
+        var challengesmytable = $('#challengesmytable').dataTable(opts);
+
+         challengesmytable.fnClearTable();
+
+        for(var i = 0; i < items.length; i++) { 
+            challengesmytable.fnAddData([ 
+              items[i][0], 
+              items[i][1], 
+              items[i][2], 
+              items[i][3],
+              items[i][4] 
+            ]);
+        }; 
+      
+      });
+
+
+    var items2 = [];
+      
+      $.getJSON( "{{ path_for('acceptedchallenges.my.get.json')}}", function( data ) {
+      
+        $.each( data, function( key, val ) {
+        var item2 = [];
+     
+        if (data[key]['confirmed'] == 1 &&  !data[key]['cancelnote']) {
+          item2.push('<div class="btn-group" role="group" aria-label="Confirmed and Cancel"><a class="btn btn-sm btn-success disabled">Confirmed</a><a data-toggle="modal" data-target="#cancelAcceptedModal" data-remote="false" class="btn btn-sm btn-warning" href="/challenge/cancelaccepted/' 
+            + data[key]['acceptedchallengeid'] 
+            + '">Cancel</a></div>');
+        } else if (data[key]['confirmed'] == 1 && data[key]['cancelnote']) {
+          item2.push('<div class="btn-group" role="group" aria-label="Confirmed and cancelled"><a class="btn btn-sm btn-success disabled">Confirmed</a><a class="btn btn-sm btn-danger disabled">Cancelled</a></div>');
+        } else if (data[key]['cancelnote']) {
+            item2.push('<a class="btn btn-sm btn-danger disabled">Cancelled</a>');
+        } else {
+          item2.push('<a data-isloaded="false" data-toggle="modal" data-target="#cancelAcceptedModal" data-remote="false" class="btn btn-sm btn-warning" href="/challenge/cancelaccepted/'
+            + data[key]['acceptedchallengeid'] 
+            + '">Cancel</a>');        
+        }
+
+        item2.push( '<a href="/challenge/details/' + data[key]['challengeid'] + 
+                    '" data-toggle="modal" \
+                       data-target="#challengeDetailsModal" \
+                       data-remote="false" \
+                       class="btn btn-sm btn-primary">' + 
+                    data[key]['challengedate'] + '</a>' 
+                  );        
+
+        item2.push(data[key]['challenger'] );
+        item2.push(data[key]['challengeddivision'] );
+        //item2.push(data[key]['challengenote'] );
+        items2.push(item2);
+
+      });
+
+        if (items2.length <= 10) {
+          var opts2 =  {
+            "oLanguage": {
+              "sZeroRecords": "No records"
+            },
+            "order": [[ 1, "desc" ]],
+            "paging":   false,
+            "info":     false,
+            "searching": false,
+          };
+        }
+
+        var acceptedchallengesmytable = $('#acceptedchallengesmytable').dataTable(opts2);
+         acceptedchallengesmytable.fnClearTable();
+
+        for(var i = 0; i < items2.length; i++) { 
+            acceptedchallengesmytable.fnAddData([ 
+                                                  items2[i][0], 
+                                                  items2[i][1], 
+                                                  items2[i][2], 
+                                                  items2[i][3]
+                                                  //items2[i][4] 
+                                                ]);
+        }; 
+      });
+
+    var items3 = [];
+      
+      $.getJSON( "{{ path_for('challengesstatus.my.get.json')}}", function( data ) {
+      
+        $.each( data, function( key, val ) {
+        var item3 = [];
+
+        if (data[key]['cancelnote']) {
+
+            item3.push('<a class="btn btn-sm btn-danger disabled" href="">Cancelled (opponent)</a>');
+
+        } else {
+
+
+            if (data[key]['confirmed'] == 1) {
+                item3.push('<a class="btn btn-sm btn-success disabled" href="">Confirmed</a>');
+            } else {
+                item3.push('<a data-toggle="modal" ' +
+                'data-target="#confirmModal" ' +
+                'data-remote="false" ' +
+                'class="btn btn-sm btn-warning" ' +
+                'href="/challenge/confirm/' +
+                data[key]['acceptedchallengeid'] +
+                '">Confirm</a>');
+            }
+        }
+        
+    item3.push( '<a href="/challenge/details/' +
+                data[key]['challengeid'] +
+             '" data-toggle="modal" ' +
+                'data-target="#challengeDetailsModal" ' +
+                'data-remote="false" ' +
+                'class="btn btn-sm btn-primary">' +
+                data[key]['challengedate'] + '</a>' );
+
+        item3.push(data[key]['acceptedby'] );
+        item3.push(data[key]['challengeddivision'] );
+        if (data[key]['numofplayers'] ) {
+          item3.push(data[key]['numofplayers'] );
+        } else {
+
+          item3.push('all');
+        }
+
+        items3.push(item3);
+
+      });
+
+        if (items3.length <= 10) {
+          var opts3 =  {
+            "oLanguage": {
+              "sZeroRecords": "No records"
+            },
+            "order": [[ 1, "desc" ]],
+            "paging":   false,
+            "info":     false,
+            "searching": false,
+          };
+        }        
+          var mychallengesstatustable = $('#mychallengesstatustable').dataTable(opts3);
+         mychallengesstatustable.fnClearTable();
+
+        for(var i = 0; i < items3.length; i++) { 
+            mychallengesstatustable.fnAddData([ 
+                                                items3[i][0], 
+                                                items3[i][1], 
+                                                items3[i][2], 
+                                                items3[i][3],
+                                                items3[i][4] 
+                                              ]);
+        }; 
+      
+      });      
+
+    $("#challengeDetailsModal").on("show.bs.modal", function(e) {
+
+        var loadingElem = $(this).find("#loading1");
+        var elem1 = $(this).find(".modal-body-inner1");
+        var elem2 = $(this).find(".modal-body-inner2");
+        elem1.html("");
+        elem2.html("");
+
+        loadingElem.show();
+
+        var link = $(e.relatedTarget);
+        var link_1 = link.attr("href");
+        var link_2 = link_1.replace('details', 'confirmeddetails');
+
+        var challenge_details = "";
+        var form = "";
+
+        $.get( link_2 ).done( function(data) {
+            form = data;
+        })
+        .done( function () {
+            elem2.prepend(form);
+        })
+            .done( function () {
+
+                $.get( link_1 ).done( function(data) {
+                    challenge_details = data;
+                })
+                    .done( function () {
+                        elem1.prepend(challenge_details);
+                        loadingElem.hide();
+                    });
+
+            });
+    });
+
+    $("#confirmModal").on("show.bs.modal", function(e) {
+
+        var loadingElem = $(this).find("#loading1");
+        var elem1 = $(this).find(".modal-body-inner1");
+        var elem2 = $(this).find(".modal-body-inner2");
+        elem1.html("");
+        elem2.html("");
+        loadingElem.show();
+
+        var details = "";
+        var form = "";
+
+        var link = $(e.relatedTarget);
+        var link_1 = link.attr("href");
+        var link_2 = link_1.replace('confirm', 'confirmdetails');
+
+        $.get( link_2 ).done( function(data) {
+            form = data;
+        })
+                .done( function () {
+                    elem1.prepend(form);
+                })
+                .done( function () {
+
+                    $.get( link_1 ).done( function(data) {
+                        details = data;
+                    })
+                            .done( function () {
+                                elem2.prepend(details);
+                                loadingElem.hide();
+                            });
+
+                });
+
+
+    });
+
+    $("#cancelModal").on("show.bs.modal", function(e) {
+
+
+        var link = $(e.relatedTarget);
+
+        link.addClass('disabled');
+
+        var loadingElem = $(this).find("#loading1");
+
+        var elem1 = $(this).find(".modal-body-inner1");
+        var elem2 = $(this).find(".modal-body-inner2");
+
+        elem1.html("");
+        elem2.html("");
+        loadingElem.show();
+
+        var link_text = link.attr("href");
+        var new_link = link_text.replace('cancel', 'confirmeddetails');
+        var new_link2 = link_text.replace('cancel', 'details');
+
+        var challenge_details = "";
+        var cancel_form = "";
+        var challenge_confirm_details = "";
+
+
+        $.get(link_text).done(function (data) {
+            cancel_form = ""
+            cancel_form = data;
+        })
+                .done(function () {
+                    elem1.prepend(cancel_form);
+                    $.get(new_link2).done(function (data) {
+                        challenge_details = "";
+                        challenge_details = data;
+                    })
+                            .done(function () {
+                                elem1.prepend(challenge_details);
+                                $.get(new_link).done(function (data) {
+                                    challenge_confirm_details = "";
+                                    challenge_confirm_details = data;
+                                })
+                                        .done(function () {
+                                            elem2.prepend(challenge_confirm_details);
+                                            link.removeClass('disabled');
+                                            loadingElem.hide();
+                                        });
+                            });
+                });
+    });
+
+    $("#cancelAcceptedModal").on("show.bs.modal", function(e) {
+
+        var link = $(e.relatedTarget);
+
+        link.addClass('disabled');
+        var link_text = link.attr("href");
+        var new_link = link_text.replace('cancelaccepted', 'confirmdetails');
+        var new_link2 = link_text.replace('cancelaccepted', 'detailsaccepted');
+
+        var challenge_details = "";
+        var cancel_form = "";
+        var challenge_confirm_details = "";
+
+        var loadingElem = $(this).find("#loading1");
+        var elem1 = $(this).find(".modal-body-inner1");
+        var elem2 = $(this).find(".modal-body-inner2");
+
+        elem1.html("");
+        elem2.html("");
+        loadingElem.show();
+
+        $.get(link_text).done(function (data) {
+            cancel_form = data;
+        })
+                .done(function () {
+                    elem1.prepend(cancel_form);
+                })
+                .done(function () {
+
+                    $.get(new_link2).done(function (data) {
+                        challenge_details = data;
+                    })
+                            .done(function () {
+                                elem1.prepend(challenge_details);
+                            })
+                            .done(function () {
+
+                                $.get(new_link).done(function (data) {
+                                    challenge_confirm_details = data;
+                                })
+                                        .done(function () {
+                                            elem2.prepend(challenge_confirm_details);
+                                            link.removeClass('disabled');
+                                            loadingElem.hide();
+                                        });
+
+                            });
+                });
+
+    });
+
+    $("#deleteModal").on("show.bs.modal", function(e) {
+        $(this).find(".modal-body-inner1").html("");
+        $(this).find(".modal-body-inner2").html("");
+        var loadingElem = $(this).find("#loading1");
+        var elem1 = $(this).find(".modal-body-inner1");
+        var elem2 = $(this).find(".modal-body-inner2");
+        var details = "";
+        var form = "";
+
+        var link = $(e.relatedTarget);
+        var link_1 = link.attr("href");
+        var link_2 = link_1.replace('delete', 'confirmdetails');
+
+        elem1.html("");
+        elem2.html("");
+        loadingElem.show();
+
+        $.get( link_2 ).done( function(data) {
+            form = data;
+        })
+                .done( function () {
+                    elem2.prepend(form);
+                })
+                .done( function () {
+
+                    $.get( link_1 ).done( function(data) {
+                        details = data;
+                    })
+                            .done( function () {
+                                elem1.prepend(details);
+                                loadingElem.hide();
+                            });
+
+                });
+
+
+
+    }); 
+
+    // 
+
+    $("#challengeDetailsModal, #deleteModal, #cancelModal, #cancelAcceptedModal, #confirmModal")
+     .on("hide.bs.modal", function(e) {
+
+        $(this).find(".modal-body-inner1").html("");
+        $(this).find(".modal-body-inner2").html("");
+
+    });
+
+
+});
+
+</script>
+
+{% endblock js %}

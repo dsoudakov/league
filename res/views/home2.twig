@@ -1,0 +1,41 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+<style>
+  body { padding-top: 50px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% block nav %}
+  {{parent()}}
+{% endblock nav %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+		<h1>Hello user!</h1>
+    </div>
+    <div class="col-md-8">
+        {% if flash.getMessages() %}
+	        {% for k, messages in flash.getMessages() %}
+	        	{% for message in flash.getMessages()[k] %}
+		        	{% if k == 'global' %}
+		        		<div class="alert alert-success">{{ message }}</div>
+		        	{% else %}
+		        		<div class="alert alert-danger">{{ message }}</div>
+		        	{% endif %}
+	        	{% endfor %}
+	        {% endfor %}
+        {% endif %}
+    </div>
+    <div class="col-md-2">
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block js %}
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends 'templates/default.twig' %}
+
+{% block content %}
+	<div class="container center-block center-position">    
+		<div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">           <!-- Div Panel -->
+				<div class="panel panel-warning" >
+					<!-- Panel Heading -->
+					<div class="panel-heading">
+						<div class="panel-title"><strong>Forest Hill Tennis League Registration</strong></div>
+					</div><!-- End panel heading -->
+					
+					<!-- Panel body -->
+					<div class="panel-body" >
+				        {% if flash.getMessage('global_error').0 %}
+				            <div class="alert alert-danger">{{ flash.getMessage('global_error').0 }}</div>
+				        {% endif %}  
+						<form action="{{ path_for('register.post') }}" 
+								id="registerForm" 
+								method="post" 
+								class="form-horizontal" 
+								role="form">
+							
+							<!-- Username -->
+							<div class="input-group input-email">
+								<span class="input-group-addon">
+									<i class="glyphicon glyphicon-envelope"></i></span>
+									<input type="text" 
+											name="identifier" 
+											id="identifier" 
+											class="form-control" 
+											placeholder="email"
+											value="{{ session.loginemail }}"
+			></div>
+			{% if app.v.errors().has('identifier') %} 
+			<div class="bg-warning">
+			{{ app.v.errors().first('identifier') }} 
+			</div>
+			{% endif %}
+
+							<div class="input-group input-password">
+								<span class="input-group-addon">
+									<i class="glyphicon glyphicon-lock"></i></span>
+									<input type="password" 
+											name="password" 
+											id="password" 
+											class="form-control" 
+											placeholder="password">
+							</div>
+							<div class="input-group input-password">
+								<span class="input-group-addon">
+									<i class="glyphicon glyphicon-lock"></i></span>
+									<input type="password" 
+											name="password_match" 
+											id="password_match" 
+											class="form-control" 
+											placeholder="confirm password">
+							</div><br />
+			{% if app.v.errors().has('password') %}
+			<div class="bg-warning">
+			 {{ app.v.errors().first('password') }}
+			</div>
+			{% endif %}
+			{% if app.v.errors().has('password_match') %}
+			<div class="bg-warning">
+			 {{ app.v.errors().first('password_match') }}
+			</div>
+			{% endif %}
+
+			<div class="g-recaptcha" data-sitekey="6LdhDBMTAAAAADdy59KvOYPfk2OZBEpJG8BAoNhM"></div>
+			{% if app.v.errors().has('g-recaptcha-response') %}
+			<div class="bg-warning">
+			 {{ app.v.errors().first('g-recaptcha-response') }}
+			</div>
+			{% endif %}
+							<div class="form-group login-button">
+								<div class="col-sm-12 controls">
+									<div>
+										<input type="submit" 
+										 		value="Register" 
+										 		class="btn btn-warning btn-lg btn-block">
+									</div>
+								</div>
+							</div>
+							
+							<a href="{{ path_for('login') }}" 
+ 								data-toggle="tooltip" title="Login">Login.</a> 	
+
+						{% include 'auth/csrf.inc' %}
+
+						</form><!-- ENd form -->     
+					</div><!-- ENd panel body -->
+			</div><!-- End panel group -->  
+		</div>
+	</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
+<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+	$(function () {
+
+		$('[data-toggle="tooltip"]').tooltip({
+			placement: 'bottom',
+			trigger: 'hover focus',
+		});
+
+		$( "#registerForm" ).validate({
+			rules: {
+				identifier: {
+					required: true,
+					email: true
+				},
+				password: {
+					required: true,
+					minlength: 6
+				},			
+				password_match: {
+					required: true,
+					minlength: 6,
+					equalTo: "#password"
+				},	
+			},
+
+			tooltip_options: {
+				identifier: { 
+					placement: 'bottom'
+				},
+				password: { 
+					placement: 'bottom'
+				},
+				password_match: { 
+					placement: 'bottom'
+				},
+			}
+		});
+	})
+</script>
+{{ parent() }}
+{% endblock %}

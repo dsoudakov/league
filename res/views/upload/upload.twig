@@ -1,0 +1,102 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+        {% if flash.getMessages() %}
+          {% for k, messages in flash.getMessages() %}
+            {% for message in flash.getMessages()[k] %}
+              {% if k == 'global' %}
+                <div class="alert alert-success">{{ message }}</div>
+              {% else %}
+                <div class="alert alert-danger">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+
+        {% if errors %}
+          <div class="alert alert-danger">File NOT uploaded! Check errors.</div>
+        {% endif %}
+
+
+{% block nav %}
+  {{ parent() }}
+{% endblock nav %}
+
+    </div>
+    <div class="col-md-8">
+      <div class="panel">
+          <div class="panel-heading">
+            <div class="panel-title">
+              <strong>Upload CSV</strong>
+            </div>
+          </div><!-- End panel heading -->
+          
+          <!-- Panel body -->
+          <div class="panel-body" >
+            <form class="form-horizontal" 
+                  method="post" 
+                  id="uploadForm" 
+                  enctype="multipart/form-data" 
+                  action="{{ path_for('upload.post') }}">
+            <fieldset>
+            <!-- Text input-->
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="table_name">Table name:</label>  
+              <div class="col-xs-6 col-md-3">
+                <input id="table_name" 
+                        name="table_name" 
+                        type="text" 
+                        placeholder="table name" 
+                        class="form-control" 
+                        value="{{ rendered( request.getParam('table_name'), '') }}">
+                        {% if errors.has('table_name') %}
+                        <div class="label label-danger">
+                         {{ errors.first('table_name') }} 
+                        </div>
+                        {% endif %}
+              </div>
+            </div>            
+
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="fileToUpload">File:</label>  
+              <div class="col-xs-6 col-md-3">
+                <input type="file" name="fileToUpload" id="fileToUpload"
+                		accept=".csv" 
+                        placeholder="select a csv file..." 
+                        class="form-control" 
+                        >
+                        {% if errors.has('fileToUpload') %}
+                        <div class="label label-danger">
+                    	   {{ errors.first('fileToUpload') }} 
+                   	    </div>
+                   	    {% endif %}
+
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-xs-3 control-label" for="submit"></label>
+              <div class="col-xs-6 col-md-3">
+                <button id="submit" name="submit" class="btn btn-primary">Upload</button>
+              </div>
+              
+            </div>
+            {% include 'auth/csrf.inc' %} 
+            </fieldset>
+</form>    
+</div>  
+</div>  
+    </div>
+    <div class="col-md-2">
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

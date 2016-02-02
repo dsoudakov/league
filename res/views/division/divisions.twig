@@ -1,0 +1,143 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+<style>
+  body { padding-top: 50px; }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+        {% if flash.getMessages() %}
+          {% for k, messages in flash.getMessages() %}
+            {% for message in flash.getMessages()[k] %}
+              {% if k == 'global' %}
+                <div class="alert alert-success">{{ message }}</div>
+              {% else %}
+                <div class="alert alert-danger">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+
+        {% if errors %}
+          <div class="alert alert-danger">Divisions NOT updated! Check errors.</div>
+        {% endif %}
+
+
+{% block nav %}
+  {{ parent() }}
+{% endblock nav %}
+
+    </div>
+    <div class="col-md-8">
+      <div class="panel">
+          <div class="panel-heading">
+            <div class="panel-title">
+              <strong>Divisions</strong>
+            </div>
+          </div><!-- End panel heading -->
+          
+          <!-- Panel body -->
+          <div class="panel-body" >
+            <form class="form-horizontal" 
+                  method="post" 
+                  id="divisionsForm" 
+                  action="{{ path_for('divisions.post') }}">
+              <fieldset>
+                <!-- Text input-->
+                <div class="form-group">
+                  <label class="col-xs-3 control-label" for="first_name">Division name</label>  
+                  <div class="col-xs-6 col-md-3">
+                    <input id="division_name" 
+                            name="division_name" 
+                            type="text" 
+                            placeholder="Division name" 
+                            class="form-control" 
+                            value="{{ rendered( request.getParam('division_name'), '') }}">
+                            {% if errors.has('division_name') %}
+                            <div class="label label-danger">
+                             {{ errors.first('division_name') }} 
+                            </div>
+                            {% endif %}
+                  </div>
+                </div>
+
+                <!-- Button -->
+                <div class="form-group">
+                  <label class="col-xs-3 control-label" for="submit"></label>
+                  <div class="col-xs-6 col-md-3">
+                    <button id="submit" name="submit" class="btn btn-primary">Update</button>
+                  </div>
+                  
+                </div>
+                {% include 'auth/csrf.inc' %} 
+              </fieldset>
+            </form>    
+</div>  
+</div>  
+    </div>
+    <div class="col-md-2">
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
+<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
+<script>
+  $(function () {
+
+    $('[data-toggle="tooltip"]').tooltip({
+      placement: 'bottom',
+      trigger: 'hover focus',
+    });
+
+    $( "#profileForm" ).validate({
+      rules: {
+        first_name: {
+         //required: true,
+         //maxlength: 30,
+        },
+        last_name: {
+          required: true,
+          maxlength: 30,
+        },
+        sex: {
+          required: true,
+          maxlength: 10,
+        },
+        hand: {
+          required: true,
+          maxlength: 15,
+        },
+        skill7: {
+          required: true,
+          maxlength: 15,
+        },        
+        skillOTA: {
+          required: true,
+          maxlength: 15,
+        },        
+      },
+
+      tooltip_options: {
+        first_name: { 
+          placement: 'bottom'
+        },
+        last_name: { 
+          placement: 'bottom'
+        },
+        sex: { 
+          placement: 'bottom'
+        },
+      }
+    });
+  })
+</script>
+{{ parent() }}
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+{{parent()}}
+
+{% endblock head %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+        {% if flash.getMessages() %}
+          {% for k, messages in flash.getMessages() %}
+            {% for message in flash.getMessages()[k] %}
+              {% if k == 'global' %}
+                <div class="alert alert-success">{{ message }}</div>
+              {% else %}
+                <div class="alert alert-danger">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+
+
+{% block nav %}
+  {{ parent() }}
+{% endblock nav %}
+
+    </div>
+    <div class="col-md-8">
+      <div class="panel">
+          <div class="panel-heading">
+            <div class="panel-title">
+          {% if not ( auth.user.divisionprimary or auth.user.divisionsecondary )%}
+          {% else %}
+            <h2><strong>Create a challenge</strong></h2>
+          {% endif %}
+          </div>
+          </div>
+          
+          <!-- Panel body -->
+          <div class="panel-body">
+          {% if not ( auth.user.divisionprimary or auth.user.divisionsecondary )%}
+          	<h2>You must join at least 1 division before you can challenge. You can do so in your profile.</h2>
+
+          {% else %}
+          	{% if step %}
+          		Step 2.
+          		{{ type }}
+          	{% else %}
+          <div class="container">
+	          <div class="row">
+	          	<div class="col-md-8">
+	          		<h3>Who do you want to challenge?</h3>
+	          	</div>
+	          </div>
+	          <div class="row"><div class="col-md-3">&nbsp;</div></div>
+	          <div class="row"><div class="col-md-3">&nbsp;</div></div>
+	          
+	          <div class="row">
+	          	<div class="col-md-3">
+	          	<form method="post" action="{{ path_for('challenge.create.post') }}/create/all">
+	          	<input type="submit" class="btn btn-primary" value="Everyone in my division"> 
+
+              {% if auth.user.divisionprimary == 0 or auth.user.divisionsecondary == 0 %}
+                  <input type="hidden" name="challengeInDivision" value="{{ auth.getDivisionID() }}">
+              {% else %}
+	          	  {{ auth.genJoinedDivisionSelect('challengeInDivision') | raw }}
+              {% endif %}
+
+	          	{% include 'auth/csrf.inc' %}	
+				</form>
+				</div>
+				<div class="col-md-6">(everyone you haven't played with)</div>
+
+	          </div>
+
+	          <div class="row"><div class="col-md-3">&nbsp;</div></div>
+	          <div class="row"><div class="col-md-3">&nbsp;</div></div>
+
+	          <div class="row">
+	          	<div class="col-md-3">
+	          	<form method="post" action="{{ path_for('challenge.create.post') }}/create/specific">
+	          	<input type="submit" class="btn btn-primary" value="Specific players in my division"> 
+
+              {% if auth.user.divisionprimary == 0 or auth.user.divisionsecondary == 0 %}
+                <input type="hidden" name="challengeInDivision" value="{{ auth.getDivisionID() }}">
+              {% else %}
+	          	  {{ auth.genJoinedDivisionSelect('challengeInDivision') | raw }}
+              {% endif %}
+	          	{% include 'auth/csrf.inc' %}	
+	          	</form>
+	          </div>
+	          <div class="col-md-5">(specific players you haven't played with)</div>
+	          </div>
+
+      	  {% endif %}
+      	  {% endif %}
+      	  </div>
+
+		</div>  
+      </div>  
+    </div>
+    <div class="col-md-2">
+    	Right column. Players online: x
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

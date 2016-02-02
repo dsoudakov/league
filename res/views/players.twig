@@ -1,0 +1,162 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+{{parent()}}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.css"/>
+
+{% endblock head %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+        {% if flash.getMessages() %}
+          {% for k, messages in flash.getMessages() %}
+            {% for message in flash.getMessages()[k] %}
+              {% if k == 'global' %}
+                <div class="alert alert-success">{{ message }}</div>
+              {% else %}
+                <div class="alert alert-danger">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+
+
+{% block nav %}
+  {{ parent() }}
+{% endblock nav %}
+
+    </div>
+    <div class="col-md-8">
+      <div class="panel">
+          <div class="panel-heading">
+            <div class="panel-title">
+              <strong>League Members (active)</strong>
+            </div>
+          </div><!-- End panel heading -->
+          
+          <!-- Panel body -->
+          <div class="panel-body" >
+            <div class="table-responsive">
+              <table id="jsontable" class="display table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+              <thead>
+              <tr>
+              <th>Name</th>
+              <th>Work Phone</th>
+              <th>Home Phone</th>
+              <th>Cell Phone</th>
+              <th>Email</th>
+              </tr>
+              </thead>
+
+              <tfoot>
+              <tr>
+              <th>Name</th>
+              <th>Work Phone</th>
+              <th>Home Phone</th>
+              <th>Cell Phone</th>
+              <th>Email</th>
+              </tr>
+              </tfoot>
+              </table>
+            </div>
+          </div>  
+      </div>  
+      <div id="jsonoutput">
+      </div>
+    </div>
+    <div class="col-md-2">
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+
+{% block js %}
+
+<script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.js"></script>
+
+<script type="text/javascript">
+
+  $(document).ready(function() {
+
+    var oTable = $('#jsontable').dataTable();
+
+  formatPhone = function (obj) {
+    if (obj) {
+
+      var numbers = obj.replace(/\D/g, ''),
+          char = {0:'(',3:') ',6:' - '};
+      obj = '';
+      for (var i = 0; i < numbers.length; i++) {
+          obj += (char[i]||'') + numbers[i];
+      }
+      return obj;
+    }
+  }
+
+ var items = [];
+  
+  $.getJSON( "{{ path_for('players.get.json')}}", function( data ) {
+  
+  //console.log(data);
+ 
+  //var items = [];
+  $.each( data, function( key, val ) {
+    var item = [];
+    //items.push( "<li id='" + key + "'>" + val['_first_name'] + "</li>" );
+    if (data[key]['division1']) {
+      div1 = '(' + data[key]['division1'] + ')';
+    } else {
+      div1 = '';
+    };
+
+    if (data[key]['division2']) {
+      div2 = '(' + data[key]['division2'] + ')';
+    } else {
+      div2 = '';
+    };
+
+
+   if (data[key]['ddivision']) {
+      div3 = '(' + data[key]['ddivision'] + ')';
+    } else {
+      div3 = '';
+    };
+
+    item.push('<strong><a href="/challenge/' + data[key]['email'] + '">' + 
+      data[key]['firstname'] + ' ' + 
+      data[key]['lastname'] + ' ' + 
+      div1 + div2 + div3 + '</a>');
+    item.push(formatPhone(data[key]['work']));
+    item.push(formatPhone(data[key]['home']));
+    item.push(formatPhone(data[key]['cell']));
+    item.push(data[key]['email'] );
+
+    items.push(item);
+    
+
+  });
+
+
+     oTable.fnClearTable();
+
+    for(var i = 0; i < items.length; i++) { 
+        oTable.fnAddData([ items[i][0], items[i][1], items[i][2], items[i][3], items[i][4] ]);
+    }; 
+  
+  });
+
+
+
+
+});
+
+</script>
+
+{% endblock js %}

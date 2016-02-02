@@ -1,0 +1,66 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+{{parent()}}
+
+{% endblock head %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+        {% if flash.getMessages() %}
+          {% for k, messages in flash.getMessages() %}
+            {% for message in flash.getMessages()[k] %}
+              {% if k == 'global' %}
+                <div class="alert alert-success">{{ message }}</div>
+              {% else %}
+                <div class="alert alert-danger">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+
+
+{% block nav %}
+  {{ parent() }}
+{% endblock nav %}
+
+    </div>
+    <div class="col-md-8">
+      <div class="panel">
+          <div class="panel-heading">
+            <div class="panel-title">
+              <h2><strong>My Challenges</strong></h2>
+            </div>
+          </div>
+          
+          <!-- Panel body -->
+          <div class="panel-body">
+            <div class="container">
+  	          <div class="row">
+  	          	<div class="col-md-8">
+  	          		
+  	          	</div>
+  	          </div>
+  	          <div class="row"><div class="col-md-3">&nbsp; empty row</div></div>
+  	          <div class="row"><div class="col-md-3">&nbsp; empty row</div></div>
+  	          
+  	          <div class="row">
+  	          	<div class="col-md-3">
+          			</div>
+  				    </div>
+        	  </div>
+		      </div>  
+      </div>  
+    </div>
+    <div class="col-md-2">
+    	Right column. My challenges.
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
