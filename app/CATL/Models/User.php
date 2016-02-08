@@ -322,5 +322,11 @@ class User
             return $this->deleteBean($res);
         }
         return false;
-    }    
+    }
+
+    public function expose(){
+        return get_object_vars($this);
+    }
+
 }
+

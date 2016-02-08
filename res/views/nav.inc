@@ -22,6 +22,10 @@
             <li class="{{ path_for('players')|isActive }}">
               <a href="{{ path_for('players') }}">Players</a>
             </li>
+
+              <li class="{{ path_for('angular1')|isActive }}">
+                  <a href="{{ path_for('angular1') }}">Angular</a>
+              </li>
             <li class="dropdown">
                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Challenges<strong class="caret"></strong></a>
                {% block challenges_dropdown_contents %}
