@@ -119,12 +119,12 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 
 			if ($winner_1 && $loser_1 && $winner_2 && $loser_2 && $winner_3 && $loser_3 ) {
 				if (!User::checkSetScore($winner_1,$loser_1) ||!User::checkSetScore($winner_2,$loser_2) || !User::checkSetScore($winner_3,$loser_3)  ) {
-					echo '<h3><span class="label label-lg label-danger">Set scores are invalid for 3 sets.</span></h3>';	
+					echo '<h3><span class="label label-lg label-danger">Set scores are invalid for 3 sets. (1)</span></h3>';	
 					die();
 				}
 
-				if (!User::checkScores([[$winner_1,$loser_1],[$winner_2,$loser_2],[$winner_3,$loser_3]])) {
-					echo '<h3><span class="label label-lg label-danger">Match score is invalid for 3 sets.</span></h3>';	
+				if (!User::checkScores([$winner_1,$loser_1],[$winner_2,$loser_2],[$winner_3,$loser_3])) {
+					echo '<h3><span class="label label-lg label-danger">Match score is invalid for 3 sets. (2)</span></h3>';	
 					die();
 				}
 				
@@ -132,11 +132,11 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 				if ($winner_1 && $loser_1 && $winner_2 && $loser_2) {
 
 					if (!User::checkSetScore($winner_1,$loser_1) ||!User::checkSetScore($winner_2,$loser_2)) {
-						echo '<h3><span class="label label-lg label-danger">Set scores are invalid for 2 sets.</span></h3>';	
+						echo '<h3><span class="label label-lg label-danger">Set scores are invalid for 2 sets. (2)</span></h3>';	
 						die();
 					}
 
-					if (!User::checkScores([[$winner_1,$loser_1],[$winner_2,$loser_2]])) {
+					if (!User::checkScores([$winner_1,$loser_1],[$winner_2,$loser_2])) {
 						echo '<h3><span class="label label-lg label-danger">Match score is invalid for 2 sets.</span></h3>';	
 						die();
 					}

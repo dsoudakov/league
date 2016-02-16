@@ -331,32 +331,65 @@ class User
 
     public static function checkSetScore($s1 = null, $s2 = null)
     {
+        if (!$s1 || !$s2) {
+            return false;
+        }
+
         if ($s1 == $s2 || ($s1 < 0 || $s2 < 0) || ($s1 > 7 || $s2 > 7)) {
+            //echo "1";
             return false;
         }
 
         if ($s1 == 7) {
-            if ($s2 != 5 || $s2 != 6) {
+            if ($s2 < 5) {
+                //echo "2";
                 return false;
             }
         }
 
         if ($s2 == 7) {
-            if ($s1 != 5 || $s1 != 6) {
+            if ($s1 < 5) {
+                //echo "3";
                 return false;
             }
         }
 
         if ($s1 == 6) {
-            if ($s2 > 4) {
+            if ($s2 > 4 && $s2 != 7) {
+                //echo "4";
                 return false;
             }
         }
 
         if ($s2 == 6) {
-            if ($s1 > 4) {
+            if ($s1 > 4 && $s1 != 7) {
+                //echo "5";
                 return false;
             }    
+        }
+
+        return true;
+    }
+
+    public static function checkScores($s1=null,$s2=null,$s3=null)
+    {
+        if (!$s3) { //check 2 sets
+
+            if ($s1[0] < $s1[1] || $s2[0] < $s2[1]) {
+                return false;
+            }
+
+        } else { // check 3 sets
+            $tsc = self::checkScores($s1,$s2);
+
+            if ($tsc) {
+                return false;
+            }
+
+            if ($s3[0] < $s3[1]) {
+                return false;
+            }
+
         }
 
         return true;
