@@ -11,7 +11,8 @@ $app->get('/profile', function($request,$response,$args) use ($app)
 
 $app->post('/profile', function($request,$response,$args) use ($app)
 {
-
+    // var_dump($app->auth->user);
+    // die();
     $first_name = $request->getParam('first_name');
     $last_name = $request->getParam('last_name');
     $sex = $request->getParam('sex');
@@ -51,25 +52,45 @@ $app->post('/profile', function($request,$response,$args) use ($app)
     $app->auth->user->skillOTA = $skillOTA;
     $app->auth->user->donotnotifyme = $donotnotifyme;
 
+    if ($app->auth->user->divisionprimaryset == null) {
+        $app->auth->user->divisionprimaryset = 0;
+    }
+
+    if ($app->auth->user->divisionsecondaryset == null) {
+        $app->auth->user->divisionsecondaryset = 0;
+    }
+
     if ($divisionprimary !== $app->auth->user->divisionprimary) {
-        if ($app->auth->user->divisionprimary == 0) {
+        if ($app->auth->user->divisionprimary == 0 && $app->auth->user->divisionprimaryset == 0) {
             if ($divisionprimary !== $app->auth->user->divisionsecondary) {
-                $app->auth->user->divisionprimary = $divisionprimary;               
+                $app->auth->user->divisionprimary = $divisionprimary;   
+                $app->auth->user->divisionprimaryset = 1;            
             }
         } else {
-            $this->get('flash')->addMessage('global_error', 'Profile NOT updated! Division can only be set once per season!');
-            return $response->withRedirect($this->get('router')->pathFor('profile'));
+            if ($app->auth->user->divisionprimaryset == 1) {
+                $app->auth->user->divisionprimary = $divisionprimary;
+                $app->auth->user->divisionprimaryset = 2; 
+            } else {
+                $this->get('flash')->addMessage('global_error', 'Profile NOT updated! Division can only be set once per season!');
+                return $response->withRedirect($this->get('router')->pathFor('profile'));
+            }
         }
     } 
 
     if ($divisionsecondary !== $app->auth->user->divisionsecondary) {
-        if ($app->auth->user->divisionsecondary == 0) {
+        if ($app->auth->user->divisionsecondary == 0 && $app->auth->user->divisionsecondaryset == 0) {
             if ($divisionsecondary !== $app->auth->user->divisionprimary) {
-                $app->auth->user->divisionsecondary = $divisionsecondary;    
+                $app->auth->user->divisionsecondary = $divisionsecondary;
+                $app->auth->user->divisionsecondaryset = 1;    
             }
         } else {
-            $this->get('flash')->addMessage('global_error', 'Profile NOT updated! Division can only be set once per season!');
-            return $response->withRedirect($this->get('router')->pathFor('profile'));
+            if ($app->auth->user->divisionsecondaryset == 1) {
+                $app->auth->user->divisionsecondary = $divisionsecondary;
+                $app->auth->user->divisionsecondaryset = 2; 
+            } else {
+                $this->get('flash')->addMessage('global_error', 'Profile NOT updated! Division can only be set once per season!');
+                return $response->withRedirect($this->get('router')->pathFor('profile'));
+            }
         }
     }
 

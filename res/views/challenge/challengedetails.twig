@@ -96,7 +96,7 @@
         $.each( data, function( key, val ) {
         var item2 = [];
      
-        item2.push('<a class="btn btn-warning" href="/challenge/details/' + data[key]['challengeid'] + '">Info</a>');
+        item2.push('<a class="btn btn-warning" href="{{SITEROOT}}/challenge/details/' + data[key]['challengeid'] + '">Info</a>');
         item2.push(data[key]['challengedate'] );
         item2.push(data[key]['challenger'] );
         item2.push(data[key]['challengeddivision'] );

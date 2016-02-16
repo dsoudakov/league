@@ -43,7 +43,8 @@ class User
         }
     }
 
-    public function isMember() {
+    public function isMember() 
+    {
         // check if user's email = member's email
         if ($this->exists) {
             $id = R::findOne('members',
@@ -326,6 +327,39 @@ class User
 
     public function expose(){
         return get_object_vars($this);
+    }
+
+    public static function checkSetScore($s1 = null, $s2 = null)
+    {
+        if ($s1 == $s2 || ($s1 < 0 || $s2 < 0) || ($s1 > 7 || $s2 > 7)) {
+            return false;
+        }
+
+        if ($s1 == 7) {
+            if ($s2 != 5 || $s2 != 6) {
+                return false;
+            }
+        }
+
+        if ($s2 == 7) {
+            if ($s1 != 5 || $s1 != 6) {
+                return false;
+            }
+        }
+
+        if ($s1 == 6) {
+            if ($s2 > 4) {
+                return false;
+            }
+        }
+
+        if ($s2 == 6) {
+            if ($s1 > 4) {
+                return false;
+            }    
+        }
+
+        return true;
     }
 
 }

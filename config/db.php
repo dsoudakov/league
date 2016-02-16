@@ -34,7 +34,7 @@ return array(
 			'password' => 'Ojqd4&41',
 			'charset' => 'utf8',
 			'collation' => 'utf8_unicode_ci',
-			'prefix' => 'selfdest_',
+			'prefix' => 'fhtl_',
 		),
 
 		'pgsql_dev' => array(

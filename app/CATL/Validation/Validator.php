@@ -59,6 +59,23 @@ class Validator extends Violin
         return true;
     }
 
+    public function validate_0to6($value = -1)
+    {
+        if ($value > 6 || $value < 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function validate_0to7($value = -1)
+    {
+        if ($value > 7 || $value < 0) {
+            return false;
+        }
+        return true;
+    }
+
    // public function addRuleMessages2($rulesAssoc) 
    // {
    //     foreach ($rulesAssoc as $key => $value) {

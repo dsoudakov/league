@@ -4,7 +4,7 @@
 
 {% else %}
 
-<form method="post" action="challenge/confirm/{{ challengeid }}">
+<form method="post" action="{{SITEROOT}}/challenge/confirm/{{ challengeid }}">
 
 <label for="challengeConfirmNote">Confirm note:</label> <textarea class="form-control" maxlegth="200" rows="10" cols="20" name="challengeConfirmNote" id="challengeConfirmNote" placeholder="Propose a start time... (optional)"></textarea> 
 <br />

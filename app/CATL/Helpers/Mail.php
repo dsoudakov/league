@@ -1,5 +1,7 @@
 <?php
 
+namespace CATL\Helpers;
+
 use Mailgun\Mailgun;
 
 class Mail

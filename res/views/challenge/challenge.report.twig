@@ -1,0 +1,447 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+{{parent()}}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/bootstrap-switch.min.css">
+
+{% endblock head %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-2">
+        {% if flash.getMessages() %}
+          {% for k, messages in flash.getMessages() %}
+            {% for message in flash.getMessages()[k] %}
+              {% if k == 'global' %}
+                <div class="alert alert-success">{{ message }}</div>
+              {% else %}
+                <div class="alert alert-danger">{{ message }}</div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endif %}
+
+
+{% block nav %}
+  {{ parent() }}
+{% endblock nav %}
+
+    </div>
+    <div class="col-md-8">
+      <div class="panel">
+          <div class="panel-heading">
+            <div class="panel-title">
+              <h2><strong>Report Challenges</strong></h2>
+            </div>
+          </div>
+          <!-- Panel body -->
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table id="reportablechallengestable" class="display table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+              <thead>
+              <tr>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Division</th>
+              <th>Player 1</th>
+              <th>Player 2</th>
+              </tr>
+              </thead>
+
+              <tfoot>
+              <tr>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Division</th>
+              <th>Player 1</th>
+              <th>Player 2</th>
+              </tr>
+              </tfoot>
+              </table>
+            </div>
+          </div>
+      </div>  
+    </div>
+    <div class="col-md-2">
+      Right column. My challenges.
+    </div>
+  </div>
+</div>
+
+<div id="challengeReportModal" class="modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-primary" style="
+          height: 50px;
+          border-top-left-radius: 5px; 
+          border-top-right-radius: 5px;
+      ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Report a Challenge</h4>
+      </div>
+      <div class="modal-body">
+          <div id="loading1">
+              <img src="{{SITEROOT}}/res/img/loader.gif">
+          </div>
+        <div class="modal-body-inner1">
+          <form id="reportForm" class="form-horizontal" role="form"  method="post" action="">
+            
+            <div id="part1" class="well well-sm" style="display:none">
+                <h3 id="pickawinner">Pick a winner:</h3>
+                <a class="btn btn-sm btn-primary" href="#" id="player1"></a>
+                <a class="btn btn-sm btn-primary" href="#" id="player2"></a>
+                <input type="hidden" id="winnerid" name="winnerid" value="">
+            </div>
+
+            <div id="part2" class="well well-sm" style="display:none">
+              <label for="typeofmatch">Match type:</label>
+                <div id="typeofmatch" class="btn-group">
+                  <button type="button" id="1stto7" class="btn btn-primary">1st to 7 games</button>
+                  <button type="button" id="bo3" class="btn btn-primary">Best of 3 sets</button>
+              </div>
+              <input name="matchtype" id="matchtype" value="" type="hidden">
+            </div>
+            
+            <div id="part3a" class="well well-sm" style="display:none">
+                <label class="control-label"  for="loserscore">Loser # of games:</label>
+                <input  style="width:50px" type="text" id="loserscore" name="loserscore">
+                <div id="errorDiv"></div>
+            </div>
+
+            <div id="part3b" class="well well-sm" style="display:none">
+                <label for="set1">Set 1:</label>
+                <input style="width:50px" id="set1" type="text" name="winner_1">
+                <input style="width:50px" type="text" name="loser_1">
+
+                <br />
+
+                <label for="set2">Set 2:</label>
+                <input style="width:50px" id="set2" type="text" name="winner_2">
+                <input style="width:50px" type="text" name="loser_2">
+                
+                <br />
+
+                <label for="set3">Set 3:</label>
+                <input style="width:50px" id="set3" type="text" name="winner_3">
+                <input style="width:50px" type="text" name="loser_3">
+
+
+            </div>            
+
+            <div id="part4a" class="well well-sm" style="display:none">
+                <label for="retiredcheck">Opponent retired: </label>
+                <input id="retiredcheck" type="checkbox" name="retired" data-size="mini" data-on-text="Yes" data-off-text="No" value="1">
+                <div id="retirednotedetails" style="display:none">
+                  <textarea rows="5" cols="30" id="retirednote" name="retirednote" placeholder="Reason to retire.(optional)"></textarea>
+                </div>
+                
+            </div>
+
+            <div id="part4" class="well well-sm" style="display:none">
+              <input type="submit" class="btn btn-sm btn-primary" value="Report">
+            </div>
+            <div id="csrfgen"></div>
+          </form>
+
+        </div>
+        <div class="modal-body-inner2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="challengeDetailsModal" class="modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-primary" style="
+          height: 50px;
+          border-top-left-radius: 5px; 
+          border-top-right-radius: 5px;
+      ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Challenge Details</h4>
+      </div>
+      <div class="modal-body">
+          <div id="loading1">
+              <img src="{{SITEROOT}}/res/img/loader.gif">
+          </div>
+        <div class="modal-body-inner1"></div>
+        <div class="modal-body-inner2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+
+{% block js %}
+
+<script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.js"></script>
+<script type="text/javascript" src="{{SITEROOT}}/res/js/bootstrap-switch.min.js"></script>
+<script type="text/javascript">
+
+  $(document).ready(function() {
+
+     var items = [];
+     var errorcount = 0;
+      var reportablechallengestable;
+
+      $.getJSON( "{{ path_for('challenges.report.get.json')}}", function( data ) {
+      
+        $.each( data, function( key, val ) {
+        var item = [];
+    
+        item.push('<a data-toggle="modal" data-target="#challengeReportModal" data-remote="false" class="btn btn-sm btn-success" href="{{SITEROOT}}/reportjson/' 
+          + data[key]['challengeid'] 
+          + '">Report</a>');
+    
+        item.push( '<a href="{{SITEROOT}}/challenge/details/' + data[key]['challengeid2'] + '" data-toggle="modal" data-target="#challengeDetailsModal" data-remote="false" class="btn btn-sm btn-primary">' + data[key]['challengedate'] + '</a>' );
+        
+        item.push(data[key]['challengeddivision'] );
+        item.push(data[key]['player1'] );
+        item.push(data[key]['player2'] );
+
+        items.push(item);
+
+      });
+
+        if (items.length <= 10) {
+          var opts =  {
+            "oLanguage": {
+              "sZeroRecords": "No challenges to report"
+            },
+            "order": [[ 1, "desc" ]],
+            "paging":   false,
+            "info":     false,
+            "searching": false,
+          };
+        }
+
+        reportablechallengestable = $('#reportablechallengestable').dataTable(opts);
+
+         reportablechallengestable.fnClearTable();
+
+        for(var i = 0; i < items.length; i++) { 
+            reportablechallengestable.fnAddData([ 
+              items[i][0], 
+              items[i][1], 
+              items[i][2], 
+              items[i][3],
+              items[i][4],
+            ]);
+        }; 
+      
+      });
+    
+    var init = "";
+
+    $("#challengeReportModal").on("show.bs.modal", function(e) {
+
+        var loadingElem = $(this).find("#loading1");
+        var elem1 = $(this).find(".modal-body-inner1");
+        var elem2 = $(this).find(".modal-body-inner2");
+        init = elem1.html();
+        //elem1.html("");
+        //elem2.html("");
+
+        loadingElem.show();
+
+        var link = $(e.relatedTarget);
+        var link_1 = link.attr("href");
+        var link_2 = link_1.replace('details', 'confirmeddetails');
+
+        var challenge_details = "";
+        var form = "";
+
+        $.get('{{SITEROOT}}/csrfgen').done(function (data) {
+          $('#reportForm #csrfgen').html(data);
+        })
+
+        $.getJSON( link_1 ).done( function(data) {
+           //var data = data;
+        })
+        .done( function (data) {
+            
+            if (!data[0]) {
+                loadingElem.hide();
+                elem1.html('<h2 class="btn btn-danger">Cannot report this!<h2>')
+                return false;
+            };
+            
+            $('#retiredcheck').bootstrapSwitch();
+
+            var data = data[0];
+            var typeofmatch = -1;
+
+            $('#retiredcheck').on('switchChange.bootstrapSwitch', function(event, state) {
+              //console.log(this); // DOM element
+              //console.log(event); // jQuery event
+              //console.log(state); // true | false
+
+              if (state) {
+                $('#retirednotedetails').show();
+              } else {
+                $('#retirednotedetails').hide();
+                $('#retirednote').html("");
+              }
+            });
+
+            // $('#retiredcheck').click(function () {
+            //   if ($(this).prop("checked")) {
+            //     $('#matchnotedetails').show();
+            //   }else {
+            //     $('#matchnotedetails').hide();
+            //     $('#matchnote').html("");
+            //   }
+            // })
+
+            $('#reportForm #part2 #1stto7').on("click", function () {
+                $('#reportForm #part2 #1stto7').addClass('active');
+                $('#reportForm #part2 #bo3').removeClass('active');
+                $('#reportForm #part3a').show();
+                $('#reportForm #part3b').hide();
+                $('#reportForm #matchtype').attr("value", "1");
+                //$('#reportForm #next3a, #reportForm #next3b').show();
+                $('#reportForm #part4,#reportForm #part4a').show();
+            });
+
+            $('#reportForm #part2 #bo3').on("click", function () {
+                $('#reportForm #part2 #bo3').addClass('active');
+                $('#reportForm #part2 #1stto7').removeClass('active');
+                $('#reportForm #part3b').show();
+                $('#reportForm #part3a').hide();
+                $('#reportForm #matchtype').attr("value", "2");
+                //$('#reportForm #next3a, #reportForm #next3b').show();
+                $('#reportForm #part4,#reportForm #part4a').show();
+            });
+
+            $('#reportForm').attr('action', '{{SITEROOT}}/report/' + data.challengeid);
+            $('#reportForm #part1 #player1').html(data.player1);
+            $('#reportForm #part1 #player2').html(data.player2);
+
+            $('#reportForm #part1 #player1').on("click", function () {
+                $('#reportForm #winnerid').attr("value", data.player1id);
+                $('#reportForm #part1 #player1').hide();  
+                $('#reportForm #part1 #player2').hide();      
+                $('#reportForm #part1 #pickawinner').html("Winner: " + data.player1);      
+                $('#reportForm #part2').show();
+            });
+            
+            $('#reportForm #part1 #player2').on("click", function () {
+                $('#reportForm #winnerid').attr("value", data.player2id);
+                $('#reportForm #part1 #player1').hide();      
+                $('#reportForm #part1 #player2').hide();  
+                $('#reportForm #part1 #pickawinner').html("Winner: " + data.player2);      
+                $('#reportForm #part2').show();
+            });            
+
+            // $('#reportForm #part3b #next3b').on("click", function () { 
+            //     $('#reportForm #part3b #next3b').hide();
+            //     $('#reportForm #part4a').show();
+            // });
+
+            $('#reportForm #part4a #next4a').on("click", function () { 
+                $('#reportForm #part4').show();
+            });
+
+            $('#reportForm #part3a #loserscore').bind("propertychange click change keyup input paste", function () {
+                if ($(this).val() <= 6 && $(this).val() >= 0 && $(this).val() !== "") {
+                  errorcount = 0;
+                  //$('#reportForm #part4a').show();
+                  $('#reportForm #part3a #errorDiv').html('');
+                } else {
+                  if ($(this).val() !== "") {
+                    errorcount++;
+                    //$('#reportForm #part4a').hide();
+                    $('#reportForm #part3a #errorDiv').html('<h4><span class="label label-pill label-danger">Has to be between 0 and 6.</span></h4>');
+                  }else {
+                    errorcount++;
+                  }
+                }
+            })
+
+            $('#reportForm').submit(function (e) {
+              e.preventDefault();
+
+              if (errorcount > 0 || ($('#reportForm #part3a #loserscore').val() == "" && $('#matchtype') == "1" )) {
+                if ($('#reportForm #part3a #loserscore').val() == "") {
+                    $('#reportForm #part3a #errorDiv').html('<h4><span class="label label-pill label-danger">Has to be between 0 and 6.</span></h4>');
+                }
+
+                return false;
+              }
+              //console.log(errorcount);
+
+              var $form = $( this );
+              var url = $form.attr( "action" );
+              console.log($form.serialize());
+              var posting = $.post( url, $form.serialize() );
+              console.log(posting);
+
+              posting.done(function( data ) {
+                console.log("back");
+                $('#reportForm #part4').html(data);
+                //elem1.append( data );
+              });
+            })
+
+            loadingElem.hide();
+            $('#reportForm #part1').show();
+
+        })
+          
+    });
+
+   $("#challengeDetailsModal").on("show.bs.modal", function(e) {
+
+        var loadingElem = $(this).find("#loading1");
+        var elem1 = $(this).find(".modal-body-inner1");
+        var elem2 = $(this).find(".modal-body-inner2");
+        elem1.html("");
+        elem2.html("");
+
+        loadingElem.show();
+
+        var link = $(e.relatedTarget);
+        var link_1 = link.attr("href");
+        var link_2 = link_1.replace('details', 'confirmeddetails');
+
+        var challenge_details = "";
+        var form = "";
+
+        $.get( link_2 ).done( function(data) {
+            form = data;
+        })
+        .done( function () {
+            elem2.prepend(form);
+        })
+            .done( function () {
+
+                $.get( link_1 ).done( function(data) {
+                    challenge_details = data;
+                })
+                    .done( function () {
+                        elem1.prepend(challenge_details);
+                        loadingElem.hide();
+                    });
+
+            });
+    });
+
+    $("#challengeReportModal")
+     .on("hide.bs.modal", function(e) {
+
+        $(this).find(".modal-body-inner1").html(init);
+        //$(this).find(".modal-body-inner2").html("");
+
+    });
+});
+
+</script>
+{% endblock js %}

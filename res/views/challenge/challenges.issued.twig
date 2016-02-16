@@ -39,12 +39,22 @@
     </div>
     <div class="col-md-8">
       <div class="panel">
+        {% if user.divisionprimary is null and user.divisionsecondary is null %}
+          <div class="panel-heading">
+            <div class="panel-title">
+              <h2><strong>You have to join at least one division!</strong></h2>
+            </div>
+          </div>
+
+        {% else %}
+
           <div class="panel-heading">
             <div class="panel-title">
               <h2><strong>Current Open Challenges</strong></h2>
             </div>
           </div>
-          
+
+        {% endif %}  
           <!-- Panel body -->
           <div class="panel-body">
             
@@ -96,6 +106,9 @@
         <h4 class="modal-title">Accept a challenge</h4>
       </div>
       <div class="modal-body">
+        <div id="loading1">
+            <img src="{{SITEROOT}}/res/img/loader.gif">
+        </div>        
         <div class="modal-body-inner1"></div>
         <div class="modal-body-inner2"></div>
       </div>
@@ -112,6 +125,9 @@
         <h4 class="modal-title">Challenge details</h4>
       </div>
       <div class="modal-body">
+          <div id="loading1">
+            <img src="{{SITEROOT}}/res/img/loader.gif">
+          </div>
         <div class="modal-body-inner1"></div>
       </div>
     </div>
@@ -124,6 +140,8 @@
 
 {% block js %}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
+<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.js"></script>
 
 <script type="text/javascript">
@@ -137,9 +155,9 @@
         $.each( data, function( key, val ) {
           var item = [];
           
-          var userid = {{ user.id }};
-          var userpid = {{ user.divisionprimary }};
-          var usersid = {{ user.divisionsecondary }};
+          var userid = {{ user.id | default(0) }};
+          var userpid = {{ user.divisionprimary | default(0) }};
+          var usersid = {{ user.divisionsecondary | default(0) }};
 
           if (userpid == data[key]['challenge_in_division'] || usersid == data[key]['challenge_in_division']) {
 
@@ -157,7 +175,7 @@
                 }
             } else {
               item.push(
-                '<a class="btn btn-sm btn-block btn-primary" data-toggle="modal" data-target="#acceptModal" data-remote="false" href="/challenge/accept/' +  data[key]['challengeid'] + '">Accept</a>'
+                '<a class="btn btn-sm btn-block btn-primary" data-toggle="modal" data-target="#acceptModal" data-remote="false" href="{{SITEROOT}}/challenge/accept/' +  data[key]['challengeid'] + '">Accept</a>'
               );
             }
           } else {
@@ -167,7 +185,7 @@
           item.push(data[key]['challenger'] );
           item.push(data[key]['challengedate'] );
           item.push(data[key]['challengeddivision'] );
-        item.push( '<a class="btn btn-sm btn-block btn-primary" data-toggle="modal" data-target="#noteModal" data-remote="false" href="/challenge/details/' + data[key]['challengeid'] + '" title="' + data[key]['challengenote'] + '">Note</a>');
+        item.push( '<a class="btn btn-sm btn-block btn-primary" data-toggle="modal" data-target="#noteModal" data-remote="false" href="{{SITEROOT}}/challenge/details/' + data[key]['challengeid'] + '" title="' + data[key]['challengenote'] + '">Note</a>');
          // item.push('');
           items.push(item);
 
@@ -191,22 +209,96 @@
         }; 
       
       });
+    
+    function setJQValidate (id) {
+      $( id ).validate({
+        rules: {
+          challengeAcceptNote: {
+            required: true,
+            maxlength: 200,
+          }
+        },
+        messages: {
+          challengeAcceptNote: {
+            required: "Accept note cannot be blank.",
+            maxlength: jQuery.validator.format("No more than {0} characters!"),
+          },
+        },         
+        tooltip_options: {
+          challengeAcceptNote: { 
+            placement: 'bottom',
+          },
+        },
 
+      });  
+    }
 
     $("#acceptModal").on("show.bs.modal", function(e) {
+        var loadingElem = $(this).find("#loading1");
+        loadingElem.show();
+        var form = "";
+        var details = "";
+        var elem1 = $(this).find(".modal-body-inner1");
+        var elem2 = $(this).find(".modal-body-inner2");
+        elem1.html("");
+        elem2.html("");
+
         var link = $(e.relatedTarget);
-        var link_text = link.attr("href");
-        var new_link = link_text.replace('accept', 'details');
-        $(this).find(".modal-body-inner1").load(new_link);
-        $(this).find(".modal-body-inner2").load(link.attr("href"));
+        var link_1 = link.attr("href");
+        var link_2 = link_1.replace('accept', 'details');
+
+        $.get( link_1 ).done( function(data) {
+            form = data;
+        })
+        .done( function () {
+            elem2.prepend(form);
+            setJQValidate('#acceptChallengeForm');
+        })
+        .done( function () {
+
+          $.get( link_2 ).done( function(data) {
+              details = data;
+          })
+          .done( function () {
+              elem1.prepend(details);
+              loadingElem.hide();
+          });
+
+        });        
     });
 
     $("#noteModal").on("show.bs.modal", function(e) {
+
+        var form = "";
+
+        var loadingElem = $(this).find("#loading1");
+        loadingElem.show();
+
+        var elem1 = $(this).find(".modal-body-inner1");
+        elem1.html("");
+        
         var link = $(e.relatedTarget);
         var link_text = link.attr("href");
-        var new_link = link_text.replace('accept', 'details');
-        $(this).find(".modal-body-inner1").load(new_link);
+        var link_1 = link_text.replace('accept', 'details');
+
+        $.get( link_1 ).done( function(data) {
+            form = data;
+        })
+        .done( function () {
+            elem1.prepend(form);
+            loadingElem.hide();
+        });
+
     });
+
+    $("#noteModal, #acceptModal")
+     .on("hide.bs.modal", function(e) {
+
+        $(this).find(".modal-body-inner1").html("");
+        $(this).find(".modal-body-inner2").html("");
+
+    });
+
 });
 
 </script>

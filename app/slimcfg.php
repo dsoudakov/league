@@ -7,7 +7,8 @@ define('PREE', '</pre>');
 use Tracy\Debugger;
 
 $mode = file_get_contents(ROOT . 'config/mode.php');
-if ($mode === '_dev') Debugger::enable();
+//if ($mode === '_dev') Debugger::enable();
+Debugger::enable();
 
 use CATL\R;
 use CATL\User\User;
@@ -15,6 +16,7 @@ use CATL\Auth\Authtokens;
 use CATL\Validation\Validator;
 use CATL\Helpers\MyCookies;
 use CATL\Helpers\Hash;
+use CATL\Helpers\Mail;
 use CATL\Helpers\Generators;
 use CATL\Middleware\SessionKeeper;
 use CATL\Middleware\AuthCheck;
@@ -26,6 +28,8 @@ ini_set( 'display_errors', true );
 
 // db setup
 $R = new R(require_once ROOT . 'config/db.php');
+
+require_once('RedBeanMysqlBackup.php');
 
 $configuration = [
     'settings' => [
@@ -68,6 +72,12 @@ $c['mail'] = function ($c){
     );
 };
 
+$c['mail2'] = function ($c){
+    return new Mail(
+        $c['config']->get('services.mailgun.secret')
+    );
+};
+
 $c['csrf'] = function ($c) {
     $guard = new \Slim\Csrf\Guard();
     $guard->setFailureCallable(function ($request, $response, $next) {
@@ -77,13 +87,6 @@ $c['csrf'] = function ($c) {
     return $guard;
 };
 
-
-$c['mail'] = function ($c)
-{
-    return new \Mailgun\Mailgun(
-        $c['config']->get('services.mailgun.secret')
-    );
-};
 
 $c['view'] = function ($c)
 {

@@ -134,7 +134,7 @@
       </div>
       <div class="modal-body">
           <div id="loading1">
-              <img src="/res/img/loader.gif">
+              <img src="{{SITEROOT}}/res/img/loader.gif">
           </div>
         <div class="modal-body-inner1"></div>
         <div class="modal-body-inner2"></div>
@@ -156,7 +156,7 @@
       </div>
       <div class="modal-body">
           <div id="loading1">
-              <img src="/res/img/loader.gif">
+              <img src="{{SITEROOT}}/res/img/loader.gif">
           </div>
         <div class="modal-body-inner1"></div>
         <div class="modal-body-inner2"></div>
@@ -178,7 +178,7 @@
       </div>
       <div class="modal-body">
           <div id="loading1">
-              <img src="/res/img/loader.gif">
+              <img src="{{SITEROOT}}/res/img/loader.gif">
           </div>
         <div class="modal-body-inner1"></div>
         <div class="modal-body-inner2"></div>
@@ -200,7 +200,7 @@
       </div>
       <div class="modal-body">
           <div id="loading1">
-              <img src="/res/img/loader.gif">
+              <img src="{{SITEROOT}}/res/img/loader.gif">
           </div>
         <div class="modal-body-inner1"></div>
         <div class="modal-body-inner2"></div>
@@ -222,7 +222,7 @@
       </div>
       <div class="modal-body">
           <div id="loading1">
-            <img src="/res/img/loader.gif">
+            <img src="{{SITEROOT}}/res/img/loader.gif">
           </div>
         <div class="modal-body-inner1">
         </div>
@@ -256,26 +256,26 @@
         if (data[key]['cancelnote']) {
           item.push('<a class="btn btn-sm btn-danger disabled">Cancelled</a>');
         } else {
-          item.push('<a data-loaded="false" data-toggle="modal" data-target="#cancelModal" data-remote="false"  class="btn btn-sm btn-info" href="/challenge/cancel/'
+          item.push('<a data-loaded="false" data-toggle="modal" data-target="#cancelModal" data-remote="false"  class="btn btn-sm btn-info" href="{{SITEROOT}}/challenge/cancel/'
             + data[key]['challengeid'] 
             + '">Cancel</a>');
         }
       } else {
-        item.push('<a data-toggle="modal" data-target="#deleteModal" data-remote="false" class="btn btn-sm btn-warning" href="/challenge/delete/' 
+        item.push('<a data-toggle="modal" data-target="#deleteModal" data-remote="false" class="btn btn-sm btn-warning" href="{{SITEROOT}}/challenge/delete/' 
           + data[key]['challengeid'] 
           + '">Delete</a>');
       }
-        item.push( '<a href="/challenge/details/' + data[key]['challengeid'] + '" data-toggle="modal" data-target="#challengeDetailsModal" data-remote="false" class="btn btn-sm btn-primary">' + data[key]['challengedate'] + '</a>' );
+        item.push( '<a href="{{SITEROOT}}/challenge/details/' + data[key]['challengeid'] + '" data-toggle="modal" data-target="#challengeDetailsModal" data-remote="false" class="btn btn-sm btn-primary">' + data[key]['challengedate'] + '</a>' );
         item.push(data[key]['challengeddivision'] );
 
         item.push(
-            '<a class="btn disabled btn-sm btn-warning" href="/challenge/details/'
+            '<a class="btn disabled btn-sm btn-warning" href="{{SITEROOT}}/challenge/details/'
             + data[key]['challengeid']
             + '"> ' + data[key]['numofacceptedchallenges'] + ' </a> / '
-            + '<a class="btn disabled btn-sm btn-success" href="/challenge/details/'
+            + '<a class="btn disabled btn-sm btn-success" href="{{SITEROOT}}/challenge/details/'
             + data[key]['challengeid']
             + '"> ' + data[key]['numofconfirmedchallenges'] + ' </a> / '
-            + '<a class="btn disabled btn-sm btn-danger" href="/challenge/details/'
+            + '<a class="btn disabled btn-sm btn-danger" href="{{SITEROOT}}/challenge/details/'
             + data[key]['challengeid']
             + '"> ' + data[key]['numofcancelledchallenges'] + ' </a>'
         );
@@ -328,7 +328,7 @@
         var item2 = [];
      
         if (data[key]['confirmed'] == 1 &&  !data[key]['cancelnote']) {
-          item2.push('<div class="btn-group" role="group" aria-label="Confirmed and Cancel"><a class="btn btn-sm btn-success disabled">Confirmed</a><a data-toggle="modal" data-target="#cancelAcceptedModal" data-remote="false" class="btn btn-sm btn-warning" href="/challenge/cancelaccepted/' 
+          item2.push('<div class="btn-group" role="group" aria-label="Confirmed and Cancel"><a class="btn btn-sm btn-success disabled">Confirmed</a><a data-toggle="modal" data-target="#cancelAcceptedModal" data-remote="false" class="btn btn-sm btn-warning" href="{{SITEROOT}}/challenge/cancelaccepted/' 
             + data[key]['acceptedchallengeid'] 
             + '">Cancel</a></div>');
         } else if (data[key]['confirmed'] == 1 && data[key]['cancelnote']) {
@@ -336,12 +336,12 @@
         } else if (data[key]['cancelnote']) {
             item2.push('<a class="btn btn-sm btn-danger disabled">Cancelled</a>');
         } else {
-          item2.push('<a data-isloaded="false" data-toggle="modal" data-target="#cancelAcceptedModal" data-remote="false" class="btn btn-sm btn-warning" href="/challenge/cancelaccepted/'
+          item2.push('<a data-isloaded="false" data-toggle="modal" data-target="#cancelAcceptedModal" data-remote="false" class="btn btn-sm btn-warning" href="{{SITEROOT}}/challenge/cancelaccepted/'
             + data[key]['acceptedchallengeid'] 
             + '">Cancel</a>');        
         }
 
-        item2.push( '<a href="/challenge/details/' + data[key]['challengeid'] + 
+        item2.push( '<a href="{{SITEROOT}}/challenge/details/' + data[key]['challengeid'] + 
                     '" data-toggle="modal" \
                        data-target="#challengeDetailsModal" \
                        data-remote="false" \
@@ -403,13 +403,13 @@
                 'data-target="#confirmModal" ' +
                 'data-remote="false" ' +
                 'class="btn btn-sm btn-warning" ' +
-                'href="/challenge/confirm/' +
+                'href="{{SITEROOT}}/challenge/confirm/' +
                 data[key]['acceptedchallengeid'] +
                 '">Confirm</a>');
             }
         }
         
-    item3.push( '<a href="/challenge/details/' +
+    item3.push( '<a href="{{SITEROOT}}/challenge/details/' +
                 data[key]['challengeid'] +
              '" data-toggle="modal" ' +
                 'data-target="#challengeDetailsModal" ' +

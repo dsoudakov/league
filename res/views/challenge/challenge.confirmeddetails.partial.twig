@@ -51,7 +51,7 @@
                     {% if c.userid == user.id and not c.cancelnote %}
                         <a data-toggle="modal" data-target="#confirmModal" data-remote="false"
                            class="btn btn-sm btn-warning"
-                           href="/challenge/confirm/{{ c.acceptedchallengeid }}">Confirm</a>
+                           href="{{SITEROOT}}/challenge/confirm/{{ c.acceptedchallengeid }}">Confirm</a>
                     {% endif %}
                     </h4>
                     <table class="table wrapme table-condensed borderless" cellspacing="0">

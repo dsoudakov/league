@@ -1,0 +1,138 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+    <link rel="stylesheet" type="text/css" href="{{ SITEROOT }}/res/css/angular-datatables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.0.2/css/responsive.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.11/css/dataTables.bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.bootstrap.min.css"/>
+
+
+    {{parent()}}
+
+{% endblock head %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                {% if flash.getMessages() %}
+                    {% for k, messages in flash.getMessages() %}
+                        {% for message in flash.getMessages()[k] %}
+                            {% if k == 'global' %}
+                                <div class="alert alert-success">{{ message }}</div>
+                            {% else %}
+                                <div class="alert alert-danger">{{ message }}</div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+
+
+                {% block nav %}
+                    {{ parent() }}
+                {% endblock nav %}
+
+                {% if room %}
+                  <h2><strong>Room: {{room}}</strong></h2>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-8 panel">
+                <div class="container-fluid" ng-app="messageboard">
+                    <div ng-controller="messageboardctrl as ctrl">
+                        <h2><strong>Message Board</strong></h2>
+                        <div ng-repeat="entry in ctrl.entries track by entry.id">
+                          {[{entry.first_name}]} said: {[{entry.message}]} at: {[{entry.createdat}]} <br />
+                        </div>
+
+                        <form ng-submit="ctrl.processForm()">
+                            Room: <input type="text" name="room" ng-model="ctrl.entry.room"><br />
+                            <textarea ng-model="ctrl.entry.message" name="message" cols="50" rows="10"></textarea><br />
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <span class="glyphicon glyphicon-flash"></span> Submit!
+                            </button>
+                            {% include 'auth/csrf.inc' with {'option1' : 'ctrl.entry.', 'option2' : 'ctrl.entry.'} %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block js %}
+
+    {{parent()}}
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-resource.min.js"></script>
+
+    <script type="text/javascript">
+
+        angular.module('messageboard', ['ngResource']
+                      ).config(function($interpolateProvider){
+                            $interpolateProvider.startSymbol('{[{').endSymbol('}]}');
+                        }).controller('messageboardctrl', messageboardctrl)
+                       .factory('Entry', function($resource) {
+                            return $resource('{{SITEROOT}}/mb/entries/:room/:id');
+                       });
+
+        function messageboardctrl($resource, $interval, $http, $scope, Entry) {
+            var vm = this;
+
+            updateEntries = function() {
+                vm.oldEntries = vm.entries;
+                {% if room %}
+                    vm.newEntries = Entry.query({'room': "{{ room }}" });
+                {% else %}
+                    vm.newEntries = Entry.query();    
+                {% endif %}
+                
+
+                vm.newEntries.$promise.then(function (result) {
+                    vm.newEntries = result;
+                    //console.log(JSON.stringify(vm.newEntries)); 
+                    //console.log(JSON.stringify(vm.oldEntries));
+
+                    if (JSON.stringify(vm.oldEntries) !== JSON.stringify(vm.newEntries) ) {
+                        vm.entries = vm.newEntries;                    
+                        console.log(vm.entries);
+                        vm.entry.room = "";
+                        vm.entry.message = "";
+                    };
+
+                });
+
+                
+            };
+            updateEntries();
+            console.log($scope.csfr_name);
+            vm.formData = {};
+            
+            vm.processForm = function() {
+                //console.log(vm.entry);
+                save = Entry.save(vm.entry);
+                
+                save.$promise.then(function (result) {
+                    vm.entry.room = "";
+                    vm.entry.message = "";
+                });
+
+                updateEntries();
+            }
+
+
+
+            refreshEntries = $interval(updateEntries, 5000);
+        }
+
+    </script>
+
+{% endblock js %}

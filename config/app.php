@@ -3,7 +3,7 @@
 return [
 
 	'app' => [
-		'url' => 'http://www.catennisleague.com/beta/authentication',
+		'url' => 'http://www.catennisleague.com/new/',
 		'hash' => [
 			'algo' => PASSWORD_BCRYPT,
 			'cost' => 10
@@ -18,7 +18,7 @@ return [
 	
 	'url' => [
 		'_dev' => 'http://localhost',
-		'_prod' => 'http://www.catennisleague.com/beta',
+		'_prod' => 'http://www.catennisleague.com',
 	],
 
 	'db' => [
@@ -37,7 +37,7 @@ return [
 				'dbname' => 'CATennis',
 				'username' => 'dsoud',
 				'password' => 'Ojqd4&41',
-				'prefix' => 'selfdest_',
+				'prefix' => 'fhtl_',
 			],		
 		],
 	],
@@ -46,6 +46,9 @@ return [
 		'mailgun' => [
 			'domain' => 'catennisleague.com',
 			'secret' => 'key-0ff032421be087c89e6575629d6d6534',
+			'first' => 'Tennis',
+			'last' => 'League',
+			'from' => 'postmaster@catennisleague.com',
 		],
 	],
 

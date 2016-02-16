@@ -24,6 +24,7 @@ require ROOT . 'app/routes/profile.php';
 require ROOT . 'app/routes/upload.php';
 require ROOT . 'app/routes/players.php';
 require ROOT . 'app/routes/challenges.php';
-require ROOT . 'app/routes/angular.php';
-
-
+require ROOT . 'app/routes/challenges.report.php';
+require ROOT . 'app/routes/members.php';
+require ROOT . 'app/routes/backup.php';
+require ROOT . 'app/routes/messageboard.php';

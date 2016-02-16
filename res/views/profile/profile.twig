@@ -173,7 +173,7 @@
               <label class="col-xs-3 control-label" for="divisionprimary">Primary division</label>
               <div class="col-xs-8 col-md-3">
                     {{ auth.genDivisionSelect('divisionprimary', 'primary')|raw }}
-                    {% if not auth.user.divisionprimary %}
+                    {% if not auth.user.divisionprimary and not auth.user.divisionprimaryset %}
                     <div class="alert alert-sm alert-warning alert-dismissible">
                       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -194,7 +194,7 @@
               <label class="col-xs-3 control-label" for="divisionprimary">Secondary division</label>
               <div class="col-xs-8 col-md-3">
                     {{ auth.genDivisionSelect('divisionsecondary', 'secondary')|raw }}
-                    {% if not auth.user.divisionsecondary %}
+                    {% if not auth.user.divisionsecondary and not auth.user.divisionsecondaryset %}
                     <div class="alert alert-sm alert-warning alert-dismissible">
                       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -202,6 +202,7 @@
                       WARNING: You will be able to join secondary division once per season. Choose wisely.
                     </div>
                     {% endif %}                    
+                    
                     {% if errors.has('divisionsecondary') %}
                     <div class="label label-danger">
                      {{ errors.first('divisionsecondary') }} 

@@ -49,6 +49,7 @@ $notauthenticated = function ($request, $response, $next) use ($app) {
 
 $authenticated = function ($request, $response, $next) use ($app) {
 
+    //dump($app);
     if ($app->auth->exists) {
         $response = $next($request, $response);  
     } else {

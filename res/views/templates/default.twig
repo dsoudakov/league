@@ -109,7 +109,7 @@
   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
-  <body ng-app="showcase">
+  <body>
     <div class="container-fluid ofh ofhbg"></div>
 
       {% block title %}{% endblock %}
@@ -117,11 +117,13 @@
 
     </div>
 
+
     <script src="{{SITEROOT}}/res/js/ie10-viewport-bug-workaround.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
   {% block js %}    
+
 
     <script type="text/javascript">
       jQuery.extend(jQuery.validator.messages, {

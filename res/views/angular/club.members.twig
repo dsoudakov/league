@@ -1,0 +1,170 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+    <link rel="stylesheet" type="text/css" href="{{ SITEROOT }}/res/css/angular-datatables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.0.2/css/responsive.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.11/css/dataTables.bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.1.2/css/buttons.bootstrap.min.css"/>
+
+
+    {{parent()}}
+
+{% endblock head %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                {% if flash.getMessages() %}
+                    {% for k, messages in flash.getMessages() %}
+                        {% for message in flash.getMessages()[k] %}
+                            {% if k == 'global' %}
+                                <div class="alert alert-success">{{ message }}</div>
+                            {% else %}
+                                <div class="alert alert-danger">{{ message }}</div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+
+
+                {% block nav %}
+                    {{ parent() }}
+                {% endblock nav %}
+
+            </div>
+            
+            <div class="col-md-8 panel">
+                <div class="container-fluid" ng-app="memberstable">
+                    <div ng-controller="membertablesctrl as ctrl">
+                        <h2><strong>Club members</strong></h2>
+                        <table style="width: auto !important;" datatable=""
+                               dt-options="ctrl.dtOptions"
+                               dt-columns="ctrl.dtColumns"
+                               class="table table-striped table-bordered table-condensed display responsive nowrap">
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block js %}
+
+    {{parent()}}
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-resource.min.js"></script>
+
+    <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.11/js/dataTables.bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.1.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.1.2/js/buttons.bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.1.2/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.0.2/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.0.2/js/responsive.bootstrap.min.js"></script>
+
+    <script src="{{ SITEROOT }}/res/js/angular-datatables.min.js"></script>
+    <script src="{{ SITEROOT }}/res/js/angular-datatables.bootstrap.min.js"></script>
+    <script src="{{ SITEROOT }}/res/js/angular-datatables.buttons.min.js"></script>
+
+<script type="text/javascript">
+
+    angular.module('memberstable', ['datatables',
+                                'datatables.bootstrap',
+                                'datatables.buttons',
+                                'ngResource']
+                  ).controller('membertablesctrl', membertablesctrl);
+
+    function membertablesctrl(DTOptionsBuilder, DTColumnBuilder, $resource) {
+        var vm = this;
+
+        vm.dtOptions = DTOptionsBuilder.fromFnPromise(function() {
+            return $resource('{{SITEROOT}}/membersjson').query().$promise;
+        }).withPaginationType('full_numbers')
+          .withBootstrap()
+          .withButtons([
+            'colvis',
+          ]);
+
+        vm.dtColumns = [
+            DTColumnBuilder.newColumn('id').withTitle('ID'),
+            DTColumnBuilder.newColumn('firstname').withTitle('First name'),
+            DTColumnBuilder.newColumn('lastname').withTitle('Last name'),
+//            DTColumnBuilder.newColumn('home').withTitle('Home phone'),
+            DTColumnBuilder.newColumn(null).withTitle('Home phone').renderWith(homePhone),
+            DTColumnBuilder.newColumn(null).withTitle('Cell').renderWith(cellPhone),
+            DTColumnBuilder.newColumn(null).withTitle('Work phone').renderWith(workPhone),
+
+            DTColumnBuilder.newColumn('email').withTitle('E-mail'),
+            DTColumnBuilder.newColumn('division1').withTitle('Prim. division'),
+            DTColumnBuilder.newColumn('division2').withTitle('Sec. division'),
+            DTColumnBuilder.newColumn('ddivision').withTitle('Doub. division'),
+        ];
+
+        function homePhone(data, type, full, meta) {
+            return phoneFormat(data.home);
+        }
+        function cellPhone(data, type, full, meta) {
+            return phoneFormat(data.cell);
+        }
+        function workPhone(data, type, full, meta) {
+            return phoneFormat(data.work);
+        }
+
+        function phoneFormat(tel) {
+            if (!tel) { return ''; }
+
+            var value = tel.toString().trim().replace(/^\+/, '');
+
+            if (value.match(/[^0-9]/)) {
+                return tel;
+            }
+
+            var country, city, number;
+
+            switch (value.length) {
+                case 10: // +1PPP####### -> C (PPP) ###-####
+                    country = 1;
+                    city = value.slice(0, 3);
+                    number = value.slice(3);
+                    break;
+
+                case 11: // +CPPP####### -> CCC (PP) ###-####
+                    country = value[0];
+                    city = value.slice(1, 4);
+                    number = value.slice(4);
+                    break;
+
+                case 12: // +CCCPP####### -> CCC (PP) ###-####
+                    country = value.slice(0, 3);
+                    city = value.slice(3, 5);
+                    number = value.slice(5);
+                    break;
+
+                default:
+                    return tel;
+            }
+
+            if (country == 1) {
+                country = "";
+            }
+
+            number = number.slice(0, 3) + '-' + number.slice(3);
+
+            return (country + " (" + city + ") " + number).trim();
+        };
+
+    }
+
+</script>
+
+{% endblock js %}
