@@ -196,10 +196,14 @@
       
         $.each( data, function( key, val ) {
         var item = [];
-    
-        item.push('<a data-toggle="modal" data-target="#challengeReportModal" data-remote="false" class="btn btn-sm btn-success" href="{{SITEROOT}}/reportjson/' 
-          + data[key]['challengeid'] 
-          + '">Report</a>');
+        
+        if (data[key]['winnerid']) {
+          item.push('<a class="btn btn-sm btn-success disabled" href="#">Already Reported</a>');
+        } else {
+          item.push('<a data-toggle="modal" data-target="#challengeReportModal" data-remote="false" class="btn btn-sm btn-success" href="{{SITEROOT}}/reportjson/' 
+            + data[key]['challengeid'] 
+            + '">Report</a>');
+        }
     
         item.push( '<a href="{{SITEROOT}}/challenge/details/' + data[key]['challengeid2'] + '" data-toggle="modal" data-target="#challengeDetailsModal" data-remote="false" class="btn btn-sm btn-primary">' + data[key]['challengedate'] + '</a>' );
         
@@ -273,11 +277,21 @@
                 elem1.html('<h2 class="btn btn-danger">Cannot report this!<h2>')
                 return false;
             };
+
+            if (data[0].winnerid) {
+                loadingElem.hide();
+                elem1.html('<h2 class="btn btn-success">Already reported!<h2>')
+                return false;
+            };
+
+            
             
             $('#retiredcheck').bootstrapSwitch();
 
             var data = data[0];
             var typeofmatch = -1;
+
+
 
             $('#retiredcheck').on('switchChange.bootstrapSwitch', function(event, state) {
               //console.log(this); // DOM element

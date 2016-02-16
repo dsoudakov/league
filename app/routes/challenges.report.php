@@ -202,7 +202,7 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 							    ':uid' => $winnerid,
 							    ':cid' => $args['challengeid'],
 	                        ]);
-	  	if ($c) {
+	  	if (!$c['winnerid']) {
 	  		$c = R::findOne('acceptedchallenges', 'id = :id', [
 	  			':id' => $args['challengeid'],
 	  		]);
@@ -236,7 +236,7 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 
 	  	} else {
 
-	  		echo '<h3><span class="label label-pill label-danger">Report failed. Already reported?</span></h3>';
+	  		echo '<h3><span class="label label-pill label-danger">Already reported!</span></h3>';
 	  	}
     }else {
     	echo '<h3><span class="label label-pill label-danger">Not reported! Check inputs</span></h3>';
@@ -257,7 +257,8 @@ $app->get('/challengesreportjson', function($request,$response,$args) use ($app)
 								concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate,
 								concat(u.first_name, \' \', u.last_name) as player1,
 								concat(uu.first_name, \' \', uu.last_name) as player2,
-								d.divisiondesc as challengeddivision
+								d.divisiondesc as challengeddivision,
+								ac.winnerid
 								FROM acceptedchallenges ac 
 								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
 								LEFT JOIN users u on u.id = ac.acceptedbyuserid  
@@ -292,7 +293,8 @@ $app->get('/reportjson[/{challengeid}]', function($request,$response,$args) use 
 						u.id as player1id,
 						concat(uu.first_name, \' \', uu.last_name) as player2,
 						uu.id as player2id,
-						d.divisiondesc as challengeddivision
+						d.divisiondesc as challengeddivision,
+						ac.winnerid
 						FROM acceptedchallenges ac 
 						LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
 						LEFT JOIN users u on u.id = ac.acceptedbyuserid  
@@ -309,10 +311,8 @@ $app->get('/reportjson[/{challengeid}]', function($request,$response,$args) use 
 						    ':uid' => $app->user->id,
 						    ':cid' => $args['challengeid'],
                         ]);
-
-	echo json_encode($challengesreport);		
-
 	
+	echo json_encode($challengesreport);		
 
 })->setName('challenge.report.get.json')
   ->add($isMember)
