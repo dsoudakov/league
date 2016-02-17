@@ -27,6 +27,9 @@
             <li class="{{ path_for('challenge.report')|isActive }}">
               <a href="{{ path_for('challenge.report') }}">Report</a>
             </li>
+            <li class="{{ path_for('standings')|isActive }}">
+              <a href="{{ path_for('standings') }}">Standings</a>
+            </li>            
             {% if auth.isAdmin() %}
               <li class="{{ path_for('upload')|isActive }}">
                 <a href="{{ path_for('upload') }}">Upload</a>
