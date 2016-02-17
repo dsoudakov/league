@@ -41,6 +41,95 @@ $app->get('/report', function($request,$response,$args) use ($app)
   ->add($authenticated)
   ->add(new GenCsrf);
 
+$app->post('/confirmreport/{challengeid}', function($request,$response,$args) use ($app)
+{
+	$v = $this->get('validator');
+
+	$incorrectdetails = $request->getParam('incorrectdetails');
+	$correctcheck = $request->getParam('correctcheck');
+
+	$v->validate([
+        'challengeid' => [$args['challengeid'], 'required|int|between(1,2147483647)'],
+        'incorrectdetails|Incorrect details' => [$incorrectdetails, 'max(100)'],
+    ]);
+
+	if ($v->passes()) {
+		//already confirmed?
+
+		//is challenge report ready to be confirmed?
+		// ie is the score reported? (reportedbyuserid is not null)
+
+		//can this user confirm?
+		// ie reportedbyuserid <> app->user->id
+
+		//mark report as confirmed
+
+		$c = R::getAll( 'SELECT *
+				FROM acceptedchallenges ac 
+				LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
+				LEFT JOIN users u on u.id = ac.acceptedbyuserid  
+				LEFT JOIN users uu on uu.id = c.challengerid
+				LEFT JOIN divisions d on d.id = c.challenge_in_division 
+				WHERE (c.challengerid = :uid OR ac.acceptedbyuserid = :uid)
+				AND c.cancelnote IS NULL -- not cancelled
+				AND ac.cancelnote IS NULL -- not cancelled
+				AND ac.confirmed = 1 -- confirmed
+				AND ac.reportedbyuserid IS NOT NULL
+				AND ac.reportedbyuserid <> :uid
+				AND (ac.reportedbyuserid = c.challengerid OR ac.reportedbyuserid = ac.acceptedbyuserid)
+				-- AND ac.reportconfirmed IS NULL
+				AND ac.id = :cid
+				-- AND ac.winnerid is null
+				',
+		        [
+				    ':uid' => $app->user->id,
+				    ':cid' => $args['challengeid'],
+		        ]);
+
+		if ($c) {
+
+	  		$c = R::findOne('acceptedchallenges', 'id = :id', [
+	  			':id' => $args['challengeid'],
+	  		]);
+
+	  		$c->reportconfirmed = 1;
+	  		$c->reportconfirmedat = Carbon::now('America/Toronto')->toDateTimeString();
+	  		
+	  		if (!$correctcheck) {
+	  			$c->incorrectdetails = $incorrectdetails;
+	  		}
+
+	  		$r = User::storeBean($c);
+
+	  		if ($r) {
+	  			if (!$correctcheck) {
+	  				echo '<h3><span class="label label-pill label-warning">Reported successfully denied!</span></h3>';	
+	  			} else {
+	  				echo '<h3><span class="label label-pill label-success">Reported successfully confirmed!</span></h3>';	
+	  			}
+	  		} else {
+	  			echo '<h3><span class="label label-pill label-danger">Report failed. Please try again!</span></h3>';	
+	  		}	  		
+
+		} else {
+			echo 'Cannot confirm this report.';
+		}
+
+	} else {
+		echo 'Validation failed';
+	}
+
+
+	// dump($_POST);
+	// die();
+
+
+
+
+})->setName('challenge.confirm.report.post')
+  ->add($isMember)
+  ->add($authenticated);
+
 $app->post('/report/{challengeid}', function($request,$response,$args) use ($app)
 {
 
@@ -84,11 +173,11 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 
 
 	$v->validate([
-        'challengeid' => [$args['challengeid'], 'required|int|between(-2147483648,2147483647)'],
+        'challengeid' => [$args['challengeid'], 'required|int|between(1,2147483647)'],
         'matchtype| Match type' => [$matchtype, 'required|between(1,2)'],
         'winnerid|Winner' => [$winnerid, 'required|int'],
         'retired|Retired checkbox' => [$retired, 'int'],
-        'retirednote|Retired note' => [$retirednote, 'max(200)'],
+        'retirednote|Retired note' => [$retirednote, 'max(70)'],
         '$loserscore|Loser score' => [$loserscore, 'int|0to6'],
         '$winner_1|Winner set 1 score' => [$winner_1, 'int|0to7'],
         '$winner_2|Winner set 2 score' => [$winner_2, 'int|0to7'],
@@ -212,6 +301,7 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 	  		$c->matchtype = $matchtype;
 	  		$c->retired = $retired;
 	  		$c->retirednote = $retirednote;
+	  		$c->reportedbyuserid = $app->user->id;
 			
 		 if ($matchtype == 2) {
 	
@@ -238,7 +328,7 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 
 	  		echo '<h3><span class="label label-pill label-danger">Already reported!</span></h3>';
 	  	}
-    }else {
+    } else {
     	echo '<h3><span class="label label-pill label-danger">Not reported! Check inputs</span></h3>';
     	echo '<h3><span class="label label-pill label-danger">'. $v->errors()->first() .'</span></h3>';
     }
@@ -249,7 +339,8 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
   ->add($authenticated);
 
 $app->get('/challengesreportjson', function($request,$response,$args) use ($app)
-{
+{	
+		// generate json of challenges available for reporting, i.e. confirmed and not cancelled
 		$challengesreport = R::getAll( 'SELECT 
 								ac.id as challengeid,
 								c.id as challengeid2,
@@ -258,7 +349,10 @@ $app->get('/challengesreportjson', function($request,$response,$args) use ($app)
 								concat(u.first_name, \' \', u.last_name) as player1,
 								concat(uu.first_name, \' \', uu.last_name) as player2,
 								d.divisiondesc as challengeddivision,
-								ac.winnerid
+								ac.winnerid,
+								ac.reportedbyuserid,
+								IF(ac.reportedbyuserid = :uid, 0,1) as needtoconfirm,
+								ac.reportconfirmed
 								FROM acceptedchallenges ac 
 								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
 								LEFT JOIN users u on u.id = ac.acceptedbyuserid  
@@ -276,8 +370,6 @@ $app->get('/challengesreportjson', function($request,$response,$args) use ($app)
 
 		echo json_encode($challengesreport);		
 
-	
-
 })->setName('challenges.report.get.json')
   ->add($isMember)
   ->add($authenticated);  
@@ -289,12 +381,26 @@ $app->get('/reportjson[/{challengeid}]', function($request,$response,$args) use 
 						c.id as challengeid2,
 						c.challengedate,
 						concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate,
-							concat(u.first_name, \' \', u.last_name) as player1,
+						concat(u.first_name, \' \', u.last_name) as player1,
 						u.id as player1id,
 						concat(uu.first_name, \' \', uu.last_name) as player2,
 						uu.id as player2id,
 						d.divisiondesc as challengeddivision,
-						ac.winnerid
+						ac.winnerid,
+						ac.reportedbyuserid,
+						IF(ac.reportedbyuserid = :uid,0,1) as needtoconfirm,
+						IF(ac.winnerid = u.id, concat(u.first_name, \' \', u.last_name),concat(uu.first_name, \' \', uu.last_name)) as winner,
+						ac.matchtype,
+						ac.retired,
+						ac.retirednote,
+						IF(ac.matchtype = 1,
+							concat(\'7:\',ac.loserscore),
+							IF(loser_3 IS NULL,
+								concat(winner_1,\':\',loser_1,\',\',winner_2,\':\',loser_2),
+								concat(winner_1,\':\',loser_1,\', \',winner_2,\':\',loser_2,\', \',winner_3,\':\',loser_3)
+							)
+						) AS score,
+						ac.reportconfirmed
 						FROM acceptedchallenges ac 
 						LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
 						LEFT JOIN users u on u.id = ac.acceptedbyuserid  

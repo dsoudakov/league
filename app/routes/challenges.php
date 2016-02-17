@@ -404,7 +404,10 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id 
 						LEFT JOIN users u on c.challengerid = u.id 
 						LEFT JOIN divisions d on c.challenge_in_division = d.id
-						WHERE c.challengerid = :uid and c.id = :cid ', 
+						WHERE c.challengerid = :uid and c.id = :cid 
+						AND ac.reportconfirmed IS NULL
+						AND ac.reportedbyuserid IS NULL
+						', 
 						[
 							':uid' => $app->user->id,
 							':cid' => $args['challengeid'],
@@ -417,6 +420,8 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 						'challengeid' => $args['challengeid'],
 					]);
 				}
+			} else {
+				echo '<h3 class="label-danger">Cannot cancel this challenge!</h3>';
 			}
 
 	    } else {
@@ -815,7 +820,10 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id 
 						LEFT JOIN users u on c.challengerid = u.id 
 						LEFT JOIN divisions d on c.challenge_in_division = d.id
-						WHERE c.challengerid = :uid and c.id = :cid ', 
+						WHERE c.challengerid = :uid and c.id = :cid 
+						AND ac.reportconfirmed IS NULL
+						AND ac.reportedbyuserid IS NULL
+						', 
 						[
 							':uid' => $app->user->id,
 							':cid' => $args['challengeid'],

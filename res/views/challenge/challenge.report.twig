@@ -155,6 +155,63 @@
   </div>
 </div>
 
+<div id="challengeConfirmReportModal" class="modal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-primary" style="
+          height: 50px;
+          border-top-left-radius: 5px; 
+          border-top-right-radius: 5px;
+      ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Confirm Report</h4>
+      </div>
+      <div class="modal-body">
+          <div id="loading1">
+              <img src="{{SITEROOT}}/res/img/loader.gif">
+          </div>
+        <div class="modal-body-inner1">
+          <form id="reportConfirmForm" class="form-horizontal" role="form"  method="post" action="">
+            
+            <div id="winner" class="well well-sm" style="display:none"></div>
+
+            <div id="matchtype" class="well well-sm" style="display:none"></div>
+            
+            <div id="score" class="well well-sm" style="display:none"></div>
+
+            <div id="opponentretired" class="well well-sm" style="display:none">
+                <div id="retiredcheck"></div>
+                <div id="retirednotedetails"></div>
+            </div>
+
+            <div id="everythingcorrectcheck" class="well well-sm" style="display:none">
+                <label for="correctcheck">Everything is correct: </label>
+                <input id="correctcheck" type="checkbox" name="correctcheck" data-size="mini" data-on-text="Yes" data-off-text="No" value="1">
+                <div id="incorrectdetails" style="display:none">
+                  <textarea rows="5" cols="30" id="incorrectnote" name="incorrectdetails" placeholder="Why is this incorrect? (required)"></textarea>
+                </div>
+            </div>
+
+            <div id="confirmdenybuttons" style="display:none">
+              <div id="confirmreportbutton" class="well well-sm">
+                <input type="submit" class="btn btn-sm btn-primary" value="Confirm">
+              </div>
+
+              <div id="denyreportbutton" class="well well-sm" style="display:none">
+                <input type="submit" class="btn btn-sm btn-danger" value="Deny">
+              </div>
+            </div>
+
+            <div id="csrfgen"></div>
+          </form>
+
+        </div>
+        <div class="modal-body-inner2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="challengeDetailsModal" class="modal" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -198,7 +255,19 @@
         var item = [];
         
         if (data[key]['winnerid']) {
-          item.push('<a class="btn btn-sm btn-success disabled" href="#">Already Reported</a>');
+          if (data[key]['needtoconfirm'] == 1) {
+            if (data[key]['reportconfirmed'] == 1) {
+
+              item.push('<a class="btn btn-sm btn-success disabled" href="#">Completed</a>');  
+
+            } else {
+            item.push('<a data-toggle="modal" data-target="#challengeConfirmReportModal" data-remote="false" class="btn btn-sm btn-warning" href="{{SITEROOT}}/reportjson/' 
+            + data[key]['challengeid'] 
+            + '">Confirm Report</a>');
+            }
+          } else {
+            item.push('<a class="btn btn-sm btn-success disabled" href="#">Already Reported</a>');
+          }
         } else {
           item.push('<a data-toggle="modal" data-target="#challengeReportModal" data-remote="false" class="btn btn-sm btn-success" href="{{SITEROOT}}/reportjson/' 
             + data[key]['challengeid'] 
@@ -265,151 +334,142 @@
 
         $.get('{{SITEROOT}}/csrfgen').done(function (data) {
           $('#reportForm #csrfgen').html(data);
-        })
+        
 
-        $.getJSON( link_1 ).done( function(data) {
-           //var data = data;
-        })
-        .done( function (data) {
-            
-            if (!data[0]) {
-                loadingElem.hide();
-                elem1.html('<h2 class="btn btn-danger">Cannot report this!<h2>')
-                return false;
-            };
+          $.getJSON( link_1 ).done( function(data) {
+             //var data = data;
+          })
+          .done( function (data) {
+              
+              if (!data[0]) {
+                  loadingElem.hide();
+                  elem1.html('<h2 class="btn btn-danger">Cannot report this!<h2>')
+                  return false;
+              };
 
-            if (data[0].winnerid) {
-                loadingElem.hide();
-                elem1.html('<h2 class="btn btn-success">Already reported!<h2>')
-                return false;
-            };
+              if (data[0].winnerid) {
+                  loadingElem.hide();
+                  elem1.html('<h2 class="btn btn-success">Already reported!<h2>')
+                  return false;
+              };
 
-            
-            
-            $('#retiredcheck').bootstrapSwitch();
+              $('#retiredcheck').bootstrapSwitch();
 
-            var data = data[0];
-            var typeofmatch = -1;
+              var data = data[0];
+              var typeofmatch = -1;
 
+              $('#retiredcheck').on('switchChange.bootstrapSwitch', function(event, state) {
+                //console.log(this); // DOM element
+                //console.log(event); // jQuery event
+                //console.log(state); // true | false
 
-
-            $('#retiredcheck').on('switchChange.bootstrapSwitch', function(event, state) {
-              //console.log(this); // DOM element
-              //console.log(event); // jQuery event
-              //console.log(state); // true | false
-
-              if (state) {
-                $('#retirednotedetails').show();
-              } else {
-                $('#retirednotedetails').hide();
-                $('#retirednote').html("");
-              }
-            });
-
-            // $('#retiredcheck').click(function () {
-            //   if ($(this).prop("checked")) {
-            //     $('#matchnotedetails').show();
-            //   }else {
-            //     $('#matchnotedetails').hide();
-            //     $('#matchnote').html("");
-            //   }
-            // })
-
-            $('#reportForm #part2 #1stto7').on("click", function () {
-                $('#reportForm #part2 #1stto7').addClass('active');
-                $('#reportForm #part2 #bo3').removeClass('active');
-                $('#reportForm #part3a').show();
-                $('#reportForm #part3b').hide();
-                $('#reportForm #matchtype').attr("value", "1");
-                //$('#reportForm #next3a, #reportForm #next3b').show();
-                $('#reportForm #part4,#reportForm #part4a').show();
-            });
-
-            $('#reportForm #part2 #bo3').on("click", function () {
-                $('#reportForm #part2 #bo3').addClass('active');
-                $('#reportForm #part2 #1stto7').removeClass('active');
-                $('#reportForm #part3b').show();
-                $('#reportForm #part3a').hide();
-                $('#reportForm #matchtype').attr("value", "2");
-                //$('#reportForm #next3a, #reportForm #next3b').show();
-                $('#reportForm #part4,#reportForm #part4a').show();
-            });
-
-            $('#reportForm').attr('action', '{{SITEROOT}}/report/' + data.challengeid);
-            $('#reportForm #part1 #player1').html(data.player1);
-            $('#reportForm #part1 #player2').html(data.player2);
-
-            $('#reportForm #part1 #player1').on("click", function () {
-                $('#reportForm #winnerid').attr("value", data.player1id);
-                $('#reportForm #part1 #player1').hide();  
-                $('#reportForm #part1 #player2').hide();      
-                $('#reportForm #part1 #pickawinner').html("Winner: " + data.player1);      
-                $('#reportForm #part2').show();
-            });
-            
-            $('#reportForm #part1 #player2').on("click", function () {
-                $('#reportForm #winnerid').attr("value", data.player2id);
-                $('#reportForm #part1 #player1').hide();      
-                $('#reportForm #part1 #player2').hide();  
-                $('#reportForm #part1 #pickawinner').html("Winner: " + data.player2);      
-                $('#reportForm #part2').show();
-            });            
-
-            // $('#reportForm #part3b #next3b').on("click", function () { 
-            //     $('#reportForm #part3b #next3b').hide();
-            //     $('#reportForm #part4a').show();
-            // });
-
-            $('#reportForm #part4a #next4a').on("click", function () { 
-                $('#reportForm #part4').show();
-            });
-
-            $('#reportForm #part3a #loserscore').bind("propertychange click change keyup input paste", function () {
-                if ($(this).val() <= 6 && $(this).val() >= 0 && $(this).val() !== "") {
-                  errorcount = 0;
-                  //$('#reportForm #part4a').show();
-                  $('#reportForm #part3a #errorDiv').html('');
+                if (state) {
+                  $('#retirednotedetails').show();
                 } else {
-                  if ($(this).val() !== "") {
-                    errorcount++;
-                    //$('#reportForm #part4a').hide();
-                    $('#reportForm #part3a #errorDiv').html('<h4><span class="label label-pill label-danger">Has to be between 0 and 6.</span></h4>');
-                  }else {
-                    errorcount++;
-                  }
+                  $('#retirednotedetails').hide();
+                  $('#retirednote').html("");
                 }
-            })
-
-            $('#reportForm').submit(function (e) {
-              e.preventDefault();
-
-              if (errorcount > 0 || ($('#reportForm #part3a #loserscore').val() == "" && $('#matchtype') == "1" )) {
-                if ($('#reportForm #part3a #loserscore').val() == "") {
-                    $('#reportForm #part3a #errorDiv').html('<h4><span class="label label-pill label-danger">Has to be between 0 and 6.</span></h4>');
-                }
-
-                return false;
-              }
-              //console.log(errorcount);
-
-              var $form = $( this );
-              var url = $form.attr( "action" );
-              console.log($form.serialize());
-              var posting = $.post( url, $form.serialize() );
-              console.log(posting);
-
-              posting.done(function( data ) {
-                console.log("back");
-                $('#reportForm #part4').html(data);
-                //elem1.append( data );
               });
-            })
 
-            loadingElem.hide();
-            $('#reportForm #part1').show();
+              // $('#retiredcheck').click(function () {
+              //   if ($(this).prop("checked")) {
+              //     $('#matchnotedetails').show();
+              //   }else {
+              //     $('#matchnotedetails').hide();
+              //     $('#matchnote').html("");
+              //   }
+              // })
 
-        })
-          
+              $('#reportForm #part2 #1stto7').on("click", function () {
+                  $('#reportForm #part2 #1stto7').addClass('active');
+                  $('#reportForm #part2 #bo3').removeClass('active');
+                  $('#reportForm #part3a').show();
+                  $('#reportForm #part3b').hide();
+                  $('#reportForm #matchtype').attr("value", "1");
+                  //$('#reportForm #next3a, #reportForm #next3b').show();
+                  $('#reportForm #part4,#reportForm #part4a').show();
+              });
+
+              $('#reportForm #part2 #bo3').on("click", function () {
+                  $('#reportForm #part2 #bo3').addClass('active');
+                  $('#reportForm #part2 #1stto7').removeClass('active');
+                  $('#reportForm #part3b').show();
+                  $('#reportForm #part3a').hide();
+                  $('#reportForm #matchtype').attr("value", "2");
+                  //$('#reportForm #next3a, #reportForm #next3b').show();
+                  $('#reportForm #part4,#reportForm #part4a').show();
+              });
+
+              $('#reportForm').attr('action', '{{SITEROOT}}/report/' + data.challengeid);
+              $('#reportForm #part1 #player1').html(data.player1);
+              $('#reportForm #part1 #player2').html(data.player2);
+
+              $('#reportForm #part1 #player1').on("click", function () {
+                  $('#reportForm #winnerid').attr("value", data.player1id);
+                  $('#reportForm #part1 #player1').hide();  
+                  $('#reportForm #part1 #player2').hide();      
+                  $('#reportForm #part1 #pickawinner').html("Winner: " + data.player1);      
+                  $('#reportForm #part2').show();
+              });
+              
+              $('#reportForm #part1 #player2').on("click", function () {
+                  $('#reportForm #winnerid').attr("value", data.player2id);
+                  $('#reportForm #part1 #player1').hide();      
+                  $('#reportForm #part1 #player2').hide();  
+                  $('#reportForm #part1 #pickawinner').html("Winner: " + data.player2);      
+                  $('#reportForm #part2').show();
+              });            
+
+              // $('#reportForm #part3b #next3b').on("click", function () { 
+              //     $('#reportForm #part3b #next3b').hide();
+              //     $('#reportForm #part4a').show();
+              // });
+
+              $('#reportForm #part4a #next4a').on("click", function () { 
+                  $('#reportForm #part4').show();
+              });
+
+              $('#reportForm #part3a #loserscore').bind("propertychange click change keyup input paste", function () {
+                  if ($(this).val() <= 6 && $(this).val() >= 0 && $(this).val() !== "") {
+                    errorcount = 0;
+                    //$('#reportForm #part4a').show();
+                    $('#reportForm #part3a #errorDiv').html('');
+                  } else {
+                    if ($(this).val() !== "") {
+                      errorcount++;
+                      //$('#reportForm #part4a').hide();
+                      $('#reportForm #part3a #errorDiv').html('<h4><span class="label label-pill label-danger">Has to be between 0 and 6.</span></h4>');
+                    }else {
+                      errorcount++;
+                    }
+                  }
+              })
+
+              $('#reportForm').submit(function (e) {
+                e.preventDefault();
+
+                if (errorcount > 0 || ($('#reportForm #part3a #loserscore').val() == "" && $('#matchtype') == "1" )) {
+                  if ($('#reportForm #part3a #loserscore').val() == "") {
+                      $('#reportForm #part3a #errorDiv').html('<h4><span class="label label-pill label-danger">Has to be between 0 and 6.</span></h4>');
+                  }
+
+                  return false;
+                }
+
+                var $form = $( this );
+                var url = $form.attr( "action" );
+                var posting = $.post( url, $form.serialize() );
+
+                posting.done(function( data ) {
+                  $('#reportForm #part4').html(data);
+                });
+              });
+
+              loadingElem.hide();
+              $('#reportForm #part1').show();
+
+          });
+        });
     });
 
    $("#challengeDetailsModal").on("show.bs.modal", function(e) {
@@ -448,9 +508,100 @@
             });
     });
 
-    $("#challengeReportModal")
-     .on("hide.bs.modal", function(e) {
 
+    $("#challengeConfirmReportModal").on("show.bs.modal", function(e) {
+
+      var loadingElem = $(this).find("#loading1");
+      var elem1 = $(this).find(".modal-body-inner1");
+      var elem2 = $(this).find(".modal-body-inner2");
+      init = elem1.html();
+
+      loadingElem.show();
+      
+      var link = $(e.relatedTarget);
+      var link_1 = link.attr("href");
+      var link_2 = link_1.replace('details', 'confirmeddetails');
+
+      var challenge_details = "";
+      var form = "";
+
+      $.get('{{SITEROOT}}/csrfgen').done(function (data) {
+        $('#reportConfirmForm #csrfgen').html(data);
+      
+
+        $.getJSON( link_1 ).done( function(data) {
+           //var data = data;
+        })
+        .done( function (data) {    
+            data = data[0];
+
+            if (data.reportconfirmed == 1) {
+              elem1.html('<h3><span class="label label-pill label-danger">Report already confirmed!</span></h3>');
+              loadingElem.hide();
+              return false;
+            };
+
+            $('#correctcheck').bootstrapSwitch('state', true, true);
+            $('#correctcheck').on('switchChange.bootstrapSwitch', function(event, state) {
+
+              if (state) {
+                $('#reportConfirmForm #confirmreportbutton').show();
+                $('#reportConfirmForm #denyreportbutton').hide();
+                $('#reportConfirmForm #incorrectdetails').hide();
+              } else {
+                $('#reportConfirmForm #confirmreportbutton').hide();
+                $('#reportConfirmForm #denyreportbutton').show();
+                $('#reportConfirmForm #incorrectdetails').show();
+              }
+            });
+
+            $('#reportConfirmForm #winner').html("<h3>Winner: " + data.winner + "</h3>"); 
+            $('#reportConfirmForm #winner').show();
+            $('#correctcheck').show();
+
+            if (data['matchtype'] == 1) {
+              $('#reportConfirmForm #matchtype').html("<h3>Match type: 1st to 7 games.</h3>");
+            } else {
+              $('#reportConfirmForm #matchtype').html("<h3>Match type: Best of 3 sets.</h3>");
+            }
+            $('#reportConfirmForm #matchtype').show();
+
+            $('#reportConfirmForm #score').html("<h3>Score: " + data.score + "</h3>");
+            $('#reportConfirmForm #score').show();
+
+            $('#reportConfirmForm #everythingcorrectcheck').show();
+            $('#reportConfirmForm #confirmdenybuttons').show();
+
+            if (data['retired']) {
+              $('#reportConfirmForm #opponentretired #retiredcheck').html('<h3>Opponent retired</h3>');
+              $('#reportConfirmForm #opponentretired #retirednotedetails').html('Note: ' + data.retirednote);
+              $('#reportConfirmForm #opponentretired').show();
+            }
+
+            $('#reportConfirmForm').attr('action', '{{SITEROOT}}/confirmreport/' + data.challengeid);
+
+            $('#reportConfirmForm').submit(function (e) {
+                e.preventDefault();
+
+                var $form = $( this );
+                var url = $form.attr( "action" );
+                var posting = $.post( url, $form.serialize() );
+
+                posting.done(function( data ) {
+
+                  $('#reportConfirmForm #confirmdenybuttons').html(data);
+
+                });
+              });
+
+            loadingElem.hide();
+        });
+      });
+    });
+
+    $("#challengeReportModal, #challengeConfirmReportModal")
+     .on("hide.bs.modal", function(e) {
+        console.log("resetting");
         $(this).find(".modal-body-inner1").html(init);
         //$(this).find(".modal-body-inner2").html("");
 
