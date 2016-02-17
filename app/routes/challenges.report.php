@@ -275,11 +275,17 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 			}
 		}
 
-	  	$c = R::getRow( 'SELECT *
+	  	$c = R::getRow( 'SELECT 
+	  						ac.id,
+	  						c.challengerid,
+	  						ac.acceptedbyuserid,
+	  						ac.winnerid,
+	  						d.id as divisionid
 							FROM acceptedchallenges ac 
 							LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
 							LEFT JOIN users u on u.id = ac.acceptedbyuserid  
 							LEFT JOIN users uu on uu.id = c.challengerid
+							LEFT JOIN divisions d on d.id = c.challenge_in_division 
 							WHERE (c.challengerid = :uid OR ac.acceptedbyuserid = :uid)
 							AND c.cancelnote IS NULL 
 							AND ac.cancelnote IS NULL 
@@ -291,32 +297,63 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 							    ':uid' => $winnerid,
 							    ':cid' => $args['challengeid'],
 	                        ]);
+	  	
+	  	// dump($c);
+	  	// die();
+
 	  	if (!$c['winnerid']) {
-	  		$c = R::findOne('acceptedchallenges', 'id = :id', [
+	  		$cc = R::findOne('acceptedchallenges', 'id = :id', [
 	  			':id' => $args['challengeid'],
 	  		]);
 
-	  		$c->winnerid = $winnerid;
-	  		$c->loserscore = $loserscore;
-	  		$c->matchtype = $matchtype;
-	  		$c->retired = $retired;
-	  		$c->retirednote = $retirednote;
-	  		$c->reportedbyuserid = $app->user->id;
+	  		$bwinner = R::dispense('points');
+	  		$bloser = R::dispense('points');
+
+	  		if ($c['challengerid'] == $winnerid) {
+	  			$winner = $c['challengerid'];
+	  			$loser = $c['acceptedbyuserid'];
+	  		} else {
+	  			$winner = $c['acceptedbyuserid'];
+	  			$loser = $c['challengerid'];
+	  		}
+
+	  		$bwinner->acceptedchallengeid = $c['id'];
+	  		$bwinner->playerid = $winner;
+	  		$bwinner->points = 7 - $loserscore * 0.5;
+	  		$bwinner->win = 1;
+	  		$bwinner->loss = 0;
+	  		$bwinner->divisionid =  $c['divisionid'];
+
+	  		$bloser->acceptedchallengeid =  $c['id'];
+	  		$bloser->playerid = $loser;
+	  		$bloser->points = $loserscore * 0.5;
+	  		$bloser->win = 0;
+	  		$bloser->loss = 1;
+	  		$bloser->divisionid =  $c['divisionid'];
+
+	  		$cc->winnerid = $winnerid;
+	  		$cc->loserscore = $loserscore;
+	  		$cc->matchtype = $matchtype;
+	  		$cc->retired = $retired;
+	  		$cc->retirednote = $retirednote;
+	  		$cc->reportedbyuserid = $app->user->id;
 			
 		 if ($matchtype == 2) {
 	
-				$c->winner_1 = $winner_1;
-				$c->winner_2 = $winner_2;
-				$c->winner_3 = $winner_3;
-				$c->loser_1 = $loser_1;
-				$c->loser_2 = $loser_2;
-				$c->loser_3 = $loser_3;
+				$cc->winner_1 = $winner_1;
+				$cc->winner_2 = $winner_2;
+				$cc->winner_3 = $winner_3;
+				$cc->loser_1 = $loser_1;
+				$cc->loser_2 = $loser_2;
+				$cc->loser_3 = $loser_3;
 
 			}
 
-	  		$r = User::storeBean($c);
+	  		$res = User::storeBean($cc);
+	  		$res1 = User::storeBean($bwinner);
+	  		$res2 = User::storeBean($bloser);
 
-	  		if ($r) {
+	  		if ($res && $res1 && $res2) {
 	  			echo '<h3><span class="label label-pill label-success">Reported successfully!</span></h3>';	
 	  		} else {
 	  			echo '<h3><span class="label label-pill label-danger">Report failed. Please try again!</span></h3>';	
@@ -351,7 +388,7 @@ $app->get('/challengesreportjson', function($request,$response,$args) use ($app)
 								d.divisiondesc as challengeddivision,
 								ac.winnerid,
 								ac.reportedbyuserid,
-								IF(ac.reportedbyuserid = :uid, 0,1) as needtoconfirm,
+								IF(ac.reportedbyuserid = :uid AND ac.reportconfirmed IS NULL,0,1) as needtoconfirm,
 								ac.reportconfirmed
 								FROM acceptedchallenges ac 
 								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 

@@ -255,18 +255,20 @@
         var item = [];
         
         if (data[key]['winnerid']) {
-          if (data[key]['needtoconfirm'] == 1) {
-            if (data[key]['reportconfirmed'] == 1) {
+          if (data[key]['reportconfirmed'] == 1) {
 
-              item.push('<a class="btn btn-sm btn-success disabled" href="#">Completed</a>');  
+            item.push('<a class="btn btn-sm btn-success disabled" href="#">Completed</a>');  
 
-            } else {
-            item.push('<a data-toggle="modal" data-target="#challengeConfirmReportModal" data-remote="false" class="btn btn-sm btn-warning" href="{{SITEROOT}}/reportjson/' 
-            + data[key]['challengeid'] 
-            + '">Confirm Report</a>');
-            }
           } else {
-            item.push('<a class="btn btn-sm btn-success disabled" href="#">Already Reported</a>');
+            if (data[key]['needtoconfirm'] == 1) {
+
+                item.push('<a data-toggle="modal" data-target="#challengeConfirmReportModal" data-remote="false" class="btn btn-sm btn-warning" href="{{SITEROOT}}/reportjson/' 
+                + data[key]['challengeid'] 
+                + '">Confirm Report</a>');
+              
+            } else {
+              item.push('<a class="btn btn-sm btn-success disabled" href="#">Already Reported</a>');
+            }
           }
         } else {
           item.push('<a data-toggle="modal" data-target="#challengeReportModal" data-remote="false" class="btn btn-sm btn-success" href="{{SITEROOT}}/reportjson/' 
