@@ -41,8 +41,9 @@
           </div>
           <!-- Panel body -->
           <div class="panel-body">
+            {{ auth.genDivisionSelect2('divisionprimary') | raw }}            
             <div class="table-responsive">
-              <table id="standingstable" class="display table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+              <table id="standingstable" class="display compact table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
               <thead>
               <tr>
               <th>Player</th>
@@ -80,60 +81,47 @@
 
 {% block js %}
 
-<script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.11/datatables.min.js"></script>
 <script type="text/javascript">
 
   $(document).ready(function() {
 
-      var items = [];
-      var standingstable;
+        var standingstable;
+        var opts =  {
+                 // "processing": true,
+                 "ajax" : "{{ path_for('standings.get.json')}}",
+                 //"sAjaxDataProp" : "",
+                 "columns": [
+                   { "data" : "player" },
+                   { "data" : "points" },
+                   { "data" : "matches" },
+                   { "data" : "wins" },
+                   { "data" : "losses" },
+                   { "data" : "division" },
+                 ],
+                 "oLanguage": {
+                   "sZeroRecords": "No reports yet"
+                 },
+                  "order": [[ 1, "desc" ]],
+                  "paging":   false,
+                  "info":     false,
+                  "searching": true,
+                  initComplete: function () {
+                        //console.log(this.api().columns(5));
+                              this.api().columns(5).search( $('#divisionprimary').val() ).draw();
+                          }                  
+                };        
 
-      $.getJSON( "{{ path_for('standings.get.json')}}", function( data ) {
-      
-        $.each( data, function( key, val ) {
-        var item = [];
-        
-        item.push(data[key]['player'] );
-        item.push(data[key]['points'] );
-        item.push(+data[key]['wins'] + +data[key]['losses']);
-        item.push(data[key]['wins'] );
-        item.push(data[key]['losses'] );
-        item.push(data[key]['division'] );
+        standingstable = $('#standingstable').DataTable(opts);
 
-        items.push(item);
+      $('#divisionprimary').on( 'change', function () {
 
-      });
-
-        if (items.length <= 10) {
-          var opts =  {
-            "oLanguage": {
-              "sZeroRecords": "No reports yet"
-            },
-            "order": [[ 1, "desc" ]],
-            "paging":   false,
-            "info":     false,
-            "searching": true,
-          };
-        }
-
-        standingstable = $('#standingstable').dataTable(opts);
-
-         standingstable.fnClearTable();
-
-        for(var i = 0; i < items.length; i++) { 
-            standingstable.fnAddData([ 
-              items[i][0], 
-              items[i][1], 
-              items[i][2], 
-              items[i][3],
-              items[i][4],
-              items[i][5],
-            ]);
-        }; 
-      
-      });
-    
-
+          // console.log($(this).val());
+          standingstable
+              .columns( 5 )
+              .search( $(this).val() )
+              .draw();
+      } );
 
 });
 

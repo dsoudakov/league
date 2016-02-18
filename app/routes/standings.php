@@ -20,6 +20,7 @@ $app->get('/standingsjson[/{divisionid}]', function($request,$response,$args) us
 					d.divisiondesc as division,
 					sum(p.win) as wins,
 					sum(p.loss) as losses,
+					sum(p.win) + sum(p.loss) as matches,
 					sum(p.points) as points
 					FROM points p
 					LEFT JOIN divisions d on d.id = p.divisionid
@@ -36,6 +37,7 @@ $app->get('/standingsjson[/{divisionid}]', function($request,$response,$args) us
 		$standings = R::getAll( ' SELECT  
 					concat(u.first_name, \' \', u.last_name) as player,	
 					d.divisiondesc as division,
+					sum(p.win) + sum(p.loss) as matches,
 					sum(p.win) as wins,
 					sum(p.loss) as losses,
 					sum(p.points) as points
@@ -48,10 +50,11 @@ $app->get('/standingsjson[/{divisionid}]', function($request,$response,$args) us
 				');				
 	}
 
-	
+	$output = ['data' => $standings];
 
-	echo json_encode($standings);		
+	echo json_encode($output);
 
 })->setName('standings.get.json')
   ->add($isMember)
   ->add($authenticated);
+

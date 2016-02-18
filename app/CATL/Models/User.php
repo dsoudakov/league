@@ -87,6 +87,8 @@ class User
         return $ret;
     }
 
+
+
     public function genDivisionSelect($name, $opt = false)
     {
         $divisions = R::findAll('divisions');
@@ -109,6 +111,29 @@ class User
 
         return $ret;
     }
+    
+    public function genDivisionSelect2($name, $opt = false)
+    {
+        $divisions = R::findAll('divisions');
+
+        $ret  .= '<select id="'. $name . '" name="'. $name . '" class="">';
+            
+        foreach ($divisions as $div) {
+            $ret .= '<option value="' . $div->divisiondesc . '">' . $div->divisiondesc . '</option>';
+        }
+        
+        $ret  .= '</select>';
+
+        if ($opt == 'primary') {
+            return $this->selected($ret, $this->user->divisionprimary);
+        }
+
+        if ($opt == 'secondary') {
+            return $this->selected($ret, $this->user->divisionsecondary);
+        }
+
+        return $ret;
+    }    
 
     public function selected($select, $value)
     {
