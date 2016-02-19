@@ -41,7 +41,10 @@
           </div>
           <!-- Panel body -->
           <div class="panel-body">
-            {{ auth.genDivisionSelect2('divisionprimary') | raw }}            
+            <div class="container row" style="width:250px">
+              {{ auth.genDivisionSelect2('divisionprimary') | raw }}
+            </div>
+            
             <div class="table-responsive">
               <table id="standingstable" class="display compact table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
               <thead>
@@ -52,6 +55,8 @@
               <th>Wins</th>
               <th>Losses</th>
               <th>Division</th>
+              <th>Userid</th>
+              <th>Divisionid</th>
               </tr>
               </thead>
 
@@ -63,15 +68,60 @@
               <th>Wins</th>
               <th>Losses</th>
               <th>Division</th>
+              <th>Userid</th>
+              <th>Divisionid</th>
               </tr>
               </tfoot>
               </table>
+              <div id="refreshtable" class="btn btn-small btn-primary">Refresh</div>
             </div>
           </div>
       </div>  
     </div>
     <div class="col-md-2">
-      Right column. My challenges.
+    </div>
+  </div>
+</div>
+
+<div id="playerDetailsModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header label-primary" style="
+          height: 50px;
+          border-top-left-radius: 5px; 
+          border-top-right-radius: 5px;
+      ">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Player details</h4>
+      </div>
+      <div class="modal-body">
+        <div id="loading1">
+            <img src="{{SITEROOT}}/res/img/loader.gif">
+        </div>        
+        <div class="modal-body-inner1">
+          <div class="table-responsive">
+              <table id="playerdetailstable" class="display compact table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>VS</th>
+                    <th>Division</th>
+                    <th>Result</th>
+                    <th>Points</th>
+                  </tr>
+                </thead>
+                <tfoot>
+                  <tr>
+                      <th>Total matches:</th>
+                      <th></th>
+                      <th colspan="2" style="text-align:right">Total points:</th>
+                      <th></th>
+                  </tr>
+                </tfoot>
+            </table>
+          </div>
+        </div>
+       </div>
     </div>
   </div>
 </div>
@@ -87,10 +137,9 @@
   $(document).ready(function() {
 
         var standingstable;
-        var opts =  {
-                 // "processing": true,
+        var standingstableopts =  {
+                 "processing": true,
                  "ajax" : "{{ path_for('standings.get.json')}}",
-                 //"sAjaxDataProp" : "",
                  "columns": [
                    { "data" : "player" },
                    { "data" : "points" },
@@ -98,32 +147,152 @@
                    { "data" : "wins" },
                    { "data" : "losses" },
                    { "data" : "division" },
+                   { "data" : "userid" },
+                   { "data" : "divisionid" },
                  ],
                  "oLanguage": {
                    "sZeroRecords": "No reports yet"
                  },
                   "order": [[ 1, "desc" ]],
+                  "paging":   true,
+                  "info":     false,
+                  "searching": true,
+                  initComplete: function () {
+                    this.api().columns(5).search( $('#divisionprimary').val() ).draw();
+                  },
+                  "aoColumnDefs": [
+                    {   
+                        "aTargets": [ 0 ],
+                        "mRender": function ( data, type, full ) {
+                          //console.log(full);
+                          return '<a data-toggle="modal" data-target="#playerDetailsModal" data-remote="false" href="{{SITEROOT}}/playerdetailsjson/'+full.userid+'">'+data+'</a>';
+                        }
+                    },
+                    {
+                        "aTargets": [ 6 ],
+                        "visible": false,
+                        "searchable": false
+                    },
+                    {
+                        "aTargets": [ 7 ],
+                        "visible": false,
+                        "searchable": false
+                    }
+                  ],
+            };
+
+        standingstable = $('#standingstable').DataTable(standingstableopts);
+
+      $('#divisionprimary').on( 'change', function () {
+          standingstable.columns(5).search( $(this).val() ).draw();
+      } );
+
+      $('#refreshtable').on( 'click', function () {
+          standingstable.ajax.reload();
+      } );
+
+        var playerdetailstableopts =  {
+                 "processing": true,
+                 "ajax" : "start",
+                 "columns": [
+                   { "data" : "challengedate" },
+                   { "data" : "vsplayer" },
+                   { "data" : "division" },
+                   { "data" : "result" },
+                   { "data" : "points" },
+                 ],
+                  "order": [[ 0, "desc" ]],
                   "paging":   false,
                   "info":     false,
                   "searching": true,
                   initComplete: function () {
-                        //console.log(this.api().columns(5));
-                              this.api().columns(5).search( $('#divisionprimary').val() ).draw();
+                    $('#playerdetailstable').show();
+                  },                  
+                  "aoColumnDefs": [
+                    {   
+                        "aTargets": [ 3 ],
+                        "mRender": function ( data, type, full ) {
+                          //console.log(data);
+                          if (data == "W") {
+                            return '<div class="label label-success label-sm">' + data + '</div>';
+                          } else {
+                            return '<div class="label label-danger label-sm">' + data + '</div>';
+                          }
+                          
+                        }
+                    },
+                  ],
+                  "footerCallback": function ( row, data, start, end, display ) {
+                              var api = this.api(), data;
+                  
+                              // Total over all pages
+                              total = api
+                                  .column( 4 )
+                                  .data()
+                                  .reduce( function (a, b) {
+                                      return a*1 + b*1;
+                                  }, 0 );
+
+                              totalmatches = this.fnSettings().fnRecordsDisplay();
+                   
+                              // Update footer
+                              $( api.column( 4 ).footer() ).html(
+                                  total
+                              );
+
+                              $( api.column( 1 ).footer() ).html(
+                                  totalmatches
+                              );
+
                           }                  
-                };        
+             };
 
-        standingstable = $('#standingstable').DataTable(opts);
+     $("#playerDetailsModal").on("show.bs.modal", function(e) {
+          var loadingElem = $(this).find("#loading1");
+          loadingElem.show();
 
-      $('#divisionprimary').on( 'change', function () {
+          $('#playerdetailstable').hide();
 
-          // console.log($(this).val());
-          standingstable
-              .columns( 5 )
-              .search( $(this).val() )
-              .draw();
-      } );
+          var elem1 = $(this).find(".modal-body-inner1");
 
-});
+          var link = $(e.relatedTarget);
+          var link_1 = link.attr("href");
+          
+          
+
+          if ( ! $.fn.DataTable.isDataTable( '#playerdetailstable' ) ) {
+
+            playerdetailstableopts.ajax = link_1;
+            playerdetailstable = $('#playerdetailstable').DataTable(playerdetailstableopts);
+
+          } else {
+            //loadingElem.show();
+            playerdetailstable.ajax.url( link_1 );
+            playerdetailstable.ajax.reload(function () {
+              $('#playerdetailstable').show();  
+              loadingElem.hide();
+            });
+            
+
+          }
+
+
+
+          loadingElem.hide();
+
+      });
+
+      $("#playerDetailsModal")
+       .on("hide.bs.modal", function(e) {
+
+
+      });
+
+      // setInterval( function () {
+      //     standingstable.ajax.reload();
+      // }, 10000 );
+
+  });
 
 </script>
 {% endblock js %}

@@ -115,9 +115,10 @@ class User
     public function genDivisionSelect2($name, $opt = false)
     {
         $divisions = R::findAll('divisions');
+        
+        $ret  .= '<select id="'. $name . '" name="'. $name . '" class="form-control col-lg-3">';
+        $ret .= '<option value="">All divisions</option>';    
 
-        $ret  .= '<select id="'. $name . '" name="'. $name . '" class="">';
-            
         foreach ($divisions as $div) {
             $ret .= '<option value="' . $div->divisiondesc . '">' . $div->divisiondesc . '</option>';
         }

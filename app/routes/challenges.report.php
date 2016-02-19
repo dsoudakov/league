@@ -92,11 +92,13 @@ $app->post('/confirmreport/{challengeid}', function($request,$response,$args) us
 	  			':id' => $args['challengeid'],
 	  		]);
 
-	  		$c->reportconfirmed = 1;
-	  		$c->reportconfirmedat = Carbon::now('America/Toronto')->toDateTimeString();
 	  		
 	  		if (!$correctcheck) {
 	  			$c->incorrectdetails = $incorrectdetails;
+	  		} else {
+	  			$c->incorrectdetails = null;
+		  		$c->reportconfirmed = 1;
+		  		$c->reportconfirmedat = Carbon::now('America/Toronto')->toDateTimeString();
 	  		}
 
 	  		$r = User::storeBean($c);
