@@ -17,6 +17,7 @@ use CATL\Validation\Validator;
 use CATL\Helpers\MyCookies;
 use CATL\Helpers\Hash;
 use CATL\Helpers\Mail;
+use CATL\Helpers\Audit;
 use CATL\Helpers\Generators;
 use CATL\Middleware\SessionKeeper;
 use CATL\Middleware\AuthCheck;

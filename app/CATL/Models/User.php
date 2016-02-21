@@ -87,7 +87,28 @@ class User
         return $ret;
     }
 
+    public function genJoinedDivisionSelect2($name)
+    {
+        $divisions = R::findAll('divisions', ' id = :div1 or id = :div2 ', [
+            ':div1' => $this->user->divisionprimary,
+            ':div2' => $this->user->divisionsecondary,
+        ]);
 
+        if (empty($divisions)) {
+            return null;
+        }
+
+        $ret  .= '<select id="'. $name . '" name="'. $name . '" class="form-control">';
+
+        foreach ($divisions as $div) {
+            $ret .= '<option value="' . $div->divisiondesc . '">' . $div->divisiondesc . '</option>';
+        }
+        
+        $ret  .= '</select>';
+
+
+        return $ret;
+    }
 
     public function genDivisionSelect($name, $opt = false)
     {
@@ -116,7 +137,7 @@ class User
     {
         $divisions = R::findAll('divisions');
         
-        $ret  .= '<select id="'. $name . '" name="'. $name . '" class="form-control col-lg-3">';
+        $ret  .= '<select id="'. $name . '" name="'. $name . '" class="form-control">';
         $ret .= '<option value="">All divisions</option>';    
 
         foreach ($divisions as $div) {

@@ -65,4 +65,4 @@ $app->post('/post', function ($request,$response,$args) use ($app) {
 	$this->flash->addMessage('global', 'Message was sent!');
 	return $response->withRedirect($app->router->pathFor('home'));
 
-})->setName('send');
+})->setName('send.email');

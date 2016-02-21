@@ -49,7 +49,7 @@ $app->post('/challengeall', function($request,$response,$args) use ($app)
 		'challengeInDivision|Challenged division' => [$challengeInDivision, 'required|between(1,99)'],
 	]);
 
-	if ($v->passes()) {
+	if ($v->passes() && $test && $test2) {
 		$now = Carbon::now('America/Toronto');
 		
 		$cc = R::findall('challenges', ' challengerid = :id and challengedate = :date and challenge_in_division = :challengeInDivision ', [
@@ -138,7 +138,7 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 	$_SESSION['challengedate'] = $challengedate1;
 	$_SESSION['checkedids'] = $challengedids;
 
-	if ($v->passes()) {
+	if ($v->passes() && $test && $test2) {
 
 		$now = Carbon::now('America/Toronto');
 		
@@ -185,6 +185,10 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 		}
 		
 	} else {
+		if (!$test || !$test2) {
+	    	$this->get('flash')->addMessage('global_error', 'Challenge date is incorrect.');
+	   		return $response->withRedirect($this->get('router')->pathFor('challenge.create.specific'));
+		}
 		
 		if ($challengedids == null) {
 			$this->get('flash')->addMessage('global_error', 'No players selected!');

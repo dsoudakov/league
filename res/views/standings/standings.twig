@@ -7,6 +7,12 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.css"/>
 <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/bootstrap-switch.min.css">
 
+<style type="text/css">
+  .modal.modal-wide .modal-dialog {
+    width: 60%;
+  }
+</style>
+
 {% endblock head %}
 
 {% block content %}
@@ -83,7 +89,7 @@
   </div>
 </div>
 
-<div id="playerDetailsModal" class="modal fade" role="dialog">
+<div id="playerDetailsModal" class="modal fade modal-wide" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header label-primary" style="
@@ -94,12 +100,12 @@
         <button type="button" class="close" data-dismiss="modal">&times;</button>
         <h4 class="modal-title">Player details</h4>
       </div>
-      <div class="modal-body">
+      <div class="modal-body modal-wide">
         <div id="loading1">
             <img src="{{SITEROOT}}/res/img/loader.gif">
         </div>        
         <div class="modal-body-inner1">
-          <div class="table-responsive">
+          
               <table id="playerdetailstable" class="display compact table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
                 <thead>
                   <tr>
@@ -110,20 +116,16 @@
                     <th>Points</th>
                   </tr>
                 </thead>
-                <tfoot>
-                  <tr>
-                      <th>Total matches:</th>
-                      <th></th>
-                      <th colspan="2" style="text-align:right">Total points:</th>
-                      <th></th>
-                  </tr>
-                </tfoot>
             </table>
-          </div>
         </div>
+        
        </div>
     </div>
   </div>
+</div>
+
+<div id="divisionselectmodal" style="display:none;">
+  {{ auth.genJoinedDivisionSelect2('usersdivisionsmodal')  | raw }}
 </div>
 
 {% endblock content %}
@@ -136,7 +138,9 @@
 
   $(document).ready(function() {
 
-        var standingstable;
+        var divisionselectmodal = $('#divisionselectmodal').html();
+        console.log(divisionselectmodal);
+        var standingstable; 
         var standingstableopts =  {
                  "processing": true,
                  "ajax" : "{{ path_for('standings.get.json')}}",
@@ -178,7 +182,7 @@
                         "visible": false,
                         "searchable": false
                     }
-                  ],
+                  ]
             };
 
         standingstable = $('#standingstable').DataTable(standingstableopts);
@@ -191,61 +195,37 @@
           standingstable.ajax.reload();
       } );
 
-        var playerdetailstableopts =  {
-                 "processing": true,
-                 "ajax" : "start",
-                 "columns": [
-                   { "data" : "challengedate" },
-                   { "data" : "vsplayer" },
-                   { "data" : "division" },
-                   { "data" : "result" },
-                   { "data" : "points" },
-                 ],
-                  "order": [[ 0, "desc" ]],
-                  "paging":   false,
-                  "info":     false,
-                  "searching": true,
-                  initComplete: function () {
-                    $('#playerdetailstable').show();
-                  },                  
-                  "aoColumnDefs": [
-                    {   
-                        "aTargets": [ 3 ],
-                        "mRender": function ( data, type, full ) {
-                          //console.log(data);
-                          if (data == "W") {
-                            return '<div class="label label-success label-sm">' + data + '</div>';
-                          } else {
-                            return '<div class="label label-danger label-sm">' + data + '</div>';
-                          }
-                          
-                        }
-                    },
-                  ],
-                  "footerCallback": function ( row, data, start, end, display ) {
-                              var api = this.api(), data;
-                  
-                              // Total over all pages
-                              total = api
-                                  .column( 4 )
-                                  .data()
-                                  .reduce( function (a, b) {
-                                      return a*1 + b*1;
-                                  }, 0 );
-
-                              totalmatches = this.fnSettings().fnRecordsDisplay();
-                   
-                              // Update footer
-                              $( api.column( 4 ).footer() ).html(
-                                  total
-                              );
-
-                              $( api.column( 1 ).footer() ).html(
-                                  totalmatches
-                              );
-
-                          }                  
-             };
+      var playerdetailstableopts =  {
+           "processing": true,
+           "ajax" : "start",
+           "columns": [
+             { "data" : "challengedate" },
+             { "data" : "vsplayer" },
+             { "data" : "division" },
+             { "data" : "result" },
+             { "data" : "points" },
+           ],
+            "order": [[ 0, "desc" ]],
+            "paging":   true,
+            "info":     false,
+            "searching": true,
+            initComplete: function () {
+              $('#playerdetailstable').show();
+            },                  
+            "aoColumnDefs": [
+              {   
+                  "aTargets": [ 3 ],
+                  "mRender": function ( data, type, full ) {
+                    //console.log(data);
+                    if (data == "W") {
+                      return '<div class="label label-success label-sm">' + data + '</div>';
+                    } else {
+                      return '<div class="label label-danger label-sm">' + data + '</div>';
+                    }
+                  }
+              },
+            ]
+      };
 
      $("#playerDetailsModal").on("show.bs.modal", function(e) {
           var loadingElem = $(this).find("#loading1");
@@ -257,8 +237,6 @@
 
           var link = $(e.relatedTarget);
           var link_1 = link.attr("href");
-          
-          
 
           if ( ! $.fn.DataTable.isDataTable( '#playerdetailstable' ) ) {
 
@@ -266,17 +244,12 @@
             playerdetailstable = $('#playerdetailstable').DataTable(playerdetailstableopts);
 
           } else {
-            //loadingElem.show();
             playerdetailstable.ajax.url( link_1 );
             playerdetailstable.ajax.reload(function () {
               $('#playerdetailstable').show();  
               loadingElem.hide();
             });
-            
-
           }
-
-
 
           loadingElem.hide();
 
@@ -284,7 +257,6 @@
 
       $("#playerDetailsModal")
        .on("hide.bs.modal", function(e) {
-
 
       });
 
