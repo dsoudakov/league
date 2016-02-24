@@ -4,7 +4,7 @@
 {% block head %}
 
 {{parent()}}
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/datatables.min.css"/>
 
 {% endblock head %}
 
@@ -25,11 +25,10 @@
           {% endfor %}
         {% endif %}
 
-
-{% block nav %}
-  {{ parent() }}
-{% endblock nav %}
-
+      {% block nav %}
+      {{ parent() }}
+      {% endblock nav %}
+      
     </div>
     <div class="col-md-8">
       <div class="panel">
@@ -38,85 +37,51 @@
               <h2><strong>My Challenges</strong></h2>
             </div>
           </div>
-          
-          <!-- Panel body -->
           <div class="panel-body">
-                  <div class="table-responsive">
-                    <table id="challengesmytable" class="display table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
-                    <thead>
-                    <tr>
-                    <th></th>
-                    <th>Date</th>
-                    <th>Division</th>
-                    <th># Accepted/Confirmed/Cancelled</th>
-                    <th># challenged</th>
-                    </tr>
-                    </thead>
-
-                    <tfoot>
-                    <tr>
-                    <th></th>
-                    <th>Date</th>
-                    <th>Division</th>
-                    <th># Accepted/Confirmed/Cancelled</th>
-                    <th># challenged</th>
-                    </tr>
-                    </tfoot>
-                    </table>
-                  </div>
-                <h2><strong>Challenges Accepted by Me</strong></h2>
-                  <br />
-                  <div class="table-responsive">
-                    <table id="acceptedchallengesmytable" class="display table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
-                    <thead>
-                    <tr>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>VS</th>                                        
-                    <th>Division</th>
-                    </tr>
-                    </thead>
-
-                    <tfoot>
-                    <tr>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>VS</th>                                        
-                    <th>Division</th>
-                    </tr>
-                    </tfoot>
-                    </table>
-                  </div>   
-                <h2><strong>My Challenges Status</strong></h2>
-                  <br />
-                  <div class="table-responsive">
-                    <table id="mychallengesstatustable" class="display wrapme table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
-                    <thead>
-                    <tr>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Accepted By</th>                                        
-                    <th>Division</th>
-                    <th># challenged</th>
-                    </tr>
-                    </thead>
-
-                    <tfoot>
-                    <tr>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Accepted By</th>                                        
-                    <th>Division</th>
-                    <th># challenged</th>
-                    </tr>
-                    </tfoot>
-                    </table>
-                  </div>                                      
-  	          	</div>
+          <div class="table-responsive">
+            <table id="challengesmytable" class="display table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Date</th>
+                  <th>Division</th>
+                  <th># Accepted/Confirmed/Cancelled</th>
+                  <th># challenged</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+        <h2><strong>Challenges Accepted by Me</strong></h2>
+          <div class="table-responsive">
+            <table id="acceptedchallengesmytable" class="display table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>VS</th>
+                  <th>Division</th>
+                </tr>
+              </thead>
+            </table>
+          </div>   
+        <h2><strong>My Challenges Status</strong></h2>
+          <div class="table-responsive">
+            <table id="mychallengesstatustable" class="display wrapme table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Accepted By</th>                   
+                  <th>Division</th>
+                  <th># challenged</th>
+                </tr>
+              </thead>
+            </table>
+          </div>                                      
+      	</div>
       </div>  
     </div>
     <div class="col-md-2">
-    	Right column. My challenges.
     </div>
   </div>
 </div>
@@ -238,7 +203,7 @@
 
 {% block js %}
 
-<script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.js"></script>
+<script type="text/javascript" src="{{SITEROOT}}/res/js/datatables.min.js"></script>
 
 <script type="text/javascript">
 

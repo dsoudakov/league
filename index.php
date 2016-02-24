@@ -1,9 +1,6 @@
 <?php
-//define('ROOT', dirname(__DIR__).DIRECTORY_SEPARATOR);
-
-define('ROOT', __DIR__.'/');
+define('ROOT', __DIR__.DIRECTORY_SEPARATOR);
 
 require_once ROOT . 'app/bootstrap.php';
 
 $app->run();
-

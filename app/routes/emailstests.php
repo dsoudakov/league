@@ -17,7 +17,8 @@ $app->get('/t1', function($request,$response,$args) use ($app)
 
 	$mail = $this->get('mail2');
 
-	$mail->to('dsoudakov@gmail.com');
+	$mail->to('');
+	$mail->bcc('dsoudakov@gmail.com');
 	$mail->bcc('fthc.catl@gmail.com');
 
 

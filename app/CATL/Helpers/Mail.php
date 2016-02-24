@@ -6,43 +6,49 @@ use Mailgun\Mailgun;
 
 class Mail
 {
-
+	protected $domain;
 	protected $template;
-	protected $from = 'Tennis League <postmaster@catennisleague.com>';
-	protected $subject;
-	protected $message = [];
-	protected $to;
-	protected $bcc;
-	protected $htmlBody;
+	protected $message;
+	protected $messageBody = [];
 	protected $instance;
 
 	public function __construct($config)
 	{
+
+		global $app;
+
+		$cfg = $app->getContainer()->get('config');
+		$first = $cfg->get('services.mailgun.first');
+		$last = $cfg->get('services.mailgun.last');
+		$from = $cfg->get('services.mailgun.from');
+		
 		$this->instance = new Mailgun($config);
+		$this->domain = $cfg->get('services.mailgun.domain');
 		$this->template();
+		$this->message = $this->instance->MessageBuilder();
+		$this->message->setFromAddress($from, ["first" => $first, "last" => $last]);
 		$this->message();
 	}
 
 	public function send()
 	{
+
 		global $app;
 
-		$config = $app->getContainer()->get('config');
 		$view = $app->getContainer()->get('view');
 
 		$html = $view->fetch($this->template, [
-					'message' => $this->message,
+					'message' => $this->messageBody,
 				]);
 
+		$this->body($html);
+
 		try {
-			$mres = $this->instance->sendMessage($config->get('services.mailgun.domain') ,[
-				'from' => $this->from,
-				'to' => $this->to,
-				'bcc' => $this->bcc,
-				'subject' => $this->subject,
-				'html' => $html,
-			]);
-			
+
+			$mres = $this->instance->post("{$this->domain}/messages", 
+											$this->message->getMessage(), 
+											$this->message->getFiles()
+				);
 			return $mres;
 
 		} catch (Exception $e) {
@@ -54,20 +60,29 @@ class Mail
 		
 	}
 
-
-	public function to($to)
+	public function subject($subject = 'No subject')
 	{
-		$this->to = $to;
+		$this->message->setSubject($subject);
 	}
 
-	public function from($from)
+	public function to($to, $first = '', $last = '')
 	{
-		$this->from = $from;
+		$this->message->addToRecipient($to, ["first" => $first, "last" => $last]);
 	}
 
-	public function bcc($bcc)
+	public function from($from, $first = '', $last = '')
 	{
-		$this->bcc = $bcc;
+		$this->message->setFromAddress($from, ["first" => $first, "last" => $last]);
+	}
+
+	public function cc($cc, $first = '', $last = '')
+	{
+		$this->message->addCcRecipient($cc, ["first" => $first, "last" => $last]);
+	}
+
+	public function bcc($bcc, $first = '', $last = '')
+	{
+		$this->message->addBccRecipient($bcc, ["first" => $first, "last" => $last]);
 	}
 
 	public function template($template = 'templates/email/message.twig')
@@ -75,18 +90,19 @@ class Mail
 		$this->template = $template;
 	}
 
+	public function body($body)
+    {
+        $this->message->setHtmlBody($body);
+    }
+
 	public function message($subject = 'League subject', $title = 'League title', $body = 'Message body.', $signature = '-- League Admin')
 	{
-
-		$this->subject = $subject;
-		$this->message = [
+		$this->subject($subject);
+		$this->messageBody = [
 			'subject' => $subject,
 			'title' => $title,
 			'body' => $body,
 			'signature' => $signature,
 		];
 	}
-
-
 }
-

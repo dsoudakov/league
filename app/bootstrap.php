@@ -1,10 +1,10 @@
 <?php
-//define('ROOT', dirname(__DIR__).DIRECTORY_SEPARATOR);
-//define('SITEROOT', dirname(dirname(($_SERVER['PHP_SELF']))));
-
 date_default_timezone_set('America/Toronto');
 
-define('SITEROOT', '');
+$mode = file_get_contents(ROOT . 'config/mode.php');
+$siteroot = file_get_contents(ROOT . 'config/siteroot.php');
+
+($mode === '_prod') ? define('SITEROOT', $siteroot) : define('SITEROOT', '');
 
 session_start();
 
@@ -12,7 +12,6 @@ require ROOT . 'vendor/autoload.php';
 require ROOT . 'app/slimcfg.php';
 require ROOT . 'app/CATL/Middleware/AuthRedirects.php';
 
-// routes
 require ROOT . 'app/routes/login.php';
 require ROOT . 'app/routes/logout.php';
 require ROOT . 'app/routes/home.php';

@@ -6,9 +6,12 @@ define('PREE', '</pre>');
 
 use Tracy\Debugger;
 
-$mode = file_get_contents(ROOT . 'config/mode.php');
-//if ($mode === '_dev') Debugger::enable();
-Debugger::enable();
+if ($mode === '_dev') 
+{
+    Debugger::enable(); 
+    ini_set( 'error_reporting', E_ALL );
+    ini_set( 'display_errors', true );
+}
 
 use CATL\R;
 use CATL\User\User;
@@ -24,17 +27,13 @@ use CATL\Middleware\AuthCheck;
 use Carbon\Carbon;
 use RandomLib\Factory as RandomLib;
 
-ini_set( 'error_reporting', E_ALL );
-ini_set( 'display_errors', true );
-
 // db setup
 $R = new R(require_once ROOT . 'config/db.php');
-
 require_once('RedBeanMysqlBackup.php');
 
 $configuration = [
     'settings' => [
-        'displayErrorDetails' => true,
+        'displayErrorDetails' => ($mode === '_dev' ? true : false),
     ],
     'mode' => $mode,
 ];

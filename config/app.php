@@ -21,27 +21,6 @@ return [
 		'_prod' => 'http://www.catennisleague.com',
 	],
 
-	'db' => [
-		'_prod' => [
-			'mysql' => [
-				'host' => 'localhost',
-				'dbname' => 'test',
-				'username' => 'root',
-				'password' => '',
-				'prefix' => 'selfdest_',	
-			],
-		],
-		'_dev' => [
-			'mysql_prod' => [
-				'host' => '50.62.209.108',
-				'dbname' => 'CATennis',
-				'username' => 'dsoud',
-				'password' => 'Ojqd4&41',
-				'prefix' => 'fhtl_',
-			],		
-		],
-	],
-
 	'services' => [
 		'mailgun' => [
 			'domain' => 'catennisleague.com',

@@ -4,7 +4,9 @@
 {% block head %}
 
 {{parent()}}
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.11/datatables.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.0.2/css/responsive.dataTables.min.css">
+
 <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/bootstrap-switch.min.css">
 
 <style type="text/css">
@@ -48,7 +50,7 @@
           <!-- Panel body -->
           <div class="panel-body">
             <div class="container row" style="width:250px">
-              {{ auth.genDivisionSelect2('divisionprimary') | raw }}
+              {{ auth.genDivisionSelect2('divisionfilter') | raw }}
             </div>
             
             <div class="table-responsive">
@@ -134,14 +136,16 @@
 {% block js %}
 
 <script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.11/datatables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.0.2/js/dataTables.responsive.min.js"></script>
 <script type="text/javascript">
 
   $(document).ready(function() {
 
         var divisionselectmodal = $('#divisionselectmodal').html();
-        console.log(divisionselectmodal);
+        //console.log(divisionselectmodal);
         var standingstable; 
         var standingstableopts =  {
+                 responsive: true,
                  "processing": true,
                  "ajax" : "{{ path_for('standings.get.json')}}",
                  "columns": [
@@ -162,7 +166,7 @@
                   "info":     false,
                   "searching": true,
                   initComplete: function () {
-                    this.api().columns(5).search( $('#divisionprimary').val() ).draw();
+                    this.api().columns(5).search( $('#divisionfilter').val() ).draw();
                   },
                   "aoColumnDefs": [
                     {   
@@ -187,15 +191,16 @@
 
         standingstable = $('#standingstable').DataTable(standingstableopts);
 
-      $('#divisionprimary').on( 'change', function () {
+      $('#divisionfilter').on( 'change', function () {
           standingstable.columns(5).search( $(this).val() ).draw();
       } );
-
+      
       $('#refreshtable').on( 'click', function () {
           standingstable.ajax.reload();
       } );
 
       var playerdetailstableopts =  {
+           responsive: true,
            "processing": true,
            "ajax" : "start",
            "columns": [
