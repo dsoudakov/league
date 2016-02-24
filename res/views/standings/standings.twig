@@ -3,273 +3,259 @@
 
 {% block head %}
 
-{{parent()}}
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.11/datatables.min.css"/>
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.0.2/css/responsive.dataTables.min.css">
+  {{parent()}}
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/datatables.min.css"/>
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/responsive.dataTables.min.css">
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/bootstrap-switch.min.css">
 
-<link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/bootstrap-switch.min.css">
-
-<style type="text/css">
-  .modal.modal-wide .modal-dialog {
-    width: 60%;
-  }
-</style>
-
+  <style type="text/css">
+    .modal.modal-wide .modal-dialog {
+      width: 60%;
+    }
+  </style>
 {% endblock head %}
 
 {% block content %}
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-md-2">
-        {% if flash.getMessages() %}
-          {% for k, messages in flash.getMessages() %}
-            {% for message in flash.getMessages()[k] %}
-              {% if k == 'global' %}
-                <div class="alert alert-success">{{ message }}</div>
-              {% else %}
-                <div class="alert alert-danger">{{ message }}</div>
-              {% endif %}
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2">
+          {% if flash.getMessages() %}
+            {% for k, messages in flash.getMessages() %}
+              {% for message in flash.getMessages()[k] %}
+                {% if k == 'global' %}
+                  <div class="alert alert-success">{{ message }}</div>
+                {% else %}
+                  <div class="alert alert-danger">{{ message }}</div>
+                {% endif %}
+              {% endfor %}
             {% endfor %}
-          {% endfor %}
-        {% endif %}
+          {% endif %}
 
+          {% block nav %}
+            {{ parent() }}
+          {% endblock nav %}
 
-{% block nav %}
-  {{ parent() }}
-{% endblock nav %}
-
-    </div>
-    <div class="col-md-8">
-      <div class="panel">
-          <div class="panel-heading">
-            <div class="panel-title">
-              <h2><strong>Current Standings</strong></h2>
-            </div>
-          </div>
-          <!-- Panel body -->
-          <div class="panel-body">
-            <div class="container row" style="width:250px">
-              {{ auth.genDivisionSelect2('divisionfilter') | raw }}
-            </div>
-            
-            <div class="table-responsive">
-              <table id="standingstable" class="display compact table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
-              <thead>
-              <tr>
-              <th>Player</th>
-              <th>Points</th>
-              <th>Matches</th>
-              <th>Wins</th>
-              <th>Losses</th>
-              <th>Division</th>
-              <th>Userid</th>
-              <th>Divisionid</th>
-              </tr>
-              </thead>
-
-              <tfoot>
-              <tr>
-              <th>Player</th>
-              <th>Points</th>
-              <th>Matches</th>
-              <th>Wins</th>
-              <th>Losses</th>
-              <th>Division</th>
-              <th>Userid</th>
-              <th>Divisionid</th>
-              </tr>
-              </tfoot>
-              </table>
-              <div id="refreshtable" class="btn btn-small btn-primary">Refresh</div>
-            </div>
-          </div>
-      </div>  
-    </div>
-    <div class="col-md-2">
-    </div>
-  </div>
-</div>
-
-<div id="playerDetailsModal" class="modal fade modal-wide" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header label-primary" style="
-          height: 50px;
-          border-top-left-radius: 5px; 
-          border-top-right-radius: 5px;
-      ">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Player details</h4>
       </div>
-      <div class="modal-body modal-wide">
-        <div id="loading1">
-            <img src="{{SITEROOT}}/res/img/loader.gif">
-        </div>        
-        <div class="modal-body-inner1">
-          
-              <table id="playerdetailstable" class="display compact table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>VS</th>
-                    <th>Division</th>
-                    <th>Result</th>
-                    <th>Points</th>
-                  </tr>
-                </thead>
-            </table>
+      <div class="col-md-8">
+        <div class="panel">
+            <div class="panel-heading">
+              <div class="panel-title">
+                <h2><strong>Current Standings</strong></h2>
+              </div>
+            </div>
+            <!-- Panel body -->
+            <div class="panel-body">
+              <div class="container row" style="width:250px">
+                {{ auth.genDivisionSelect2('divisionfilter') | raw }}
+              </div>
+              <div class="table-responsive">
+                <table id="standingstable" class="display compact table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+                  <thead>
+                    <tr>
+                      <th>Player</th>
+                      <th>Points</th>
+                      <th>Matches</th>
+                      <th>Wins</th>
+                      <th>Losses</th>
+                      <th>Division</th>
+                      <th>Userid</th>
+                      <th>Divisionid</th>
+                    </tr>
+                  </thead>
+                </table>
+                <div id="refreshtable" class="btn btn-small btn-primary">Refresh</div>
+              </div>
+            </div>
         </div>
-        
-       </div>
+      </div>
+      <div class="col-md-2">
+      </div>
     </div>
   </div>
-</div>
 
-<div id="divisionselectmodal" style="display:none;">
-  {{ auth.genJoinedDivisionSelect2('usersdivisionsmodal')  | raw }}
-</div>
+  <div id="playerDetailsModal" class="modal fade modal-wide" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header label-primary" style="
+            height: 50px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        ">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Player details</h4>
+        </div>
+        <div class="modal-body modal-wide">
+          <div id="loading1">
+              <img src="{{SITEROOT}}/res/img/loader.gif">
+          </div>
+          <div class="modal-body-inner1">
+                <table id="playerdetailstable" class="display compact table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>VS</th>
+                      <th>Division</th>
+                      <th>Result</th>
+                      <th>Points</th>
+                    </tr>
+                  </thead>
+              </table>
+          </div>
 
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="divisionselectmodal" style="display:none;">
+    {{ auth.genJoinedDivisionSelect2('usersdivisionsmodal')  | raw }}
+  </div>
 {% endblock content %}
-
 
 {% block js %}
 
-<script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.11/datatables.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.0.2/js/dataTables.responsive.min.js"></script>
-<script type="text/javascript">
+  <script type="text/javascript" src="{{SITEROOT}}/res/js/datatables.min.js"></script>
+  <script type="text/javascript" src="{{SITEROOT}}/res/js/dataTables.responsive.min.js"></script>
+  <script type="text/javascript">
 
-  $(document).ready(function() {
+    $(document).ready(function() {
 
-        var divisionselectmodal = $('#divisionselectmodal').html();
-        //console.log(divisionselectmodal);
-        var standingstable; 
-        var standingstableopts =  {
-                 responsive: true,
-                 "processing": true,
-                 "ajax" : "{{ path_for('standings.get.json')}}",
-                 "columns": [
-                   { "data" : "player" },
-                   { "data" : "points" },
-                   { "data" : "matches" },
-                   { "data" : "wins" },
-                   { "data" : "losses" },
-                   { "data" : "division" },
-                   { "data" : "userid" },
-                   { "data" : "divisionid" },
-                 ],
-                 "oLanguage": {
-                   "sZeroRecords": "No reports yet"
-                 },
-                  "order": [[ 1, "desc" ]],
-                  "paging":   true,
-                  "info":     false,
-                  "searching": true,
-                  initComplete: function () {
-                    this.api().columns(5).search( $('#divisionfilter').val() ).draw();
-                  },
-                  "aoColumnDefs": [
-                    {   
-                        "aTargets": [ 0 ],
-                        "mRender": function ( data, type, full ) {
-                          //console.log(full);
-                          return '<a data-toggle="modal" data-target="#playerDetailsModal" data-remote="false" href="{{SITEROOT}}/playerdetailsjson/'+full.userid+'">'+data+'</a>';
-                        }
+          var divisionselectmodal = $('#divisionselectmodal').html();
+          var standingstable;
+          var standingstableopts =  {
+                   responsive: true,
+                   processing: true,
+                   ajax : "{{ path_for('standings.get.json')}}",
+                   columns: [
+                     { "data" : "player" },
+                     { "data" : "points" },
+                     { "data" : "matches" },
+                     { "data" : "wins" },
+                     { "data" : "losses" },
+                     { "data" : "division" },
+                     { "data" : "userid" },
+                     { "data" : "divisionid" },
+                   ],
+                   fnDrawCallback:function(){
+                     if ( $('#standingstable_paginate span span.paginate_button').size()) {
+                        $('#standingstable_paginate')[0].style.display = "block";
+                       } else {
+                       $('#standingstable_paginate')[0].style.display = "none";
+                     }
+                   },
+                   oLanguage: {
+                    sZeroRecords : "No reports yet"
+                   },
+                   order: [[ 1, "desc" ]],
+                   paging:   true,
+                   info:     false,
+                   searching: true,
+                    initComplete: function () {
+                      this.api().columns(5).search( $('#divisionfilter').val() ).draw();
                     },
-                    {
-                        "aTargets": [ 6 ],
-                        "visible": false,
-                        "searchable": false
-                    },
-                    {
-                        "aTargets": [ 7 ],
-                        "visible": false,
-                        "searchable": false
-                    }
-                  ]
-            };
+                    aoColumnDefs : [
+                      {
+                          aTargets : [ 0 ],
+                          mRender : function ( data, type, full ) {
+                            return '<a data-toggle="modal" data-target="#playerDetailsModal" data-remote="false" href="{{SITEROOT}}/playerdetailsjson/'+full.userid+'">'+data+'</a>';
+                          }
+                      },
+                      {
+                          aTargets   : [ 6 ],
+                          visible    : false,
+                          searchable : false
+                      },
+                      {
+                          aTargets   : [ 7 ],
+                          visible    : false,
+                          searchable : false
+                      }
+                    ]
+              };
 
-        standingstable = $('#standingstable').DataTable(standingstableopts);
+          standingstable = $('#standingstable').DataTable(standingstableopts);
 
-      $('#divisionfilter').on( 'change', function () {
-          standingstable.columns(5).search( $(this).val() ).draw();
-      } );
-      
-      $('#refreshtable').on( 'click', function () {
-          standingstable.ajax.reload();
-      } );
+        $('#divisionfilter').on( 'change', function () {
+            standingstable.columns(5).search( $(this).val() ).draw();
+        } );
 
-      var playerdetailstableopts =  {
-           responsive: true,
-           "processing": true,
-           "ajax" : "start",
-           "columns": [
-             { "data" : "challengedate" },
-             { "data" : "vsplayer" },
-             { "data" : "division" },
-             { "data" : "result" },
-             { "data" : "points" },
-           ],
-            "order": [[ 0, "desc" ]],
-            "paging":   true,
-            "info":     false,
-            "searching": true,
-            initComplete: function () {
-              $('#playerdetailstable').show();
-            },                  
-            "aoColumnDefs": [
-              {   
-                  "aTargets": [ 3 ],
-                  "mRender": function ( data, type, full ) {
-                    //console.log(data);
-                    if (data == "W") {
-                      return '<div class="label label-success label-sm">' + data + '</div>';
-                    } else {
-                      return '<div class="label label-danger label-sm">' + data + '</div>';
-                    }
-                  }
+        $('#refreshtable').on( 'click', function () {
+            standingstable.ajax.reload();
+        } );
+
+        var playerdetailstableopts =  {
+             responsive : true,
+             processing : true,
+             ajax       : "start",
+             columns    : [
+               { "data" : "challengedate" },
+               { "data" : "vsplayer" },
+               { "data" : "division" },
+               { "data" : "result" },
+               { "data" : "points" },
+             ],
+              order        : [[ 0, "desc" ]],
+              paging       : true,
+              info         : false,
+              searching    : true,
+              initComplete : function () {
+                $('#playerdetailstable').show();
               },
-            ]
-      };
+              aoColumnDefs : [
+                {
+                    aTargets: [ 3 ],
+                    mRender: function ( data, type, full ) {
+                      if (data == "W") {
+                        return '<div class="label label-success label-sm">' + data + '</div>';
+                      } else {
+                        return '<div class="label label-danger label-sm">' + data + '</div>';
+                      }
+                    }
+                },
+              ]
+        };
 
-     $("#playerDetailsModal").on("show.bs.modal", function(e) {
-          var loadingElem = $(this).find("#loading1");
-          loadingElem.show();
+       $("#playerDetailsModal").on("show.bs.modal", function(e) {
+            var loadingElem = $(this).find("#loading1");
+            loadingElem.show();
 
-          $('#playerdetailstable').hide();
+            $('#playerdetailstable').hide();
 
-          var elem1 = $(this).find(".modal-body-inner1");
+            var elem1 = $(this).find(".modal-body-inner1");
 
-          var link = $(e.relatedTarget);
-          var link_1 = link.attr("href");
+            var link = $(e.relatedTarget);
+            var link_1 = link.attr("href");
 
-          if ( ! $.fn.DataTable.isDataTable( '#playerdetailstable' ) ) {
+            if ( ! $.fn.DataTable.isDataTable( '#playerdetailstable' ) ) {
 
-            playerdetailstableopts.ajax = link_1;
-            playerdetailstable = $('#playerdetailstable').DataTable(playerdetailstableopts);
+              playerdetailstableopts.ajax = link_1;
+              playerdetailstable = $('#playerdetailstable').DataTable(playerdetailstableopts);
 
-          } else {
-            playerdetailstable.ajax.url( link_1 );
-            playerdetailstable.ajax.reload(function () {
-              $('#playerdetailstable').show();  
-              loadingElem.hide();
-            });
-          }
+            } else {
 
-          loadingElem.hide();
+              playerdetailstable.ajax.url( link_1 );
+              playerdetailstable.ajax.reload(function () {
+                $('#playerdetailstable').show();
+                loadingElem.hide();
+              });
 
-      });
+            }
 
-      $("#playerDetailsModal")
-       .on("hide.bs.modal", function(e) {
+            loadingElem.hide();
 
-      });
+        });
 
-      // setInterval( function () {
-      //     standingstable.ajax.reload();
-      // }, 10000 );
+        $("#playerDetailsModal")
+         .on("hide.bs.modal", function(e) {
 
-  });
+        });
 
-</script>
+        // setInterval( function () {
+        //     standingstable.ajax.reload();
+        // }, 10000 );
+
+    });
+
+  </script>
 {% endblock js %}

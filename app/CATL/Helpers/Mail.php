@@ -21,7 +21,7 @@ class Mail
 		$first = $cfg->get('services.mailgun.first');
 		$last = $cfg->get('services.mailgun.last');
 		$from = $cfg->get('services.mailgun.from');
-		
+
 		$this->instance = new Mailgun($config);
 		$this->domain = $cfg->get('services.mailgun.domain');
 		$this->template();
@@ -45,8 +45,8 @@ class Mail
 
 		try {
 
-			$mres = $this->instance->post("{$this->domain}/messages", 
-											$this->message->getMessage(), 
+			$mres = $this->instance->post("{$this->domain}/messages",
+											$this->message->getMessage(),
 											$this->message->getFiles()
 				);
 			return $mres;
@@ -57,7 +57,7 @@ class Mail
 			// return $response->withRedirect($app->router->pathFor('home'));
 			return false;
 		}
-		
+
 	}
 
 	public function subject($subject = 'No subject')

@@ -26,16 +26,16 @@
           <div class="panel-heading">
             <div class="panel-title">
           {% if not ( auth.user.divisionprimary or auth.user.divisionsecondary )%}
-          
+
           {% else %}
-              
+
               <h2><strong>Create a challenge (all)</strong></h2>
               <h3>Challenging available players in division: {{ gen.getDivNameByID(challengeInDivision) }}</h2>
-              
+
            {% endif %}
             </div>
           </div>
-          
+
           <!-- Panel body -->
           <div class="panel-body">
           {% if not ( auth.user.divisionprimary or auth.user.divisionsecondary )%}
@@ -49,12 +49,12 @@
           <div class="container">
 	          <div class="row">
 	          	<div class="col-md-8">
-	          		
+
 	          	</div>
 	          </div>
 	          <div class="row"><div class="col-md-3">&nbsp;</div></div>
 	          <div class="row"><div class="col-md-3">&nbsp;</div></div>
-	          
+
 	          <div class="row">
 	          	<div class="col-md-4">
                 <div class="span4 well">
@@ -69,16 +69,16 @@
                       {% endfor %}
                     {% endfor %}
                   {% endif %}
-                  
+
 	          	<form method="post" action="{{ path_for('challenge.create.all.post') }}">
                 <input type="hidden" name="challengeInDivision" value="{{ challengeInDivision }}">
 	          	  <label for="challengedate">Select a date:</label>
-                <input class="date form-control" type="text" data-date-end-date="+14d" name="challengedate" id="challengedate" placeholder="date within 14 days from today"> 
-              <label for="challengenote">Note:</label> <textarea class="form-control" maxlegth="200" rows="10" cols="40" name="challengenote" id="challengenote" placeholder="Details of the challenge, such as number of matches, start time, etc."></textarea> 
+                <input class="date form-control" type="text" data-date-end-date="+14d" name="challengedate" id="challengedate" placeholder="date within 14 days from today">
+              <label for="challengenote">Note:</label> <textarea class="form-control" maxlegth="200" rows="10" cols="40" name="challengenote" id="challengenote" placeholder="Details of the challenge, such as number of matches, start time, etc."></textarea>
                <br /> <h6 class="pull-right" id="count_message"></h6>
-              <input type="submit" class="btn btn-primary" value="Create challenge"> 
+              <input type="submit" class="btn btn-primary" value="Create challenge">
 
-	          	{% include 'auth/csrf.inc' %}	
+	          	{% include 'auth/csrf.inc' %}
 				</form>
         </div>
 				</div>
@@ -95,13 +95,13 @@
       	  {% endif %}
       	  </div>
 
-		</div>  
-      </div>  
+		</div>
+      </div>
     </div>
     <div class="col-md-2">
       <div class="row">
         <div class="col-md-2"></div>
-      </div>    	
+      </div>
     </div>
   </div>
 </div>
@@ -122,9 +122,9 @@ $( document ).ready(function() {
   $('#challengenote').keyup(function() {
     var text_length = $('#challengenote').val().length;
     var text_remaining = text_max - text_length;
-    
+
     $('#count_message').html(text_remaining + ' characters remaining');
-  });    
+  });
 
   $('#challengedate').datepicker({
       startDate: "today",

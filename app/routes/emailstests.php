@@ -22,8 +22,8 @@ $app->get('/t1', function($request,$response,$args) use ($app)
 	$mail->bcc('fthc.catl@gmail.com');
 
 
-	/*dump($mail);
-	die();*/
+	dump($mail);
+	die();
 	$res = $mail->send();
 
 	//Audit::log('Mail sent, result: ' . $res->http_response_code);

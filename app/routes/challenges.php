@@ -51,7 +51,7 @@ $app->post('/challengeall', function($request,$response,$args) use ($app)
 
 	if ($v->passes() && $test && $test2) {
 		$now = Carbon::now('America/Toronto');
-		
+
 		$cc = R::findall('challenges', ' challengerid = :id and challengedate = :date and challenge_in_division = :challengeInDivision ', [
 			':id' => $app->auth->id,
 			':date' => $challengedate->toDateTimeString(),
@@ -72,15 +72,15 @@ $app->post('/challengeall', function($request,$response,$args) use ($app)
 		$c->challengecreatedat = $now;
 
 		if (User::storeBean($c)) {
-	    	
+
 	    	$this->get('flash')->addMessage('global', 'Challenge created successfully.');
 	   		return $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-			
+
 		} else {
 	    	$this->get('flash')->addMessage('global_error', 'Failed to create challenge. Please try again.');
 	   		return $response->withRedirect($this->get('router')->pathFor('challenge.create.all'));
 		}
-		
+
 
 	} else {
 		if (!$test || !$test2) {
@@ -132,7 +132,7 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 		'challengedate1|Challenge date' => [$challengedate1, 'required'],
 		'challengedids' => [$challengedids, 'required|array|arrayOfInt'],
 		'challengeInDivision|Challenged division' => [$challengeInDivision, 'required|between(1,99)'],
-	]);		
+	]);
 
 	$_SESSION['challengenote'] = $challengenote;
 	$_SESSION['challengedate'] = $challengedate1;
@@ -141,8 +141,8 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 	if ($v->passes() && $test && $test2) {
 
 		$now = Carbon::now('America/Toronto');
-		
-		$cc = R::findall('challenges', ' challengerid = :id and challengedate = :date and challenge_in_division = :cid ', 
+
+		$cc = R::findall('challenges', ' challengerid = :id and challengedate = :date and challenge_in_division = :cid ',
 		[
 			':id' => $app->user->id,
 			':date' => $challengedate->toDateTimeString(),
@@ -156,7 +156,7 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 		}
 
 		if ($challengeInDivision == $app->user->divisionprimary || $challengeInDivision == $app->user->divisionsecondary) {
-			
+
 		} else {
 	    	$this->get('flash')->addMessage('global_error', 'You are not allow to challenge these divisions.');
 	   		return $response->withRedirect($this->get('router')->pathFor('challenge.create.specific'));
@@ -175,21 +175,21 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 			unset($_SESSION['challengenote']);
 			unset($_SESSION['challengedate']);
 			unset($_SESSION['checkedids']);
-	    	
+
 	    	$this->get('flash')->addMessage('global', 'Challenge created successfully.');
 	   		return $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-			
+
 		} else {
 	    	$this->get('flash')->addMessage('global_error', 'Failed to create challenge. Please try again.');
 	   		return $response->withRedirect($this->get('router')->pathFor('challenge.create.specific'));
 		}
-		
+
 	} else {
 		if (!$test || !$test2) {
 	    	$this->get('flash')->addMessage('global_error', 'Challenge date is incorrect.');
 	   		return $response->withRedirect($this->get('router')->pathFor('challenge.create.specific'));
 		}
-		
+
 		if ($challengedids == null) {
 			$this->get('flash')->addMessage('global_error', 'No players selected!');
 			return $response->withRedirect($this->get('router')->pathFor('challenge.create.specific'));
@@ -231,35 +231,35 @@ $app->get('/mychallenges[/{yyyymmdd}]', function($request,$response,$args) use (
 $app->get('/mychallengesjson[/{yyyymmdd}]', function($request,$response,$args) use ($app)
 {
 	//$ddate = Carbon::parse($args['yyyymmdd']);
-	
+
 	if (!empty($args['yyyymmdd'])) {
 
 		//echo $ddate;
 
 	} else {
 
-		$mychallenges = R::getAll( 'SELECT  
-										c.id AS challengeid, 
-										concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate, 										
+		$mychallenges = R::getAll( 'SELECT
+										c.id AS challengeid,
+										concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate,
 										d.divisiondesc AS challengeddivision,
-										challengenote, 
+										challengenote,
 										challengecreatedat,
 										count(ac.id) as numofacceptedchallenges,
 										IFNULL(sum(ac.confirmed),0) as numofconfirmedchallenges,
 										count(ac.cancelnote) as numofcancelledchallenges,
 								LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1 as numofplayers,
 										ac.confirmed,
-										c.cancelnote  
-								FROM challenges c 
-								LEFT JOIN divisions d on c.challenge_in_division = d.id 
-								LEFT JOIN acceptedchallenges ac on c.id = ac.acceptedchallengeid 
-								WHERE challengerid = :challengerid 
+										c.cancelnote
+								FROM challenges c
+								LEFT JOIN divisions d on c.challenge_in_division = d.id
+								LEFT JOIN acceptedchallenges ac on c.id = ac.acceptedchallengeid
+								WHERE challengerid = :challengerid
 								Group by challengeid, challengedate, challengeddivision, challengenote,challengecreatedat
 								', [
 								':challengerid' => $app->auth->id,
 		]);
 
-		echo json_encode($mychallenges);		
+		echo json_encode($mychallenges);
 
 	}
 
@@ -268,39 +268,76 @@ $app->get('/mychallengesjson[/{yyyymmdd}]', function($request,$response,$args) u
   ->add($authenticated)
   ->add(new GenCsrf);
 
+$app->get('/mychallengesjson2[/{yyyymmdd}]', function($request,$response,$args) use ($app)
+{
+
+	if (!empty($args['yyyymmdd'])) {
+	} else {
+
+		$mychallenges = R::getAll( 'SELECT
+					c.id AS challengeid,
+					concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate,
+					d.divisiondesc AS challengeddivision,
+					challengenote,
+					challengecreatedat,
+					count(ac.id) as numofacceptedchallenges,
+					IFNULL(sum(ac.confirmed),0) as numofconfirmedchallenges,
+					count(ac.cancelnote) as numofcancelledchallenges,
+			LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1 as numofplayers,
+					ac.confirmed,
+					c.cancelnote
+			FROM challenges c
+			LEFT JOIN divisions d on c.challenge_in_division = d.id
+			LEFT JOIN acceptedchallenges ac on c.id = ac.acceptedchallengeid
+			WHERE challengerid = :challengerid
+			Group by challengeid, challengedate, challengeddivision, challengenote,challengecreatedat
+			', [
+				':challengerid' => $app->auth->id,
+			]);
+
+		$output = ['data' => $mychallenges];
+		echo json_encode($output);
+
+	}
+
+})->setName('challenges2.my.get.json')
+  ->add($isMember)
+  ->add($authenticated)
+  ->add(new GenCsrf);
+
 $app->get('/myacceptedchallengesjson[/{yyyymmdd}]', function($request,$response,$args) use ($app)
 {
 	//$ddate = Carbon::parse($args['yyyymmdd']);
-	
+
 	if (!empty($args['yyyymmdd'])) {
 
 		//echo $ddate;
 
 	} else {
 
-		$myacceptedchallenges = R::getAll( 'SELECT 
+		$myacceptedchallenges = R::getAll( 'SELECT
 								ac.acceptedchallengeid as challengeid,
 								ac.id as acceptedchallengeid,
-								concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate, 									
-								concat(u.first_name, \' \', u.last_name) as challenger,	
+								concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate,
+								concat(u.first_name, \' \', u.last_name) as challenger,
 								d.divisiondesc as challengeddivision,
 								ac.acceptednote as challengenote,
 								ac.confirmed,
 								ac.cancelnote,
 								ac.winnerid,
 								ac.reportconfirmed
-								FROM acceptedchallenges ac 
-								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
-								LEFT JOIN divisions d on d.id = c.challenge_in_division 
-								LEFT JOIN users u on u.id = c.challengerid 
-								WHERE ac.acceptedbyuserid = :uid 
+								FROM acceptedchallenges ac
+								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+								LEFT JOIN divisions d on d.id = c.challenge_in_division
+								LEFT JOIN users u on u.id = c.challengerid
+								WHERE ac.acceptedbyuserid = :uid
 								AND c.cancelnote IS NULL
-								
+
 								', [
 								':uid' => $app->user->id,
 		]);
 
-		echo json_encode($myacceptedchallenges);		
+		echo json_encode($myacceptedchallenges);
 
 	}
 
@@ -308,42 +345,81 @@ $app->get('/myacceptedchallengesjson[/{yyyymmdd}]', function($request,$response,
   ->add($isMember)
   ->add($authenticated);
 
+
+
+$app->get('/myacceptedchallengesjson2[/{yyyymmdd}]', function($request,$response,$args) use ($app)
+{
+
+	if (!empty($args['yyyymmdd'])) {
+	} else {
+
+		$myacceptedchallenges = R::getAll( 'SELECT
+								ac.acceptedchallengeid as challengeid,
+								ac.id as acceptedchallengeid,
+								concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate,
+								concat(u.first_name, \' \', u.last_name) as challenger,
+								d.divisiondesc as challengeddivision,
+								ac.acceptednote as challengenote,
+								ac.confirmed,
+								ac.cancelnote,
+								ac.winnerid,
+								ac.reportconfirmed
+								FROM acceptedchallenges ac
+								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+								LEFT JOIN divisions d on d.id = c.challenge_in_division
+								LEFT JOIN users u on u.id = c.challengerid
+								WHERE ac.acceptedbyuserid = :uid
+								AND c.cancelnote IS NULL
+
+								', [
+								':uid' => $app->user->id,
+		]);
+
+		$output = ['data' => $myacceptedchallenges];
+		echo json_encode($output);
+
+	}
+
+})->setName('acceptedchallenges2.my.get.json')
+  ->add($isMember)
+  ->add($authenticated);
+
 $app->get('/issuedchallengesjson[/{yyyymmdd}]', function($request,$response,$args) use ($app)
 {
 	//$ddate = Carbon::parse($args['yyyymmdd']);
-	
+
 	if (!empty($args['yyyymmdd'])) {
 
 		//echo $ddate;
 
 	} else {
 
-		$issuedchallenges = R::getAll( 'SELECT  
-										c.id AS challengeid, 
+		$issuedchallenges = R::getAll( 'SELECT
+										c.id AS challengeid,
 										concat(u.first_name, \' \', u.last_name) as challenger,
-										concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate, 
+										concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate,
 										concat(d.divisiondesc,  \' (\', d.divisionname,  \') \') AS challengeddivision,
-										challengenote, 
+										challengenote,
 										challengecreatedat,
 										c.challenge_in_division,
 										ac.acceptedbyuserid,
 										ac.confirmed,
 										ac.cancelnote,
 										LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1 as numofplayers
-								FROM challenges c 
-								LEFT JOIN users u on c.challengerid = u.id 
-								LEFT JOIN divisions d on c.challenge_in_division = d.id 
-								LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id and ac.acceptedbyuserid = :cid 
+								FROM challenges c
+								LEFT JOIN users u on c.challengerid = u.id
+								LEFT JOIN divisions d on c.challenge_in_division = d.id
+								LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id and ac.acceptedbyuserid = :cid
 								WHERE Date(challengedate) BETWEEN CURDATE() AND CURDATE() + INTERVAL 15 DAY
-										and challengerid <> :cid 
+										and challengerid <> :cid
 										and (c.challengedids like \'%"' . $app->user->id . '"%\' or c.challengedids IS NULL )
-								AND c.cancelnote IS NULL 
-								', 
+								AND c.cancelnote IS NULL
+								',
 								[
 									':cid' => $app->user->id,
 								]);
 
-		echo json_encode($issuedchallenges);		
+		echo json_encode($issuedchallenges);
 
 	}
 })->setName('challenges.issued.get.json')
@@ -353,7 +429,7 @@ $app->get('/issuedchallengesjson[/{yyyymmdd}]', function($request,$response,$arg
 
 $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$args) use ($app)
 {
-	
+
 	$v = $this->get('validator');
 
 	if ($args['action'] == 'delete') {
@@ -365,11 +441,11 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 	    if ($v->passes()) {
 
 			$challenges = R::getRow( 'SELECT  *
-						FROM challenges c 
-						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id 
-						LEFT JOIN users u on c.challengerid = u.id 
+						FROM challenges c
+						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id
+						LEFT JOIN users u on c.challengerid = u.id
 						LEFT JOIN divisions d on c.challenge_in_division = d.id
-						WHERE c.challengerid = :uid and c.id = :cid ', 
+						WHERE c.challengerid = :uid and c.id = :cid ',
 						[
 							':uid' => $app->user->id,
 							':cid' => $args['challengeid'],
@@ -380,9 +456,9 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 				if ($challenges['confirmed'] == 1) {
 					$this->get('flash')->addMessage('global_error', 'Challenge NOT deleted! Cannot delete confirmed challenges. Can only cancel with reasons.');
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;	
+					return $response;
 				}
-			
+
 				return $this->view->render($response, 'challenge/challenge.delete.partial.twig', [
 					'challengeid' => $args['challengeid'],
 				]);
@@ -394,7 +470,7 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 	    	//dump($v->errors());
 	    	//echo 'validation failed';
 	    }
-	
+
 	}
 
 	if ($args['action'] == 'cancel') {
@@ -406,14 +482,14 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 	    if ($v->passes()) {
 
 			$challenges = R::getRow( 'SELECT  *
-						FROM challenges c 
-						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id 
-						LEFT JOIN users u on c.challengerid = u.id 
+						FROM challenges c
+						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id
+						LEFT JOIN users u on c.challengerid = u.id
 						LEFT JOIN divisions d on c.challenge_in_division = d.id
-						WHERE c.challengerid = :uid and c.id = :cid 
+						WHERE c.challengerid = :uid and c.id = :cid
 						AND ac.reportconfirmed IS NULL
 						AND ac.reportedbyuserid IS NULL
-						', 
+						',
 						[
 							':uid' => $app->user->id,
 							':cid' => $args['challengeid'],
@@ -434,7 +510,7 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 	    	//dump($v->errors());
 	    	//echo 'validation failed';
 	    }
-	
+
 	}
 
 	if ($args['action'] == 'cancelaccepted') {
@@ -446,11 +522,11 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 	    if ($v->passes()) {
 
 			$challenges = R::getRow( 'SELECT  *
-						FROM challenges c 
-						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id 
-						LEFT JOIN users u on c.challengerid = u.id 
+						FROM challenges c
+						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id
+						LEFT JOIN users u on c.challengerid = u.id
 						LEFT JOIN divisions d on c.challenge_in_division = d.id
-						WHERE ac.id = :cid AND ac.acceptedbyuserid = :uid AND ac.cancelnote is null ', 
+						WHERE ac.id = :cid AND ac.acceptedbyuserid = :uid AND ac.cancelnote is null ',
 						[
 							':uid' => $app->user->id,
 							':cid' => $args['challengeid'],
@@ -470,7 +546,7 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 	    	//dump($v->errors());
 	    	//echo 'validation failed';
 	    }
-	
+
 	}
 
 	if ($args['action'] == 'accept') {
@@ -482,9 +558,9 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 
 	    if ($v->passes()) {
 			$canacceptchallenge = R::getRow( 'SELECT  *
-						FROM challenges c LEFT JOIN users u on c.challengerid = u.id 
+						FROM challenges c LEFT JOIN users u on c.challengerid = u.id
 						LEFT JOIN divisions d on c.challenge_in_division = d.id
-						WHERE (u.divisionprimary = :divp or  u.divisionsecondary = :divs) and c.id = :cid ', 
+						WHERE (u.divisionprimary = :divp or  u.divisionsecondary = :divs) and c.id = :cid ',
 						[
 							':cid' => $args['challengeid'],
 							':divp' => $app->user->divisionprimary,
@@ -493,7 +569,7 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 
 			if ($canacceptchallenge) {
 
-				$checkalreadyaccepted = R::getRow( ' SELECT * FROM acceptedchallenges 
+				$checkalreadyaccepted = R::getRow( ' SELECT * FROM acceptedchallenges
 										WHERE acceptedchallengeid = :acid and acceptedbyuserid = :abuid
 
 				', [
@@ -532,8 +608,8 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 
 	    if ($v->passes()) {
 			$canconfirmchallenge = R::getRow( 'SELECT  *, ac.cancelnote as accancelnote
-						FROM acceptedchallenges ac 
-						LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
+						FROM acceptedchallenges ac
+						LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
 						WHERE c.challengerid = :uid and ac.id = :cid ',
 						[
 							':cid' => $args['challengeid'],
@@ -546,7 +622,7 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 				return $this->view->render($response, 'challenge/challenge.confirm.twig', [
 					'challengeid' => $args['challengeid'],
                     'c' => $canconfirmchallenge,
-				]);				
+				]);
 			} else {
 
                 //echo '<h2>Can\'t confirm!</h2>';
@@ -558,30 +634,30 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 
 	}
 
-	if ($args['action'] == 'details') {	
-		
+	if ($args['action'] == 'details') {
+
 		$v->validate([
 	        'challengeid' => [$args['challengeid'], 'required|int|between(-2147483648,2147483647)'],
 	    ]);
 
 		if ($v->passes()) {
 
-			$challenge = R::getRow( 'SELECT  
-										c.id AS challengeid, 
+			$challenge = R::getRow( 'SELECT
+										c.id AS challengeid,
 										concat(u.first_name, \' \', u.last_name) as challenger,
-										concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate, 
+										concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate,
 										concat(d.divisiondesc,  \' (\', d.divisionname,  \') \') AS challengeddivision,
-										challengenote, 
+										challengenote,
 										challengecreatedat,
-										c.challenge_in_division 
-								FROM challenges c 
-								LEFT JOIN users u on c.challengerid = u.id 
-								LEFT JOIN divisions d on c.challenge_in_division = d.id 
-								WHERE c.id = :cid and (c.challenge_in_division = u.divisionprimary or c.challenge_in_division = u.divisionsecondary)', 
+										c.challenge_in_division
+								FROM challenges c
+								LEFT JOIN users u on c.challengerid = u.id
+								LEFT JOIN divisions d on c.challenge_in_division = d.id
+								WHERE c.id = :cid and (c.challenge_in_division = u.divisionprimary or c.challenge_in_division = u.divisionsecondary)',
 								[
-									':cid' => $args['challengeid'],						
+									':cid' => $args['challengeid'],
 								]);
-			
+
 
 			return $this->view->render($response, 'challenge/challenge.details.partial.twig', [
 				'challengeid' => $args['challengeid'],
@@ -591,36 +667,36 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 				'challengenote' => $challenge['challengenote'],
 			]);
 		}
-	    
+
 	}
-	
-	if ($args['action'] == 'detailsaccepted') {	
-		
+
+	if ($args['action'] == 'detailsaccepted') {
+
 		$v->validate([
 	        'challengeid' => [$args['challengeid'], 'required|int|between(-2147483648,2147483647)'],
 	    ]);
 
 		if ($v->passes()) {
 
-			$challenge = R::getRow( 'SELECT  
-										c.id AS challengeid, 
+			$challenge = R::getRow( 'SELECT
+										c.id AS challengeid,
 										concat(u.first_name, \' \', u.last_name) as challenger,
-										concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate, 
+										concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate,
 										concat(d.divisiondesc,  \' (\', d.divisionname,  \') \') AS challengeddivision,
-										challengenote, 
+										challengenote,
 										challengecreatedat,
-										c.challenge_in_division 
-								FROM challenges c 
+										c.challenge_in_division
+								FROM challenges c
 								LEFT JOIN acceptedchallenges ac ON ac.acceptedchallengeid = c.id
-								LEFT JOIN users u on c.challengerid = u.id 
-								LEFT JOIN divisions d on c.challenge_in_division = d.id 
+								LEFT JOIN users u on c.challengerid = u.id
+								LEFT JOIN divisions d on c.challenge_in_division = d.id
 								WHERE ac.id = :cid and (c.challenge_in_division = u.divisionprimary or c.challenge_in_division = u.divisionsecondary)
 								AND ac.cancelnote is null
-								 ', 
+								 ',
 								[
-									':cid' => $args['challengeid'],						
+									':cid' => $args['challengeid'],
 								]);
-			
+
 			if ($challenge) {
 				return $this->view->render($response, 'challenge/challenge.details.partial.twig', [
 					'challengeid' => $args['challengeid'],
@@ -631,36 +707,36 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 				]);
 			}
 		}
-	    
+
 	}
 
-	if ($args['action'] == 'confirmdetails') {	
-		
+	if ($args['action'] == 'confirmdetails') {
+
 		$v->validate([
 	        'challengeid' => [$args['challengeid'], 'required|int|between(-2147483648,2147483647)'],
 	    ]);
 
 		if ($v->passes()) {
 
-			$challenge = R::getRow( 'SELECT  
-										ac.id AS challengeid, 
+			$challenge = R::getRow( 'SELECT
+										ac.id AS challengeid,
 										concat(u.first_name, \' \', u.last_name) as challenger,
-										concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate, 
+										concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate,
 										concat(d.divisiondesc,  \' (\', d.divisionname,  \') \') AS challengeddivision,
-										ac.acceptednote as challengenote, 
+										ac.acceptednote as challengenote,
 										c.challengecreatedat,
-										c.challenge_in_division 
-								FROM acceptedchallenges ac 
-								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
-								LEFT JOIN users u on ac.acceptedbyuserid = u.id 
-								LEFT JOIN divisions d on c.challenge_in_division = d.id 
+										c.challenge_in_division
+								FROM acceptedchallenges ac
+								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+								LEFT JOIN users u on ac.acceptedbyuserid = u.id
+								LEFT JOIN divisions d on c.challenge_in_division = d.id
 								WHERE ac.id = :cid and (c.challenge_in_division = u.divisionprimary or c.challenge_in_division = u.divisionsecondary)
 								AND ac.cancelnote is null
-								', 
+								',
 								[
-									':cid' => $args['challengeid'],						
+									':cid' => $args['challengeid'],
 								]);
-			
+
 			if ($challenge) {
 				return $this->view->render($response, 'challenge/challenge.confirmdetails.partial.twig', [
 					'challengeid' => $args['challengeid'],
@@ -668,26 +744,26 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 					'challengedate' => $challenge['challengedate'],
 					'challengeddivision' => $challenge['challengeddivision'],
 					'challengenote' => $challenge['challengenote'],
-				]);				
+				]);
 			}
 
 		}
-	    
+
 	}
 
-	if ($args['action'] == 'confirmeddetails') {	
-		
+	if ($args['action'] == 'confirmeddetails') {
+
 		$v->validate([
 	        'challengeid' => [$args['challengeid'], 'required|int|between(-2147483648,2147483647)'],
 	    ]);
 
 		if ($v->passes()) {
 
-			$challenges = R::getAll( 'SELECT  
+			$challenges = R::getAll( 'SELECT
 										c.id AS challengeid,
 										ac.id as acceptedchallengeid,
 										concat(uu.first_name, \' \', uu.last_name) as challenger,
-										ac.acceptednote, 
+										ac.acceptednote,
 										ac.confirmnote,
 										challengecreatedat,
 										ac.acceptedat,
@@ -697,21 +773,21 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 										ac.cancelnote as accancelnote,
 										u.id as userid
 
-								FROM acceptedchallenges ac 
-								LEFT JOIN challenges c on ac.acceptedchallengeid = c.id 
-								LEFT JOIN users u on c.challengerid = u.id 
+								FROM acceptedchallenges ac
+								LEFT JOIN challenges c on ac.acceptedchallengeid = c.id
+								LEFT JOIN users u on c.challengerid = u.id
 								LEFT JOIN users uu on ac.acceptedbyuserid = uu.id
-								WHERE ac.acceptedchallengeid = :cid and (c.challenge_in_division = u.divisionprimary or c.challenge_in_division = u.divisionsecondary) 
-									and (c.challengerid = :uid 
-										OR c.challengedids like \'%"'. $app->user->id .'"%\' 
+								WHERE ac.acceptedchallengeid = :cid and (c.challenge_in_division = u.divisionprimary or c.challenge_in_division = u.divisionsecondary)
+									and (c.challengerid = :uid
+										OR c.challengedids like \'%"'. $app->user->id .'"%\'
 										OR c.challengedids is NULL )
 									ORDER by ac.confirmed DESC
-								', 
+								',
 								[
-									':cid' => $args['challengeid'],						
+									':cid' => $args['challengeid'],
 									':uid' => $app->user->id,
 								]);
-			
+
 			// dump($challenges);
 			// die();
 
@@ -719,13 +795,13 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 				'challenges' => $challenges,
 			]);
 		}
-	}	
+	}
 
 })->setName('challenge.action.get')->add($isMember)->add($authenticated)->add(new GenCsrf);
 
 // issue a challenge
-$app->post('/challenge[/{action}[/{challengeid}]]', 
-	function($request,$response,$args) 
+$app->post('/challenge[/{action}[/{challengeid}]]',
+	function($request,$response,$args)
 	use ($app)
 {
 
@@ -745,7 +821,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 			$_SESSION['challengeInDivision'] = $challengeInDivision;
 			$response = $response->withRedirect($this->get('router')->pathFor('challenge.'. $args['action'] .'.'.$args['challengeid']));
 			return $response;
-    	
+
 	    } else {
 
 			$this->get('flash')->addMessage('global_error', 'Errors... Failed to create challenge.');
@@ -765,11 +841,11 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 	    if ($v->passes()) {
 
 			$challenges = R::getRow( 'SELECT  *
-						FROM challenges c 
-						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id 
-						LEFT JOIN users u on c.challengerid = u.id 
+						FROM challenges c
+						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id
+						LEFT JOIN users u on c.challengerid = u.id
 						LEFT JOIN divisions d on c.challenge_in_division = d.id
-						WHERE c.challengerid = :uid and c.id = :cid ', 
+						WHERE c.challengerid = :uid and c.id = :cid ',
 						[
 							':uid' => $app->user->id,
 							':cid' => $args['challengeid'],
@@ -780,10 +856,10 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 				if ($challenges['confirmed'] == 1) {
 					$this->get('flash')->addMessage('global_error', 'Challenge NOT deleted! Cannot delete confirmed challenges. Can only cancel with reasons.');
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;	
+					return $response;
 				}
 				//dump($challenges);
-				//die('delete would succeed.');	
+				//die('delete would succeed.');
 
 			    R::begin();
 			    try{
@@ -792,13 +868,13 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 			        R::commit();
 					$this->get('flash')->addMessage('global', 'Challenge deleted!');
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;			        
+					return $response;
 			    }
 			    catch( Exception $e ) {
 			        R::rollback();
 					$this->get('flash')->addMessage('global_error', 'Challenge NOT deleted! Error: ' . $e->getMessage());
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;			        
+					return $response;
 
 			    }
 			}
@@ -807,8 +883,8 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 	    	//dump($v->errors());
 	    	//echo 'validation failed';
 	    }
-	
-	}	 
+
+	}
 
 	if ($args['action'] == 'cancel') {
 
@@ -822,14 +898,14 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 	    if ($v->passes()) {
 
 			$challenge = R::getRow( 'SELECT  *
-						FROM challenges c 
-						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id 
-						LEFT JOIN users u on c.challengerid = u.id 
+						FROM challenges c
+						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id
+						LEFT JOIN users u on c.challengerid = u.id
 						LEFT JOIN divisions d on c.challenge_in_division = d.id
-						WHERE c.challengerid = :uid and c.id = :cid 
+						WHERE c.challengerid = :uid and c.id = :cid
 						AND ac.reportconfirmed IS NULL
 						AND ac.reportedbyuserid IS NULL
-						', 
+						',
 						[
 							':uid' => $app->user->id,
 							':cid' => $args['challengeid'],
@@ -851,13 +927,13 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 				        R::commit();
 						$this->get('flash')->addMessage('global', 'Challenge cancelled!');
 						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;			        
+						return $response;
 				    }
 				    catch( Exception $e ) {
 				        R::rollback();
 						$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! Error: ' . $e->getMessage());
 						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;			        
+						return $response;
 
 				    }
 				} else {
@@ -865,17 +941,17 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 					// die('not confirmed');
 				}
 				//dump($challenges);
-				//die('delete would succeed.');	
+				//die('delete would succeed.');
 			}
 
 	    } else {
 			$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! ' . implode(',', $v->errors()->all()));
 			$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-			return $response;			        
+			return $response;
 
 	    }
-	
-	}	
+
+	}
 
 	if ($args['action'] == 'cancelaccepted') {
 
@@ -889,11 +965,11 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 	    if ($v->passes()) {
 
 			$challenge = R::getRow( 'SELECT  *
-						FROM challenges c 
-						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id 
-						LEFT JOIN users u on c.challengerid = u.id 
+						FROM challenges c
+						LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id
+						LEFT JOIN users u on c.challengerid = u.id
 						LEFT JOIN divisions d on c.challenge_in_division = d.id
-						WHERE ac.id = :cid AND ac.acceptedbyuserid = :uid AND ac.cancelnote is null ', 
+						WHERE ac.id = :cid AND ac.acceptedbyuserid = :uid AND ac.cancelnote is null ',
 						[
 							':uid' => $app->user->id,
 							':cid' => $args['challengeid'],
@@ -914,13 +990,13 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 				        R::commit();
 						$this->get('flash')->addMessage('global', 'Challenge cancelled! Player notified.');
 						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;			        
+						return $response;
 				    }
 				    catch( Exception $e ) {
 				        R::rollback();
 						$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! Error: ' . $e->getMessage());
 						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;			        
+						return $response;
 
 				    }
 			}
@@ -928,11 +1004,11 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 	    } else {
 			$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! ' . implode(',', $v->errors()->all()));
 			$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-			return $response;			        
+			return $response;
 
 	    }
-	
-	}	
+
+	}
 
 	if ($args['action'] == 'accept') {
 
@@ -945,9 +1021,9 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 	    if ($v->passes()) {
 			$canacceptchallenge = R::getRow( 'SELECT  *
-						FROM challenges c LEFT JOIN users u on c.challengerid = u.id 
+						FROM challenges c LEFT JOIN users u on c.challengerid = u.id
 						LEFT JOIN divisions d on c.challenge_in_division = d.id
-						WHERE (u.divisionprimary = :divp or  u.divisionsecondary = :divs) and c.id = :cid ', 
+						WHERE (u.divisionprimary = :divp or  u.divisionsecondary = :divs) and c.id = :cid ',
 						[
 							':cid' => $args['challengeid'],
 							':divp' => $app->user->divisionprimary,
@@ -956,7 +1032,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 			if ($canacceptchallenge) {
 
-				$checkalreadyaccepted = R::getRow( ' SELECT * FROM acceptedchallenges 
+				$checkalreadyaccepted = R::getRow( ' SELECT * FROM acceptedchallenges
 										WHERE acceptedchallengeid = :acid and acceptedbyuserid = :abuid
 
 				', [
@@ -969,7 +1045,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 				if ($checkalreadyaccepted) {
 					$this->get('flash')->addMessage('global_error', 'Challenge ALREADY accepted! Please refresh the page or go to My Challenges to see the status.');
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-					return $response;						
+					return $response;
 				}
 
 				$c = R::dispense('acceptedchallenges');
@@ -988,13 +1064,13 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 			        R::commit();
 					$this->get('flash')->addMessage('global', 'Challenge accepted!');
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-					return $response;			        
+					return $response;
 			    }
 			    catch( Exception $e ) {
 			        R::rollback();
 					$this->get('flash')->addMessage('global_error', 'Challenge NOT accepted! Error: ' . $e->getMessage());
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-					return $response;			        
+					return $response;
 
 			    }
 
@@ -1002,12 +1078,12 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 			} else {
 				$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-				return $response;			        
+				return $response;
 			}
 	    } else {
 	    	$this->get('flash')->addMessage('global_error', 'Challenge NOT accepted! ' . implode(',',$v->errors()->all()) );
 			$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-			return $response;			        
+			return $response;
 	    }
 
 	}
@@ -1023,9 +1099,9 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 	    if ($v->passes()) {
 			$canconfirmchallenge = R::getRow( 'SELECT  *
-						FROM acceptedchallenges ac 
-						LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
-						WHERE c.challengerid = :uid and ac.id = :cid ', 
+						FROM acceptedchallenges ac
+						LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+						WHERE c.challengerid = :uid and ac.id = :cid ',
 						[
 							':cid' => $args['challengeid'],
 							':uid' => $app->user->id,
@@ -1035,7 +1111,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 				$checkalreadyconfirmed = R::getRow( ' SELECT * FROM challenges c
 										LEFT JOIN acceptedchallenges ac on ac.acceptedchallengeid = c.id
-										WHERE challengeid = :cid and ac.confirmed = 1', 
+										WHERE challengeid = :cid and ac.confirmed = 1',
 										[
 											':cid' => $args['challengeid'],
 										]);
@@ -1043,7 +1119,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 				if ($checkalreadyconfirmed) {
 					$this->get('flash')->addMessage('global_error', 'Challenge ALREADY confirmed! Please refresh the page.');
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;						
+					return $response;
 				}
 
 				$c = R::findOne('acceptedchallenges', ' id = :id ', [
@@ -1065,29 +1141,29 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 						$this->get('flash')->addMessage('global', 'Challenge confirmed!');
 						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;			        
+						return $response;
 				    }
 				    catch( Exception $e ) {
 				        R::rollback();
 						$this->get('flash')->addMessage('global_error', 'Challenge NOT confirmed! Error: ' . $e->getMessage());
 						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;			        
+						return $response;
 
 				    }
-						
+
 				} else {
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;			        
+					return $response;
 				}
 
 			} else {
 				$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-				return $response;			        
+				return $response;
 			}
 	    } else {
 	    	$this->get('flash')->addMessage('global_error', 'Challenge NOT confirmed! ' . implode(',',$v->errors()->all()) );
 			$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-			return $response;			        
+			return $response;
 	    }
 
 	}
@@ -1099,7 +1175,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 $app->get('/challengedetailsjson[/{challengeid}]', function($request,$response,$args) use ($app)
 {
-	
+
 	if (!empty($args['challengeid'])) {
 
 		$v = $this->get('validator');
@@ -1109,26 +1185,26 @@ $app->get('/challengedetailsjson[/{challengeid}]', function($request,$response,$
 	    ]);
 
 		if ($v->passes()) {
-			$challengedetailsjson = R::getAll( 'SELECT 
-									c.id AS challengeid, 
+			$challengedetailsjson = R::getAll( 'SELECT
+									c.id AS challengeid,
 									concat(u.first_name, \' \', u.last_name) as acceptedby,
-									concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate, 
+									concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate,
 									concat(d.divisiondesc,  \' (\', d.divisionname,  \') \') AS challengeddivision,
-									challengenote, 
+									challengenote,
 									challengecreatedat,
 									c.challenge_in_division,
 									ac.acceptedbyuserid,
-									ac.confirmed 				
-									FROM acceptedchallenges ac 
-									LEFT JOIN users u on u.id = ac.acceptedbyuserid 
-									LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
-									LEFT JOIN divisions d on d.id = c.challenge_in_division 
+									ac.confirmed
+									FROM acceptedchallenges ac
+									LEFT JOIN users u on u.id = ac.acceptedbyuserid
+									LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+									LEFT JOIN divisions d on d.id = c.challenge_in_division
 									WHERE ac.acceptedchallengeid = :cid
 									', [
 										':cid' => $args['challengeid'],
 									]);
 
-			echo json_encode($challengedetailsjson);	
+			echo json_encode($challengedetailsjson);
 		} else {
 			echo 'failed v';
 		}
@@ -1137,7 +1213,7 @@ $app->get('/challengedetailsjson[/{challengeid}]', function($request,$response,$
 
 		// $challengedetailsjson = R::getAll( 'SELECT * FROM challenges' );
 
-		// echo json_encode($challengedetailsjson);		
+		// echo json_encode($challengedetailsjson);
 
 	}
 
@@ -1148,38 +1224,75 @@ $app->get('/challengedetailsjson[/{challengeid}]', function($request,$response,$
 $app->get('/challengesstatusmyjson[/{yyyymmdd}]', function($request,$response,$args) use ($app)
 {
 	//$ddate = Carbon::parse($args['yyyymmdd']);
-	
+
 	if (!empty($args['yyyymmdd'])) {
 
 		//echo $ddate;
 
 	} else {
 
-		$challengesstatus = R::getAll( 'SELECT 
+		$challengesstatus = R::getAll( 'SELECT
 								c.id as challengeid,
 								ac.id as acceptedchallengeid,
-								concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate, 									
-								concat(u.first_name, \' \', u.last_name) as acceptedby,	
+								concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate,
+								concat(u.first_name, \' \', u.last_name) as acceptedby,
 								d.divisiondesc as challengeddivision,
 								ac.acceptednote as challengenote,
 								ac.confirmed,
 								ac.cancelnote,
 								LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1 as numofplayers
-								FROM acceptedchallenges ac 
-								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
-								LEFT JOIN divisions d on d.id = c.challenge_in_division 
-								LEFT JOIN users u on u.id = ac.acceptedbyuserid  
-								WHERE c.challengerid = :uid 
-								AND c.cancelnote IS NULL 
+								FROM acceptedchallenges ac
+								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+								LEFT JOIN divisions d on d.id = c.challenge_in_division
+								LEFT JOIN users u on u.id = ac.acceptedbyuserid
+								WHERE c.challengerid = :uid
+								AND c.cancelnote IS NULL
 								',
                                 [
 								    ':uid' => $app->user->id,
 		                        ]);
 
-		echo json_encode($challengesstatus);		
+		echo json_encode($challengesstatus);
 
 	}
 
 })->setName('challengesstatus.my.get.json')
+  ->add($isMember)
+  ->add($authenticated);
+
+$app->get('/challengesstatusmyjson2[/{yyyymmdd}]', function($request,$response,$args) use ($app)
+{
+
+	if (!empty($args['yyyymmdd'])) {
+	} else {
+
+		$challengesstatus = R::getAll( 'SELECT
+								ac.id as acceptedchallengeid,
+								c.id as challengeid,
+								concat(u.first_name, \' \', u.last_name) as acceptedby,
+								concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate,
+								d.divisiondesc as challengeddivision,
+								LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1 as numofplayers,
+								ac.acceptednote as challengenote,
+								ac.confirmed,
+								ac.cancelnote
+								FROM acceptedchallenges ac
+								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+								LEFT JOIN divisions d on d.id = c.challenge_in_division
+								LEFT JOIN users u on u.id = ac.acceptedbyuserid
+								WHERE c.challengerid = :uid
+								AND c.cancelnote IS NULL
+								',
+                                [
+								    ':uid' => $app->user->id,
+		                        ]);
+
+		//echo json_encode($challengesstatus);
+		$output = ['data' => $challengesstatus];
+		echo json_encode($output);
+
+	}
+
+})->setName('challengesstatus2.my.get.json')
   ->add($isMember)
   ->add($authenticated);

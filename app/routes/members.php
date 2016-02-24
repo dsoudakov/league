@@ -7,7 +7,7 @@ use Carbon\Carbon;
 $app->get('/members', function($request,$response,$args) use ($app)
 {
 
-    return $this->view->render($response, 'angular/club.members.twig', []);
+    return $this->view->render($response, 'members/club.members.twig', []);
 
 })->setName('club_members')->add($isAdmin)->add($isMember)->add($authenticated);
 
