@@ -1,0 +1,165 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+  {{parent()}}
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/datatables.min.css"/>
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/responsive.dataTables.min.css">
+{% endblock head %}
+
+{% block content %}
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2">
+          {% if flash.getMessages() %}
+            {% for k, messages in flash.getMessages() %}
+              {% for message in flash.getMessages()[k] %}
+                {% if k == 'global' %}
+                  <div class="alert alert-success">{{ message }}</div>
+                {% else %}
+                  <div class="alert alert-danger">{{ message }}</div>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          {% endif %}
+
+        {% block nav %}
+        {{ parent() }}
+        {% endblock nav %}
+
+      </div>
+      <div class="col-md-8">
+        <div class="panel">
+            <div class="panel-body">
+              <h2><strong>Club Members</strong><a alt="Refresh" class="btn btn-sm" title="Refresh" id="memberstablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></h2>
+              <table id="memberstable" class="display nowrap table table-bordered table-striped table-condensed table-hover" style="width: 100% !important;">
+                <thead>
+                  <tr>
+                    <th>id</th>
+                    <th>First</th>
+                    <th>Last</th>
+                    <th>Home</th>
+                    <th>Cell</th>
+                    <th>Work</th>
+                    <th>E-mail</th>
+                    <th>Prim. division</th>
+                    <th>Sec. division</th>
+                    <th>Doubles division</th>
+                  </tr>
+                </thead>
+              </table>
+        	</div>
+        </div>
+      </div>
+      <div class="col-md-2">
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block js %}
+
+  <script type="text/javascript" src="{{SITEROOT}}/res/js/datatables.min.js"></script>
+  <script type="text/javascript" src="{{SITEROOT}}/res/js/dataTables.responsive.min.js"></script>
+  <script type="text/javascript">
+
+    $(document).ready(function() {
+
+      var memberstableopts = {
+          responsive: true,
+          processing: true,
+          ajax: "{{ path_for('club_members_json2')}}",
+          columns: [
+            { "data" : "id" }, // 0
+            { "data" : "firstname" },
+            { "data" : "lastname" },
+            { "data" : "home" },
+            { "data" : "cell" },
+            { "data" : "work" },
+            { "data" : "email" },
+            { "data" : "division1" },
+            { "data" : "division2" },
+            { "data" : "ddivision" }, // 9
+          ],
+          oLanguage: {
+           sZeroRecords : "Nothing to show"
+          },
+          order: [[ 1, "asc" ]],
+          paging:   true,
+          info:     true,
+          searching: true,
+          initComplete: function () {
+          },
+          fnDrawCallback : function(d) {
+            if ( d.aiDisplay.length > 10 ) {
+                $('#memberstable_paginate').show();
+              } else {
+                $('#memberstable_paginate').hide();
+              }
+          },         
+          rowCallback : function( row, full, index ) {
+             full.home = phoneFormat(full.home);
+             full.cell = phoneFormat(full.cell);
+             full.work = phoneFormat(full.work);
+             $('td:eq(3)', row).html( full.home );
+             $('td:eq(4)', row).html( full.cell );
+             $('td:eq(5)', row).html( full.work );
+          }
+      };
+
+      memberstable = $('#memberstable').DataTable(memberstableopts);
+
+      $('#memberstablerefresh').on( 'click', function () {
+          memberstable.ajax.reload();
+      });
+
+      function phoneFormat(tel) {
+          if (!tel) { return ''; }
+
+          var value = tel.toString().trim().replace(/^\+/, '');
+
+          if (value.match(/[^0-9]/)) {
+              return tel;
+          }
+
+          var country, city, number;
+
+          switch (value.length) {
+              case 10: // +1PPP####### -> C (PPP) ###-####
+                  country = 1;
+                  city = value.slice(0, 3);
+                  number = value.slice(3);
+                  break;
+
+              case 11: // +CPPP####### -> CCC (PP) ###-####
+                  country = value[0];
+                  city = value.slice(1, 4);
+                  number = value.slice(4);
+                  break;
+
+              case 12: // +CCCPP####### -> CCC (PP) ###-####
+                  country = value.slice(0, 3);
+                  city = value.slice(3, 5);
+                  number = value.slice(5);
+                  break;
+
+              default:
+                  return tel;
+          }
+
+          if (country == 1) {
+              country = "";
+          }
+
+          number = number.slice(0, 3) + '-' + number.slice(3);
+
+          return (country + " (" + city + ") " + number).trim();
+      };
+
+  });
+
+  </script>
+{% endblock js %}

@@ -125,9 +125,6 @@ $app->post('/confirmreport/{challengeid}', function($request,$response,$args) us
 	// dump($_POST);
 	// die();
 
-
-
-
 })->setName('challenge.confirm.report.post')
   ->add($isMember)
   ->add($authenticated);
@@ -371,7 +368,6 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
     	echo '<h3><span class="label label-pill label-danger">Not reported! Check inputs</span></h3>';
     	echo '<h3><span class="label label-pill label-danger">'. $v->errors()->first() .'</span></h3>';
     }
-	
 
 })->setName('challenge.report.post')
   ->add($isMember)
@@ -407,7 +403,8 @@ $app->get('/challengesreportjson', function($request,$response,$args) use ($app)
 								    ':uid' => $app->user->id,
 		                        ]);
 
-		echo json_encode($challengesreport);		
+		$output = ['data' => $challengesreport];
+		echo json_encode($output);		
 
 })->setName('challenges.report.get.json')
   ->add($isMember)

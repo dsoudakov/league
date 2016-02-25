@@ -39,13 +39,8 @@
       </div>
       <div class="col-md-8">
         <div class="panel">
-            <div class="panel-heading">
-              <div class="panel-title">
-                <h2><strong>Current Standings</strong></h2>
-              </div>
-            </div>
-            <!-- Panel body -->
-            <div class="panel-body">
+             <div class="panel-body">
+              <h2><strong>Current Standings<a alt="Refresh" class="btn btn-sm" title="Refresh" id="standingstablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></strong></h2>
               <div class="container row" style="width:250px">
                 {{ auth.genDivisionSelect2('divisionfilter') | raw }}
               </div>
@@ -121,60 +116,58 @@
 
     $(document).ready(function() {
 
-          var divisionselectmodal = $('#divisionselectmodal').html();
-          var standingstable;
-          var standingstableopts =  {
-                   responsive: true,
-                   processing: true,
-                   ajax : "{{ path_for('standings.get.json')}}",
-                   columns: [
-                     { "data" : "player" },
-                     { "data" : "points" },
-                     { "data" : "matches" },
-                     { "data" : "wins" },
-                     { "data" : "losses" },
-                     { "data" : "division" },
-                     { "data" : "userid" },
-                     { "data" : "divisionid" },
-                   ],
-                   fnDrawCallback:function(){
-                     if ( $('#standingstable_paginate span span.paginate_button').size()) {
-                        $('#standingstable_paginate')[0].style.display = "block";
-                       } else {
-                       $('#standingstable_paginate')[0].style.display = "none";
-                     }
-                   },
-                   oLanguage: {
-                    sZeroRecords : "No reports yet"
-                   },
-                   order: [[ 1, "desc" ]],
-                   paging:   true,
-                   info:     false,
-                   searching: true,
-                    initComplete: function () {
-                      this.api().columns(5).search( $('#divisionfilter').val() ).draw();
+        var divisionselectmodal = $('#divisionselectmodal').html();
+        var standingstable;
+        var standingstableopts =  {
+                 responsive: true,
+                 processing: true,
+                 ajax : "{{ path_for('standings.get.json')}}",
+                 columns: [
+                   { "data" : "player" },
+                   { "data" : "points" },
+                   { "data" : "matches" },
+                   { "data" : "wins" },
+                   { "data" : "losses" },
+                   { "data" : "division" },
+                   { "data" : "userid" },
+                   { "data" : "divisionid" },
+                 ],
+                 fnDrawCallback:function(d){
+                    if ( d.aiDisplay.length > 10 ) {
+                      $('#standingstable_paginate').show();
+                    } else {
+                      $('#standingstable_paginate').hide();
+                    }
+                 },
+                 oLanguage: {
+                  sZeroRecords : "No reports yet"
+                 },
+                 order: [[ 1, "desc" ]],
+                 paging:   true,
+                 info:     false,
+                 searching: true,
+                  initComplete: function (d) {
+                    if ( d.aiDisplay.length > 10 ) {
+                      $('#standingstable_length').show();
+                    } else {
+                      $('#standingstable_length').hide();
+                    }
+                    this.api().columns(5).search( $('#divisionfilter').val() ).draw();
+                  },
+                  aoColumnDefs : [
+                    {
+                        aTargets   : [ 6, 7 ],
+                        visible    : false,
+                        searchable : false
                     },
-                    aoColumnDefs : [
-                      {
-                          aTargets : [ 0 ],
-                          mRender : function ( data, type, full ) {
-                            return '<a data-toggle="modal" data-target="#playerDetailsModal" data-remote="false" href="{{SITEROOT}}/playerdetailsjson/'+full.userid+'">'+data+'</a>';
-                          }
-                      },
-                      {
-                          aTargets   : [ 6 ],
-                          visible    : false,
-                          searchable : false
-                      },
-                      {
-                          aTargets   : [ 7 ],
-                          visible    : false,
-                          searchable : false
-                      }
-                    ]
-              };
+                  ],
+                    rowCallback : function( row, full, index ) {
+                      output_col_0 = '<a data-toggle="modal" data-target="#playerDetailsModal" data-remote="false" href="{{SITEROOT}}/playerdetailsjson/'+full.userid+'">'+full.player  +'</a>';
+                      $('td:eq(0)', row).html( output_col_0 );
+                    }
+            };
 
-          standingstable = $('#standingstable').DataTable(standingstableopts);
+        standingstable = $('#standingstable').DataTable(standingstableopts);
 
         $('#divisionfilter').on( 'change', function () {
             standingstable.columns(5).search( $(this).val() ).draw();
@@ -249,6 +242,10 @@
         $("#playerDetailsModal")
          .on("hide.bs.modal", function(e) {
 
+        });
+
+        $('#standingstablerefresh').on( 'click', function () {
+            standingstable.ajax.reload();
         });
 
         // setInterval( function () {
