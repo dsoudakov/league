@@ -2,7 +2,12 @@
 
 <label for="challengeAcceptNote">Accept note:</label> <textarea class="form-control" maxlegth="200" rows="10" cols="20" name="challengeAcceptNote" id="challengeAcceptNote" placeholder="Propose a start time... (required)"></textarea> 
 <br />
-<input type="submit" class="btn btn-primary" value="Accept"> 
+
+<div id="loading2" style="display:none">
+	<img src="{{SITEROOT}}/res/img/ajax-loader.gif">
+</div>
+<input type="submit" id="acceptChallengeSubmit" class="btn btn-primary" value="Accept"> 
+<div id="acceptResult" style="display:none"></div>
 
 {% include 'auth/csrf.inc' %} 
 </form>

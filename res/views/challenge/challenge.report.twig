@@ -125,7 +125,10 @@
               </div>
 
               <div id="part4" class="well well-sm" style="display:none">
-                <input type="submit" class="btn btn-sm btn-primary" value="Report">
+                <div id="loading2" style="display:none">
+                  <img src="{{SITEROOT}}/res/img/ajax-loader.gif">
+                </div>
+                <input type="submit" id="reportFormSubmit" class="btn btn-sm btn-primary" value="Report">
               </div>
               <div id="csrfgen"></div>
             </form>
@@ -172,6 +175,13 @@
                   <div id="incorrectdetails" style="display:none">
                     <textarea rows="5" cols="30" id="incorrectnote" name="incorrectdetails" placeholder="Why is this incorrect? (required)"></textarea>
                   </div>
+              </div>
+
+              <div id="loading2" class="well well-sm" style="display:none">
+                <img src="{{SITEROOT}}/res/img/ajax-loader.gif">
+              </div>
+
+              <div id="reportResult" class="well well-sm" style="display:none">
               </div>
 
               <div id="confirmdenybuttons" style="display:none">
@@ -227,6 +237,7 @@
 
     $(document).ready(function() {
 
+      var tablename_0 = 'reportchallengestable';
       var errorcount = 0;
       var reportchallengestable;
 
@@ -309,6 +320,9 @@
 
       $("#challengeReportModal").on("show.bs.modal", function(e) {
 
+          $('#reportFormSubmit').show();
+          $('#loading2').hide();
+
           var loadingElem = $(this).find("#loading1");
           var elem1 = $(this).find(".modal-body-inner1");
           var elem2 = $(this).find(".modal-body-inner2");
@@ -352,9 +366,6 @@
                 var typeofmatch = -1;
 
                 $('#retiredcheck').on('switchChange.bootstrapSwitch', function(event, state) {
-                  //console.log(this); // DOM element
-                  //console.log(event); // jQuery event
-                  //console.log(state); // true | false
 
                   if (state) {
                     $('#retirednotedetails').show();
@@ -364,22 +375,12 @@
                   }
                 });
 
-                // $('#retiredcheck').click(function () {
-                //   if ($(this).prop("checked")) {
-                //     $('#matchnotedetails').show();
-                //   }else {
-                //     $('#matchnotedetails').hide();
-                //     $('#matchnote').html("");
-                //   }
-                // })
-
                 $('#reportForm #part2 #1stto7').on("click", function () {
                     $('#reportForm #part2 #1stto7').addClass('active');
                     $('#reportForm #part2 #bo3').removeClass('active');
                     $('#reportForm #part3a').show();
                     $('#reportForm #part3b').hide();
                     $('#reportForm #matchtype').attr("value", "1");
-                    //$('#reportForm #next3a, #reportForm #next3b').show();
                     $('#reportForm #part4,#reportForm #part4a').show();
                 });
 
@@ -389,7 +390,6 @@
                     $('#reportForm #part3b').show();
                     $('#reportForm #part3a').hide();
                     $('#reportForm #matchtype').attr("value", "2");
-                    //$('#reportForm #next3a, #reportForm #next3b').show();
                     $('#reportForm #part4,#reportForm #part4a').show();
                 });
 
@@ -413,11 +413,6 @@
                     $('#reportForm #part2').show();
                 });
 
-                // $('#reportForm #part3b #next3b').on("click", function () {
-                //     $('#reportForm #part3b #next3b').hide();
-                //     $('#reportForm #part4a').show();
-                // });
-
                 $('#reportForm #part4a #next4a').on("click", function () {
                     $('#reportForm #part4').show();
                 });
@@ -425,14 +420,12 @@
                 $('#reportForm #part3a #loserscore').bind("propertychange click change keyup input paste", function () {
                     if ($(this).val() <= 6 && $(this).val() >= 0 && $(this).val() !== "") {
                       errorcount = 0;
-                      //$('#reportForm #part4a').show();
                       $('#reportForm #part3a #errorDiv').html('');
                     } else {
                       if ($(this).val() !== "") {
                         errorcount++;
-                        //$('#reportForm #part4a').hide();
                         $('#reportForm #part3a #errorDiv').html('<h4><span class="label label-pill label-danger">Has to be between 0 and 6.</span></h4>');
-                      }else {
+                      } else {
                         errorcount++;
                       }
                     }
@@ -449,12 +442,18 @@
                     return false;
                   }
 
+
+                  $('#loading2').show();
+                  $('#reportFormSubmit').hide();
+
                   var $form = $( this );
                   var url = $form.attr( "action" );
                   var posting = $.post( url, $form.serialize() );
 
                   posting.done(function( data ) {
                     $('#reportForm #part4').html(data);
+                    $('#loading2').hide();
+                    $('#reportFormSubmit').show();
                   });
                 });
 
@@ -504,10 +503,12 @@
       $("#challengeConfirmReportModal").on("show.bs.modal", function(e) {
 
         var loadingElem = $(this).find("#loading1");
+        var loadingElem2 = $(this).find("#loading2");
         var elem1 = $(this).find(".modal-body-inner1");
         var elem2 = $(this).find(".modal-body-inner2");
         init = elem1.html();
 
+        loadingElem2.hide();
         loadingElem.show();
 
         var link = $(e.relatedTarget);
@@ -579,10 +580,13 @@
                   var url = $form.attr( "action" );
                   var posting = $.post( url, $form.serialize() );
 
+                  loadingElem2.show();
+                  $('#confirmdenybuttons').hide();
+
                   posting.done(function( data ) {
-
-                    $('#reportConfirmForm #confirmdenybuttons').html(data);
-
+                    loadingElem2.hide();
+                    $('#reportConfirmForm #reportResult').html(data);
+                    $('#reportConfirmForm #reportResult').show();
                   });
                 });
 

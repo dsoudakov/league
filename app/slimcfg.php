@@ -139,7 +139,6 @@ $c['view'] = function ($c)
     return $view;
 };
 
-
 $app = new \Slim\App($c);
 $app->auth = null;
 $app->user = null;
@@ -148,5 +147,3 @@ $app->csrf_value = "";
 $app->add(new SessionKeeper);
 $app->add(new AuthCheck);
 $app->add($c->get('csrf'));
-
-

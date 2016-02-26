@@ -3,304 +3,350 @@
 
 {% block head %}
 
-{{parent()}}
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.css"/>
+  {{parent()}}
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/datatables.min.css" />
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/responsive.dataTables.min.css" />
 
 {% endblock head %}
 
 {% block content %}
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-md-2">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2">
         {% if flash.getMessages() %}
           {% for k, messages in flash.getMessages() %}
             {% for message in flash.getMessages()[k] %}
               {% if k == 'global' %}
-                <div class="alert alert-success">
-                  <button type="button" class="close" data-dismiss="alert">&times;</button>
-                  {{ message }}
-                </div>
+                <div class="alert alert-success">{{ message }}</div>
               {% else %}
-                <div class="alert alert-danger">
-                  <button type="button" class="close" data-dismiss="alert">&times;</button>
-                  {{ message }}
-                </div>
+                <div class="alert alert-danger">{{ message }}</div>
               {% endif %}
             {% endfor %}
           {% endfor %}
         {% endif %}
 
+        {% block nav %}
+          {{ parent() }}
+        {% endblock nav %}
 
-{% block nav %}
-  {{ parent() }}
-{% endblock nav %}
-
-    </div>
-    <div class="col-md-8">
-      <div class="panel">
-        {% if user.divisionprimary is null and user.divisionsecondary is null %}
-          <div class="panel-heading">
-            <div class="panel-title">
-              <h2><strong>You have to join at least one division!</strong></h2>
-            </div>
-          </div>
-
-        {% else %}
-
-          <div class="panel-heading">
-            <div class="panel-title">
-              <h2><strong>Current Open Challenges</strong></h2>
-            </div>
-          </div>
-
-        {% endif %}  
-          <!-- Panel body -->
+      </div>
+      <div class="col-md-8">
+        <div class="panel">
           <div class="panel-body">
-            
-                  <div class="table-responsive">
-                    <table id="challengesissuedtable" class="display wrapme table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
-                    <thead>
-                    <tr>
+            {% if user.divisionprimary is null and user.divisionsecondary is null %}
+                 <h2><strong>You have to join at least one division!</strong></h2>
+            {% else %}
+
+              <h2><strong>Current Open Challenges</strong><a alt="Refresh" class="btn btn-sm" title="Refresh" id="challengesissuedtablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></h2>
+              <table id="challengesissuedtable" class="display table table-bordered table-striped table-condensed table-hover" width="100%">
+                <thead>
+                  <tr>
                     <th></th>
                     <th>Challenger</th>
                     <th>Date</th>
                     <th>Division</th>
                     <th>Note</th>
-                    </tr>
-                    </thead>
+                  </tr>
+                </thead>
+              </table>
 
-                    <tfoot>
-                    <tr>
-                    <th></th>
-                    <th>Challenger</th>
-                    <th>Date</th>
-                    <th>Division</th>
-                    <th>Note</th>
-                    </tr>
-                    </tfoot>
-                    </table>
-                  </div>
-
-
-  	          		
-  	          	</div>
-  	          </div>
-      
-    </div>
-    <div class="col-md-2">
-    	Right column. Open challenges.
-    </div>
-  </div>
-</div>
-
-<div id="acceptModal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header label-primary" style="
-          height: 50px;
-          border-top-left-radius: 5px; 
-          border-top-right-radius: 5px;
-      ">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Accept a challenge</h4>
-      </div>
-      <div class="modal-body">
-        <div id="loading1">
-            <img src="{{SITEROOT}}/res/img/loader.gif">
-        </div>        
-        <div class="modal-body-inner1"></div>
-        <div class="modal-body-inner2"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<div id="noteModal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header label-success" style="border-top-left-radius: 5px; border-top-right-radius: 5px;">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Challenge details</h4>
-      </div>
-      <div class="modal-body">
-          <div id="loading1">
-            <img src="{{SITEROOT}}/res/img/loader.gif">
+            {% endif %}
           </div>
-        <div class="modal-body-inner1"></div>
+    	  </div>
+    	</div>
+      <div class="col-md-2">
       </div>
     </div>
   </div>
-</div>
 
+  <div id="acceptModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header label-primary" style="
+            height: 50px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        ">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Accept a challenge</h4>
+        </div>
+        <div class="modal-body">
+          <div id="loading1">
+              <img src="{{SITEROOT}}/res/img/loader.gif">
+          </div>
+          <div class="modal-body-inner1"></div>
+          <div class="modal-body-inner2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <div id="noteModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header label-success" style="border-top-left-radius: 5px; border-top-right-radius: 5px;">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Challenge details</h4>
+        </div>
+        <div class="modal-body">
+            <div id="loading1">
+              <img src="{{SITEROOT}}/res/img/loader.gif">
+            </div>
+          <div class="modal-body-inner1"></div>
+          <div class="modal-body-inner2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 {% endblock content %}
 
 {% block js %}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
-<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/s/bs/dt-1.10.10/datatables.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
+  <script type="text/javascript" src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
+  <script type="text/javascript" src="{{SITEROOT}}/res/js/datatables.min.js"></script>
+  <script type="text/javascript" src="{{SITEROOT}}/res/js/dataTables.responsive.min.js"></script>
 
-<script type="text/javascript">
+  <script type="text/javascript">
 
-  $(document).ready(function() {
+    $(document).ready(function() {
 
-     var items = [];
-      
-      $.getJSON( "{{ path_for('challenges.issued.get.json')}}", function( data ) {
-      
-        $.each( data, function( key, val ) {
-          var item = [];
-          
-          var userid = {{ user.id | default(0) }};
-          var userpid = {{ user.divisionprimary | default(0) }};
-          var usersid = {{ user.divisionsecondary | default(0) }};
+      var userid = {{ user.id | default(0) }};
+      var userpid = {{ user.divisionprimary | default(0) }};
+      var usersid = {{ user.divisionsecondary | default(0) }};
 
-          if (userpid == data[key]['challenge_in_division'] || usersid == data[key]['challenge_in_division']) {
+      var tablename_0 = 'challengesissuedtable';
+      var challengesissuedtableopts = {
+          responsive: true,
+          processing: true,
+          ajax: "{{ path_for('challenges.issued.get.json')}}",
+          columns: [
+            { "data" : "challengeid" }, // 0
+            { "data" : "challenger" },
+            { "data" : "challengedate" },
+            { "data" : "challengeddivision" },
+            { "data" : "challengenote" }, // 4 - hide rest
+            { "data" : "challengecreatedat" },
+            { "data" : "challenge_in_division" },
+            { "data" : "acceptedbyuserid" },
+            { "data" : "confirmed" },
+            { "data" : "cancelnote" },
+            { "data" : "numofplayers" },
+          ],
+          oLanguage: {
+           sZeroRecords : "No challenges created yet",
+           sProcessing: "Reloading data from server..."
+          },
+          order: [[ 2, "desc" ]],
+          paging:   true,
+          info:     true,
+          searching: true,
+          initComplete: function () {
+          },
+          aoColumnDefs : [
+            {
+                aTargets   : [ 5,6,7,8,9,10 ],
+                visible    : false,
+                searchable : false
+            },
+          ],
+          fnDrawCallback : function(d) {
+            if ( d.aiDisplay.length > 10 ) {
+                $('#' + tablename_0 + '_paginate').show();
+                $('#' + tablename_0 + '_length').show();
+              } else {
+                $('#' + tablename_0 + '_paginate').hide();
+                $('#' + tablename_0 + '_length').hide();
+              }
+          },
+          rowCallback : function( row, full, index ) {
+            if (userpid == full.challenge_in_division || usersid == full.challenge_in_division) {
 
-            if (userid == data[key]['acceptedbyuserid']) {
-                if (data[key]['cancelnote']) {
+              if (userid == full.acceptedbyuserid) {
+                  if (full.cancelnote) {
 
-                    item.push('<a class="btn btn-sm btn-block btn-danger disabled" href="">Cancelled (you)</a>');
+                      output_col_0 = '<a class="btn btn-sm btn-block btn-danger disabled" href="">Cancelled (you)</a>';
 
-                } else {
-                    if (data[key]['confirmed'] == 1) {
-                        item.push('<a class="btn btn-sm btn-block btn-success disabled" href="">Confirmed</a>');
-                    } else {
-                        item.push('<a class="btn btn-sm btn-block btn-warning disabled" href="">Accepted</a>');
-                    }
-                }
+                  } else {
+                      if (full.confirmed == 1) {
+                          output_col_0 = '<a class="btn btn-sm btn-block btn-success disabled" href="">Confirmed</a>';
+                      } else {
+                          output_col_0 = '<a class="btn btn-sm btn-block btn-warning disabled" href="">Accepted</a>';
+                      }
+                  }
+              } else {
+               output_col_0 = '<a class="btn btn-sm btn-block btn-primary" data-toggle="modal" data-target="#acceptModal" data-remote="false" href="{{SITEROOT}}/challenge/accept/' +  full.challengeid + '">Accept</a>';
+              }
             } else {
-              item.push(
-                '<a class="btn btn-sm btn-block btn-primary" data-toggle="modal" data-target="#acceptModal" data-remote="false" href="{{SITEROOT}}/challenge/accept/' +  data[key]['challengeid'] + '">Accept</a>'
-              );
+              output_col_0 = 'Not in your division';
             }
-          } else {
-            item.push('Not in your division');
+
+          output_col_4 = '<a class="btn btn-sm btn-block btn-primary" data-toggle="modal" data-target="#noteModal" data-remote="false" href="{{SITEROOT}}/challenge/details/' + full.challengeid + '" title="' + full.challengenote + '">Note</a>';
+             $('td:eq(0)', row).html( output_col_0 );
+             $('td:eq(4)', row).html( output_col_4 );
           }
+      };
 
-          item.push(data[key]['challenger'] );
-          item.push(data[key]['challengedate'] );
-          item.push(data[key]['challengeddivision'] );
-        item.push( '<a class="btn btn-sm btn-block btn-primary" data-toggle="modal" data-target="#noteModal" data-remote="false" href="{{SITEROOT}}/challenge/details/' + data[key]['challengeid'] + '" title="' + data[key]['challengenote'] + '">Note</a>');
-         // item.push('');
-          items.push(item);
+      challengesissuedtable = $('#' + tablename_0 ).DataTable(challengesissuedtableopts);
 
-        });
-
-        if (items.length <= 10) {
-          var opts =  {
-
-            "order": [[ 2, "desc" ]],
-            "paging":   false,
-            "info":     false,
-            "searching": false,
-          };
-        }
-        
-        var oTable = $('#challengesissuedtable').dataTable(opts);
-        oTable.fnClearTable();
-
-        for(var i = 0; i < items.length; i++) { 
-            oTable.fnAddData([ items[i][0], items[i][1], items[i][2], items[i][3], items[i][4] ]);
-        }; 
-      
+      $('#' + tablename_0 + 'refresh').on( 'click', function () {
+          challengesissuedtable.ajax.reload();
       });
-    
-    function setJQValidate (id) {
-      $( id ).validate({
-        rules: {
-          challengeAcceptNote: {
-            required: true,
-            maxlength: 200,
-          }
-        },
-        messages: {
-          challengeAcceptNote: {
-            required: "Accept note cannot be blank.",
-            maxlength: jQuery.validator.format("No more than {0} characters!"),
+
+      function setJQValidate (id) {
+        $( id ).validate({
+          rules: {
+            challengeAcceptNote: {
+              required: true,
+              maxlength: 200,
+            }
           },
-        },         
-        tooltip_options: {
-          challengeAcceptNote: { 
-            placement: 'bottom',
+          messages: {
+            challengeAcceptNote: {
+              required: "Accept note cannot be blank.",
+              maxlength: jQuery.validator.format("No more than {0} characters!"),
+            },
           },
-        },
+          tooltip_options: {
+            challengeAcceptNote: {
+              placement: 'bottom',
+            },
+          },
+          submitHandler: function(form) {
+              submitAcceptForm(form);
+          },
+        });
+      }
 
-      });  
-    }
+      function submitAcceptForm (form) {
+        id = '#acceptChallengeForm';
+        var $form = $(form);
 
-    $("#acceptModal").on("show.bs.modal", function(e) {
-        var loadingElem = $(this).find("#loading1");
-        loadingElem.show();
-        var form = "";
-        var details = "";
-        var elem1 = $(this).find(".modal-body-inner1");
-        var elem2 = $(this).find(".modal-body-inner2");
-        elem1.html("");
-        elem2.html("");
+        var loadingElem2 = $form.find("#loading2");
 
-        var link = $(e.relatedTarget);
-        var link_1 = link.attr("href");
-        var link_2 = link_1.replace('accept', 'details');
+        var url = $form.attr( "action" );
+        var posting = $.post( url, $form.serialize() );
 
-        $.get( link_1 ).done( function(data) {
-            form = data;
-        })
-        .done( function () {
-            elem2.prepend(form);
-            setJQValidate('#acceptChallengeForm');
-        })
-        .done( function () {
+        loadingElem2.show();
+        $('#acceptChallengeSubmit').hide();
 
-          $.get( link_2 ).done( function(data) {
-              details = data;
+        posting.done(function( data ) {
+          loadingElem2.hide();
+          $(id + ' #acceptResult').html(data);
+          $(id + ' #acceptResult').show();
+        }).fail(function() {
+          $(id + ' #acceptResult').html('<h3><span class="label label-lg label-danger">Failed... please try again.</span></h3>');
+        });        
+      }
+
+      function initSubmitAcceptForm (id) {
+        $(id).submit(function (e) {
+            e.preventDefault();
+            var loadingElem2 = $(this).find("#loading2");
+
+            var $form = $( this );
+            var url = $form.attr( "action" );
+            var posting = $.post( url, $form.serialize() );
+
+            loadingElem2.show();
+            $('#acceptChallengeSubmit').hide();
+
+            posting.done(function( data ) {
+              loadingElem2.hide();
+              $(id + ' #acceptResult').html(data);
+              $(id + ' #acceptResult').show();
+            }).fail(function() {
+              $(id + ' #acceptResult').html('Failed... please try again.');
+            });
+          });        
+      }
+
+      $("#acceptModal").on("show.bs.modal", function(e) {
+          var loadingElem = $(this).find("#loading1");
+          loadingElem.show();
+          var form = "";
+          var details = "";
+          var elem1 = $(this).find(".modal-body-inner1");
+          var elem2 = $(this).find(".modal-body-inner2");
+          elem1.html("");
+          elem2.html("");
+
+          var link = $(e.relatedTarget);
+          var link_1 = link.attr("href");
+          var link_2 = link_1.replace('accept', 'details');
+
+          $.get( link_1 ).done( function(data) {
+              form = data;
           })
           .done( function () {
-              elem1.prepend(details);
-              loadingElem.hide();
+              elem2.prepend(form);
+              setJQValidate('#acceptChallengeForm');
+             // initSubmitAcceptForm('#acceptChallengeForm');
+          })
+          .done( function () {
+
+            $.get( link_2 ).done( function(data) {
+                details = data;
+            })
+            .done( function () {
+                elem1.prepend(details);
+                loadingElem.hide();
+            });
+
           });
+      });
 
-        });        
+      $("#noteModal").on("show.bs.modal", function(e) {
+
+          var loadingElem = $(this).find("#loading1");
+          var elem1 = $(this).find(".modal-body-inner1");
+          var elem2 = $(this).find(".modal-body-inner2");
+          elem1.html("");
+          elem2.html("");
+
+          loadingElem.show();
+
+          var link = $(e.relatedTarget);
+          var link_1 = link.attr("href");
+          var link_2 = link_1.replace('details', 'confirmeddetails');
+
+          var challenge_details = "";
+          var form = "";
+
+          $.get( link_2 ).done( function(data) {
+              form = data;
+          })
+          .done( function () {
+              elem2.prepend(form);
+          })
+              .done( function () {
+
+                  $.get( link_1 ).done( function(data) {
+                      challenge_details = data;
+                  })
+                      .done( function () {
+                          elem1.prepend(challenge_details);
+                          loadingElem.hide();
+                      });
+
+              });
+      });
+
+      $("#noteModal, #acceptModal").on("hide.bs.modal", function(e) {
+        if ($('#acceptChallengeForm #acceptResult').html() !== undefined) {
+          if ($('#acceptChallengeForm #acceptResult').html().indexOf('success')) {
+            challengesissuedtable.ajax.reload();  
+          }
+        }
+
+          $(this).find(".modal-body-inner1").html("");
+          $(this).find(".modal-body-inner2").html("");
+
+      });
+
     });
-
-    $("#noteModal").on("show.bs.modal", function(e) {
-
-        var form = "";
-
-        var loadingElem = $(this).find("#loading1");
-        loadingElem.show();
-
-        var elem1 = $(this).find(".modal-body-inner1");
-        elem1.html("");
-        
-        var link = $(e.relatedTarget);
-        var link_text = link.attr("href");
-        var link_1 = link_text.replace('accept', 'details');
-
-        $.get( link_1 ).done( function(data) {
-            form = data;
-        })
-        .done( function () {
-            elem1.prepend(form);
-            loadingElem.hide();
-        });
-
-    });
-
-    $("#noteModal, #acceptModal")
-     .on("hide.bs.modal", function(e) {
-
-        $(this).find(".modal-body-inner1").html("");
-        $(this).find(".modal-body-inner2").html("");
-
-    });
-
-});
-
-</script>
+  </script>
 
 {% endblock js %}

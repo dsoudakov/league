@@ -109,10 +109,6 @@
 
 <script>
 $(function () {
-	//$('[data-toggle="popover"]').popover({
-	//	placement: 'right',
-	//	trigger: 'hover',
-	//});
 
 	$('[data-toggle="tooltip"]').tooltip({
 		placement: 'bottom',
@@ -127,6 +123,7 @@ $(function () {
 			},
 			password: {
 				required: true,
+				minlength: 6,
 			},			
 		},
 		tooltip_options: {

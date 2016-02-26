@@ -59,7 +59,6 @@
                     </tr>
                   </thead>
                 </table>
-                <div id="refreshtable" class="btn btn-small btn-primary">Refresh</div>
               </div>
             </div>
         </div>
@@ -116,100 +115,99 @@
 
     $(document).ready(function() {
 
-        var divisionselectmodal = $('#divisionselectmodal').html();
-        var standingstable;
-        var standingstableopts =  {
-                 responsive: true,
-                 processing: true,
-                 ajax : "{{ path_for('standings.get.json')}}",
-                 columns: [
-                   { "data" : "player" },
-                   { "data" : "points" },
-                   { "data" : "matches" },
-                   { "data" : "wins" },
-                   { "data" : "losses" },
-                   { "data" : "division" },
-                   { "data" : "userid" },
-                   { "data" : "divisionid" },
-                 ],
-                 fnDrawCallback:function(d){
-                    if ( d.aiDisplay.length > 10 ) {
-                      $('#standingstable_paginate').show();
-                    } else {
-                      $('#standingstable_paginate').hide();
-                    }
-                 },
-                 oLanguage: {
-                  sZeroRecords : "No reports yet"
-                 },
-                 order: [[ 1, "desc" ]],
-                 paging:   true,
-                 info:     false,
-                 searching: true,
-                  initComplete: function (d) {
-                    if ( d.aiDisplay.length > 10 ) {
-                      $('#standingstable_length').show();
-                    } else {
-                      $('#standingstable_length').hide();
-                    }
-                    this.api().columns(5).search( $('#divisionfilter').val() ).draw();
-                  },
-                  aoColumnDefs : [
-                    {
-                        aTargets   : [ 6, 7 ],
-                        visible    : false,
-                        searchable : false
-                    },
-                  ],
-                    rowCallback : function( row, full, index ) {
-                      output_col_0 = '<a data-toggle="modal" data-target="#playerDetailsModal" data-remote="false" href="{{SITEROOT}}/playerdetailsjson/'+full.userid+'">'+full.player  +'</a>';
-                      $('td:eq(0)', row).html( output_col_0 );
-                    }
-            };
+      var tablename_0 = 'standingstable';
+      var tablename_1 = 'playerdetailstable';
 
-        standingstable = $('#standingstable').DataTable(standingstableopts);
-
-        $('#divisionfilter').on( 'change', function () {
-            standingstable.columns(5).search( $(this).val() ).draw();
-        } );
-
-        $('#refreshtable').on( 'click', function () {
-            standingstable.ajax.reload();
-        } );
-
-        var playerdetailstableopts =  {
-             responsive : true,
-             processing : true,
-             ajax       : "start",
-             columns    : [
-               { "data" : "challengedate" },
-               { "data" : "vsplayer" },
-               { "data" : "division" },
-               { "data" : "result" },
-               { "data" : "points" },
-             ],
-              order        : [[ 0, "desc" ]],
-              paging       : true,
-              info         : false,
-              searching    : true,
-              initComplete : function () {
-                $('#playerdetailstable').show();
+      var divisionselectmodal = $('#divisionselectmodal').html();
+      var standingstable;
+      var standingstableopts =  {
+              responsive: true,
+              processing: true,
+              ajax : "{{ path_for('standings.get.json')}}",
+              columns: [
+                { "data" : "player" },
+                { "data" : "points" },
+                { "data" : "matches" },
+                { "data" : "wins" },
+                { "data" : "losses" },
+                { "data" : "division" },
+                { "data" : "userid" },
+                { "data" : "divisionid" },
+              ],
+              fnDrawCallback:function(d){
+                if ( d.aiDisplay.length > 10 ) {
+                  $('#' + tablename_0 + '_paginate').show();
+                } else {
+                  $('#' + tablename_0 + '_paginate').hide();
+                }
+              },
+              oLanguage: {
+               sZeroRecords : "No reports yet"
+              },
+              order: [[ 1, "desc" ]],
+              paging:   true,
+              info:     false,
+              searching: true,
+              initComplete: function (d) {
+                this.api().columns(5).search( $('#divisionfilter').val() ).draw();
               },
               aoColumnDefs : [
                 {
-                    aTargets: [ 3 ],
-                    mRender: function ( data, type, full ) {
-                      if (data == "W") {
-                        return '<div class="label label-success label-sm">' + data + '</div>';
-                      } else {
-                        return '<div class="label label-danger label-sm">' + data + '</div>';
-                      }
-                    }
+                    aTargets   : [ 6, 7 ],
+                    visible    : false,
+                    searchable : false
                 },
-              ]
-        };
+              ],
+              rowCallback : function( row, full, index ) {
+                output_col_0 = '<a data-toggle="modal" data-target="#playerDetailsModal" data-remote="false" href="{{SITEROOT}}/playerdetailsjson/'+full.userid+'">'+ full.player  +'</a>';
+                $('td:eq(0)', row).html( output_col_0 );
+              }
+      };
 
-       $("#playerDetailsModal").on("show.bs.modal", function(e) {
+      standingstable = $('#standingstable').DataTable(standingstableopts);
+
+      $('#divisionfilter').on( 'change', function () {
+          standingstable.columns(5).search( $(this).val() ).draw();
+      });
+
+      var playerdetailstableopts =  {
+          responsive : true,
+          processing : true,
+          ajax       : "start",
+          columns    : [
+            { "data" : "challengedate" },
+            { "data" : "vsplayer" },
+            { "data" : "division" },
+            { "data" : "result" },
+            { "data" : "points" },
+          ],
+          order        : [[ 0, "desc" ]],
+          paging       : true,
+          info         : false,
+          searching    : true,
+          initComplete : function () {
+            $('#playerdetailstable').show();
+          },
+          fnDrawCallback: function(d) {
+              if ( d.aiDisplay.length > 10 ) {
+                $('#' + tablename_1 + '_paginate').show();
+              } else {
+                $('#' + tablename_1 + '_paginate').hide();
+              }
+          },
+          aoColumnDefs : [],
+          rowCallback : function( row, full, index ) {
+            if (full.result == "W") {
+              output_col_3 = '<div class="label label-success label-sm">' + full.result + '</div>';
+            } else {
+              output_col_3 = '<div class="label label-danger label-sm">' + full.result + '</div>';
+            }
+
+            $('td:eq(3)', row).html( output_col_3 );
+          }
+      };
+
+      $("#playerDetailsModal").on("show.bs.modal", function(e) {
             var loadingElem = $(this).find("#loading1");
             loadingElem.show();
 
@@ -236,21 +234,19 @@
             }
 
             loadingElem.hide();
+      });
 
-        });
+      $("#playerDetailsModal").on("hide.bs.modal", function(e) {
+        //
+      });
 
-        $("#playerDetailsModal")
-         .on("hide.bs.modal", function(e) {
+      $('#standingstablerefresh').on( 'click', function () {
+          standingstable.ajax.reload();
+      });
 
-        });
-
-        $('#standingstablerefresh').on( 'click', function () {
-            standingstable.ajax.reload();
-        });
-
-        // setInterval( function () {
-        //     standingstable.ajax.reload();
-        // }, 10000 );
+      // setInterval( function () {
+      //     standingstable.ajax.reload();
+      // }, 10000 );
 
     });
 

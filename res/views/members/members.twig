@@ -68,6 +68,7 @@
 
     $(document).ready(function() {
 
+      var tablename_0 = 'memberstable';
       var memberstableopts = {
           responsive: true,
           processing: true,
@@ -95,9 +96,9 @@
           },
           fnDrawCallback : function(d) {
             if ( d.aiDisplay.length > 10 ) {
-                $('#memberstable_paginate').show();
+                $('#' + tablename_0 + '_paginate').show();
               } else {
-                $('#memberstable_paginate').hide();
+                $('#' + tablename_0 + '_paginate').hide();
               }
           },         
           rowCallback : function( row, full, index ) {

@@ -13,14 +13,14 @@ $app->get('/login', function($request,$response,$args) use ($app)
 
 })->setName('login')->add($notauthenticated)->add(new GenCsrf);
 
-$app->post('/login', function($request,$response,$args) use ($app) 
+$app->post('/login', function($request,$response,$args) use ($app)
 {
-   
+
     $identifier = $request->getParam('identifier');
     $_SESSION['loginemail'] = $identifier;
     $password = $request->getParam('password');
     $remember = $request->getParam('remember');
-    
+
     if ($remember == "on") {
     	$_SESSION['checked'] = "checked";
     }
@@ -29,7 +29,7 @@ $app->post('/login', function($request,$response,$args) use ($app)
 
     $v->validate([
         'identifier|Email' => [$identifier, 'required'],
-        'password' => [$password, 'required|max(20)']
+        'password' => [$password, 'required|min(6)|max(20)']
     ]);
 
     if ($v->passes()) {
@@ -37,10 +37,9 @@ $app->post('/login', function($request,$response,$args) use ($app)
         $user = new User($identifier);
 
         if ($user->exists) {
-            
             if ($user->checkPassword($password)) {
             	if ($user->user->active) {
-                
+
 	                //set var for templates
 	                $this->auth = $user;
 	                $this->user = $user->user;
@@ -53,7 +52,7 @@ $app->post('/login', function($request,$response,$args) use ($app)
 	                $this->get('view')->offsetSet('user', $user->user);
 
 	                if ($remember === 'on') {
-	                 
+
 	                    //pull up users tokens, delete old ones
 	                    $authtoken = new Authtokens($user->id);
 
@@ -69,10 +68,10 @@ $app->post('/login', function($request,$response,$args) use ($app)
 								"{$rememberIdentifier}___{$rememberToken}", //cookie value
 								$this->get('config')->get('auth.cookieexpire')  	// +1 week
 	                		);
-	                } 
+	                }
 
 	                $this->get('flash')->addMessage('global', 'You logged in! Welcome!');
-	                $response = $response->withRedirect($this->get('router')->pathFor('home'));
+	                $response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
 	            } else {
 	            	$this->get('flash')->addMessage('global_error', 'Your account is not activated yet.');
 	           		$response = $response->withRedirect($this->get('router')->pathFor('login'));
@@ -81,10 +80,16 @@ $app->post('/login', function($request,$response,$args) use ($app)
             	$this->get('flash')->addMessage('global_error', 'Username or password is incorrect.');
             	$response = $response->withRedirect($this->get('router')->pathFor('login'));
             }
+        } else {
+
+	       	$this->get('flash')->addMessage('global_error', 'Username or password is incorrect.');
+	       	$response = $response->withRedirect($this->get('router')->pathFor('login'));
+
         }
+
     } else {
 
-       	$this->get('flash')->addMessage('global_error', 'Username or password is incorrect.');
+       	$this->get('flash')->addMessage('global_error', 'Failed to login: ' . $v->errors()->first());
        	$response = $response->withRedirect($this->get('router')->pathFor('login'));
 
     }
@@ -92,4 +97,3 @@ $app->post('/login', function($request,$response,$args) use ($app)
 	return $response;
 
 })->setName('login.post')->add($notauthenticated);
-

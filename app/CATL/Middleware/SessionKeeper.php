@@ -5,8 +5,6 @@ namespace CATL\Middleware;
 class SessionKeeper {
 	public function checkActivity()
 	{
-		//echo time() - $_SESSION['CREATED'] . BR;
-		//echo session_status() . PHP_SESSION_ACTIVE . BR;
 		if (!isset($_SESSION['CREATED'])) {
 		    $_SESSION['CREATED'] = time();
 		} elseif (time() - $_SESSION['CREATED'] > 40) {

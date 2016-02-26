@@ -2,7 +2,6 @@
 
 global $app;
 
-
 $isMember = function ($request, $response, $next) use ($app) {
 
     if ($app->auth) {

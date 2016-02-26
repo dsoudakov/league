@@ -65,11 +65,11 @@ $app->post('/confirmreport/{challengeid}', function($request,$response,$args) us
 		//mark report as confirmed
 
 		$c = R::getAll( 'SELECT *
-				FROM acceptedchallenges ac 
-				LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
-				LEFT JOIN users u on u.id = ac.acceptedbyuserid  
+				FROM acceptedchallenges ac
+				LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+				LEFT JOIN users u on u.id = ac.acceptedbyuserid
 				LEFT JOIN users uu on uu.id = c.challengerid
-				LEFT JOIN divisions d on d.id = c.challenge_in_division 
+				LEFT JOIN divisions d on d.id = c.challenge_in_division
 				WHERE (c.challengerid = :uid OR ac.acceptedbyuserid = :uid)
 				AND c.cancelnote IS NULL -- not cancelled
 				AND ac.cancelnote IS NULL -- not cancelled
@@ -92,7 +92,7 @@ $app->post('/confirmreport/{challengeid}', function($request,$response,$args) us
 	  			':id' => $args['challengeid'],
 	  		]);
 
-	  		
+
 	  		if (!$correctcheck) {
 	  			$c->incorrectdetails = $incorrectdetails;
 	  		} else {
@@ -105,13 +105,13 @@ $app->post('/confirmreport/{challengeid}', function($request,$response,$args) us
 
 	  		if ($r) {
 	  			if (!$correctcheck) {
-	  				echo '<h3><span class="label label-pill label-warning">Reported successfully denied!</span></h3>';	
+	  				echo '<h3><span class="label label-pill label-warning">Reported successfully denied!</span></h3>';
 	  			} else {
-	  				echo '<h3><span class="label label-pill label-success">Reported successfully confirmed!</span></h3>';	
+	  				echo '<h3><span class="label label-pill label-success">Reported successfully confirmed!</span></h3>';
 	  			}
 	  		} else {
-	  			echo '<h3><span class="label label-pill label-danger">Report failed. Please try again!</span></h3>';	
-	  		}	  		
+	  			echo '<h3><span class="label label-pill label-danger">Report failed. Please try again!</span></h3>';
+	  		}
 
 		} else {
 			echo 'Cannot confirm this report.';
@@ -142,11 +142,11 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 
 	$retired = $request->getParam('retired');
 	$retirednote = $request->getParam('retirednote');
-	
+
 	$winner_1 = $request->getParam('winner_1');
 	$winner_2 = $request->getParam('winner_2');
 	$winner_3 = $request->getParam('winner_3');
-	
+
 	$loser_1 = $request->getParam('loser_1');
 	$loser_2 = $request->getParam('loser_2');
 	$loser_3 = $request->getParam('loser_3');
@@ -160,10 +160,10 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 			$loser_3,
 		   ];
 
-	if ($matchtype == 1) { 
-		
+	if ($matchtype == 1) {
+
 		$loserscore = $request->getParam('loserscore');
-		
+
 	} else if ($matchtype == 2) {
 
 		$loserscore = null;
@@ -190,16 +190,16 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 	//echo implode("<br />", $set);
 
     if ($v->passes()) {
-		if ($matchtype == 1 && !$loserscore) { 
-			
-			echo '<h3><span class="label label-danger">Report failed. Number of games that loser won is not specified!</span></h3>';	
+		if ($matchtype == 1 && !$loserscore) {
+
+			echo '<h3><span class="label label-danger">Report failed. Number of games that loser won is not specified!</span></h3>';
 			die();
-			
+
 		} else if ($matchtype == 2 && $retired != 1 && ((!$winner_1 || !$winner_2 || !$loser_1 || !$loser_2))  ) {
 
-			echo '<h3><span class="label label-lg label-danger">Report failed. Check your set scores. Missing numbers.</span></h3>';	
+			echo '<h3><span class="label label-lg label-danger">Report failed. Check your set scores. Missing numbers.</span></h3>';
 			die();
-			
+
 
 		}
 
@@ -207,29 +207,29 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 
 			if ($winner_1 && $loser_1 && $winner_2 && $loser_2 && $winner_3 && $loser_3 ) {
 				if (!User::checkSetScore($winner_1,$loser_1) ||!User::checkSetScore($winner_2,$loser_2) || !User::checkSetScore($winner_3,$loser_3)  ) {
-					echo '<h3><span class="label label-lg label-danger">Set scores are invalid for 3 sets. (1)</span></h3>';	
+					echo '<h3><span class="label label-lg label-danger">Set scores are invalid for 3 sets. (1)</span></h3>';
 					die();
 				}
 
 				if (!User::checkScores([$winner_1,$loser_1],[$winner_2,$loser_2],[$winner_3,$loser_3])) {
-					echo '<h3><span class="label label-lg label-danger">Match score is invalid for 3 sets. (2)</span></h3>';	
+					echo '<h3><span class="label label-lg label-danger">Match score is invalid for 3 sets. (2)</span></h3>';
 					die();
 				}
-				
+
 			} else {
 				if ($winner_1 && $loser_1 && $winner_2 && $loser_2) {
 
 					if (!User::checkSetScore($winner_1,$loser_1) ||!User::checkSetScore($winner_2,$loser_2)) {
-						echo '<h3><span class="label label-lg label-danger">Set scores are invalid for 2 sets. (2)</span></h3>';	
+						echo '<h3><span class="label label-lg label-danger">Set scores are invalid for 2 sets. (2)</span></h3>';
 						die();
 					}
 
 					if (!User::checkScores([$winner_1,$loser_1],[$winner_2,$loser_2])) {
-						echo '<h3><span class="label label-lg label-danger">Match score is invalid for 2 sets.</span></h3>';	
+						echo '<h3><span class="label label-lg label-danger">Match score is invalid for 2 sets.</span></h3>';
 						die();
 					}
 				} else {
-					echo '<h3><span class="label label-lg label-danger">Set scores are missing.</span></h3>';	
+					echo '<h3><span class="label label-lg label-danger">Set scores are missing.</span></h3>';
 					die();
 				}
 			}
@@ -237,57 +237,57 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 			$loserscore = -1;
 
 		} else if ($matchtype == 2 && $retired == 1) {
-			
+
 			if ($winner_3 && $loser_3) {
 				//check 2nd and 1st
 				if (!User::checkSetScore($winner_2,$loser_2)) {
-					echo '<h3><span class="label label-lg label-danger">Report failed. Set 2 score is invalid.</span></h3>';	
-					die();					
+					echo '<h3><span class="label label-lg label-danger">Report failed. Set 2 score is invalid.</span></h3>';
+					die();
 				}
 
 				if (!User::checkSetScore($winner_1,$loser_1)) {
-					echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is invalid.</span></h3>';	
-					die();					
+					echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is invalid.</span></h3>';
+					die();
 				}
 
 			} else {
 				if ($winner_2 && $loser_2) {
 					//check 1st
 					if (!User::checkSetScore($winner_1,$loser_1)) {
-						echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is invalid here.</span></h3>';	
-						die();					
+						echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is invalid here.</span></h3>';
+						die();
 					}
 
 				} else {
 					if ($winner_1 && $loser_1) {
 						if ($winner_1 == $loser_1 && $winner_1 == 7) {
-							echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is invalid.</span></h3>';	
-							die();					
+							echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is invalid.</span></h3>';
+							die();
 						}
-						
+
 					} else {
-						echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is missing.</span></h3>';	
-						die();					
+						echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is missing.</span></h3>';
+						die();
 					}
 
 				}
 			}
 		}
 
-	  	$c = R::getRow( 'SELECT 
+	  	$c = R::getRow( 'SELECT
 	  						ac.id,
 	  						c.challengerid,
 	  						ac.acceptedbyuserid,
 	  						ac.winnerid,
 	  						d.id as divisionid
-							FROM acceptedchallenges ac 
-							LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
-							LEFT JOIN users u on u.id = ac.acceptedbyuserid  
+							FROM acceptedchallenges ac
+							LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+							LEFT JOIN users u on u.id = ac.acceptedbyuserid
 							LEFT JOIN users uu on uu.id = c.challengerid
-							LEFT JOIN divisions d on d.id = c.challenge_in_division 
+							LEFT JOIN divisions d on d.id = c.challenge_in_division
 							WHERE (c.challengerid = :uid OR ac.acceptedbyuserid = :uid)
-							AND c.cancelnote IS NULL 
-							AND ac.cancelnote IS NULL 
+							AND c.cancelnote IS NULL
+							AND ac.cancelnote IS NULL
 							AND ac.confirmed = 1
 							AND ac.id = :cid
 							-- AND ac.winnerid IS NULL
@@ -296,7 +296,7 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 							    ':uid' => $winnerid,
 							    ':cid' => $args['challengeid'],
 	                        ]);
-	  	
+
 	  	// dump($c);
 	  	// die();
 
@@ -336,9 +336,9 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 	  		$cc->retired = $retired;
 	  		$cc->retirednote = $retirednote;
 	  		$cc->reportedbyuserid = $app->user->id;
-			
+
 		 if ($matchtype == 2) {
-	
+
 				$cc->winner_1 = $winner_1;
 				$cc->winner_2 = $winner_2;
 				$cc->winner_3 = $winner_3;
@@ -353,12 +353,12 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 	  		$res2 = User::storeBean($bloser);
 
 	  		if ($res && $res1 && $res2) {
-	  			echo '<h3><span class="label label-pill label-success">Reported successfully!</span></h3>';	
+	  			echo '<h3><span class="label label-pill label-success">Reported successfully!</span></h3>';
 	  		} else {
-	  			echo '<h3><span class="label label-pill label-danger">Report failed. Please try again!</span></h3>';	
+	  			echo '<h3><span class="label label-pill label-danger">Report failed. Please try again!</span></h3>';
 	  		}
 
-	  		
+
 
 	  	} else {
 
@@ -374,9 +374,9 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
   ->add($authenticated);
 
 $app->get('/challengesreportjson', function($request,$response,$args) use ($app)
-{	
+{
 		// generate json of challenges available for reporting, i.e. confirmed and not cancelled
-		$challengesreport = R::getAll( 'SELECT 
+		$challengesreport = R::getAll( 'SELECT
 								ac.id as challengeid,
 								c.id as challengeid2,
 								c.challengedate,
@@ -388,14 +388,14 @@ $app->get('/challengesreportjson', function($request,$response,$args) use ($app)
 								ac.reportedbyuserid,
 								IF(ac.reportedbyuserid = :uid AND ac.reportconfirmed IS NULL,0,1) as needtoconfirm,
 								ac.reportconfirmed
-								FROM acceptedchallenges ac 
-								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
-								LEFT JOIN users u on u.id = ac.acceptedbyuserid  
+								FROM acceptedchallenges ac
+								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+								LEFT JOIN users u on u.id = ac.acceptedbyuserid
 								LEFT JOIN users uu on uu.id = c.challengerid
-								LEFT JOIN divisions d on d.id = c.challenge_in_division 
+								LEFT JOIN divisions d on d.id = c.challenge_in_division
 								WHERE (c.challengerid = :uid OR ac.acceptedbyuserid = :uid)
-								AND c.cancelnote IS NULL 
-								AND ac.cancelnote IS NULL 
+								AND c.cancelnote IS NULL
+								AND ac.cancelnote IS NULL
 								AND ac.confirmed = 1
 								-- AND ac.winnerid is null
 								',
@@ -404,15 +404,15 @@ $app->get('/challengesreportjson', function($request,$response,$args) use ($app)
 		                        ]);
 
 		$output = ['data' => $challengesreport];
-		echo json_encode($output);		
+		echo json_encode($output);
 
 })->setName('challenges.report.get.json')
   ->add($isMember)
-  ->add($authenticated);  
+  ->add($authenticated);
 
 $app->get('/reportjson[/{challengeid}]', function($request,$response,$args) use ($app)
 {
-	$challengesreport = R::getAll( 'SELECT 
+	$challengesreport = R::getAll( 'SELECT
 						ac.id as challengeid,
 						c.id as challengeid2,
 						c.challengedate,
@@ -437,14 +437,14 @@ $app->get('/reportjson[/{challengeid}]', function($request,$response,$args) use 
 							)
 						) AS score,
 						ac.reportconfirmed
-						FROM acceptedchallenges ac 
-						LEFT JOIN challenges c on c.id = ac.acceptedchallengeid 
-						LEFT JOIN users u on u.id = ac.acceptedbyuserid  
+						FROM acceptedchallenges ac
+						LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
+						LEFT JOIN users u on u.id = ac.acceptedbyuserid
 						LEFT JOIN users uu on uu.id = c.challengerid
-						LEFT JOIN divisions d on d.id = c.challenge_in_division 
+						LEFT JOIN divisions d on d.id = c.challenge_in_division
 						WHERE (c.challengerid = :uid OR ac.acceptedbyuserid = :uid)
-						AND c.cancelnote IS NULL 
-						AND ac.cancelnote IS NULL 
+						AND c.cancelnote IS NULL
+						AND ac.cancelnote IS NULL
 						AND ac.confirmed = 1
 						AND ac.id = :cid
 						-- AND ac.winnerid is null
@@ -453,9 +453,9 @@ $app->get('/reportjson[/{challengeid}]', function($request,$response,$args) use 
 						    ':uid' => $app->user->id,
 						    ':cid' => $args['challengeid'],
                         ]);
-	
-	echo json_encode($challengesreport);		
+
+	echo json_encode($challengesreport);
 
 })->setName('challenge.report.get.json')
   ->add($isMember)
-  ->add($authenticated);    
+  ->add($authenticated);

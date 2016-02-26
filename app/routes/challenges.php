@@ -419,7 +419,7 @@ $app->get('/issuedchallengesjson[/{yyyymmdd}]', function($request,$response,$arg
 									':cid' => $app->user->id,
 								]);
 
-		echo json_encode($issuedchallenges);
+		echo json_encode(['data' => $issuedchallenges]);
 
 	}
 })->setName('challenges.issued.get.json')
@@ -1043,9 +1043,11 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 				]);
 
 				if ($checkalreadyaccepted) {
-					$this->get('flash')->addMessage('global_error', 'Challenge ALREADY accepted! Please refresh the page or go to My Challenges to see the status.');
-					$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-					return $response;
+					// $this->get('flash')->addMessage('global_error', 'Challenge ALREADY accepted! Please refresh the page or go to My Challenges to see the status.');
+					// $response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
+					// return $response;
+					echo '<h3><span class="label label-lg label-danger">Accept failed. You already accepted.</span></h3>';
+					die();
 				}
 
 				$c = R::dispense('acceptedchallenges');
@@ -1062,28 +1064,38 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 			    try{
 			        R::store($c);
 			        R::commit();
-					$this->get('flash')->addMessage('global', 'Challenge accepted!');
-					$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-					return $response;
+					// $this->get('flash')->addMessage('global', 'Challenge accepted!');
+					// $response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
+					// return $response;
+					echo '<h3><span class="label label-lg label-success">Accepted successfully!';
+					die();
 			    }
 			    catch( Exception $e ) {
 			        R::rollback();
-					$this->get('flash')->addMessage('global_error', 'Challenge NOT accepted! Error: ' . $e->getMessage());
-					$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-					return $response;
+					// $this->get('flash')->addMessage('global_error', 'Challenge NOT accepted! Error: ' . $e->getMessage());
+					// $response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
+					// return $response;
+					echo '<h3><span class="label label-lg label-danger">Accept failed. Error: ' . $e->getMessage();
+					die();
 
 			    }
 
 				//send email here to challenger with confirmation link and user info
 
 			} else {
-				$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-				return $response;
+				//$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
+				//return $response;
+				echo '<h3><span class="label label-lg label-success">Accepted successfully!';
+				die();
+
 			}
 	    } else {
-	    	$this->get('flash')->addMessage('global_error', 'Challenge NOT accepted! ' . implode(',',$v->errors()->all()) );
-			$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-			return $response;
+	  //   	$this->get('flash')->addMessage('global_error', 'Challenge NOT accepted! ' . implode(',',$v->errors()->all()) );
+			// $response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
+			// return $response;
+			echo '<h3><span class="label label-lg label-danger">Accept failed. Error: ' . implode(',',$v->errors()->all());
+			die();
+
 	    }
 
 	}
