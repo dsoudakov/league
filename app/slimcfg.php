@@ -114,6 +114,31 @@ $c['view'] = function ($c)
 
     $view->getEnvironment()->addFilter($addActivefilter);
 
+    $addActivityCheck = new Twig_SimpleFunction('logActivity', function ($log) use ($app) {
+        if ($log && $app->auth->id) {
+            $ua = R::findOne('usersactive', 'user_id = :id', [
+                        ':id' => $app->auth->id,
+                        ]);
+
+            if (!$ua) {
+                $ua = R::dispense('usersactive');
+            }
+
+            $ua->last_active = Carbon::now('America/Toronto')->toDateTimeString();
+            $ua->user_id = $app->auth->id;
+
+            $uaid = R::store($ua);
+        }
+        
+        return null;
+    });
+
+    $addUsersOnlineCheck = new Twig_SimpleFunction('numOfUsersOnline', function () use ($app) {
+
+        $ua = R::getRow('SELECT count(*) as count FROM usersactive WHERE last_active > NOW() - INTERVAL 15 MINUTE');
+        return $ua['count'];
+    });
+
     $value_selected = new Twig_SimpleFunction('value_selected', function ($value, $field) use ($app) {
         
         if ($app->auth) {
@@ -135,6 +160,8 @@ $c['view'] = function ($c)
 
     $view->getEnvironment()->addFunction($value_selected);
     $view->getEnvironment()->addFunction($rendered);
+    $view->getEnvironment()->addFunction($addActivityCheck);
+    $view->getEnvironment()->addFunction($addUsersOnlineCheck);
 
     return $view;
 };

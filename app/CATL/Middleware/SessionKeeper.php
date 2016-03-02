@@ -2,6 +2,9 @@
 
 namespace CATL\Middleware;
 
+use CATL\R;
+use Carbon\Carbon;
+
 class SessionKeeper {
 	public function checkActivity()
 	{
@@ -17,9 +20,9 @@ class SessionKeeper {
 
     public function __invoke($request, $response, $next)
     {
-    	$this->checkActivity();
 
+		$this->checkActivity();
         $response = $next($request, $response);
         return $response;
-    }	
+    }
 }

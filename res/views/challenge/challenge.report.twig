@@ -266,13 +266,13 @@
           searching: true,
           initComplete: function () {
           },
-           aoColumnDefs : [
-             {
-                 aTargets   : [ 5,6,7,8,9 ],
-                 visible    : false,
-                 searchable : false
-             },
-           ],
+          aoColumnDefs : [
+            {
+                aTargets   : [ 5,6,7,8,9 ],
+                visible    : false,
+                searchable : false
+            },
+          ],
           fnDrawCallback:function(d){
             if ( d.aiDisplay.length > 10 ) {
                $('#reportchallengestable_paginate').show();

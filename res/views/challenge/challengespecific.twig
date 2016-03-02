@@ -70,6 +70,24 @@
                 <input type="hidden" name="challengeInDivision" value="{{ challengeInDivision }}">
                 <label for="challengedate">Select a date:</label>
                 <input class="date form-control" type="text" data-date-end-date="+14d" name="challengedate" id="challengedate" placeholder="date within 14 days from today" value="{{ session.challengedate }}">
+                <label for="matchesGroup1">Number of matches:</label>
+                <div id="matchesGroup1" class="btn-group" data-toggle="buttons">
+                  <label class="btn btn-default active" data-active-class="primary">
+                    <input type="radio" name="numofmatches" id="option1" value="1" autocomplete="off" checked>1
+                  </label>
+                  <label class="btn btn-default" data-active-class="primary">
+                    <input type="radio" name="numofmatches" id="option2" value="2" autocomplete="off">2
+                  </label>
+                  <label class="btn btn-default" data-active-class="primary">
+                    <input type="radio" name="numofmatches" id="option3" value="3" autocomplete="off">3
+                  </label>
+                  <label class="btn btn-default" data-active-class="primary">
+                    <input type="radio" name="numofmatches" id="option4" value="4" autocomplete="off">4
+                  </label>
+                  <label class="btn btn-default" data-active-class="primary">
+                    <input type="radio" name="numofmatches" id="option5" value="5" autocomplete="off">5
+                  </label>
+                </div><br />                
               <label for="challengenote">Note:</label>
               <textarea class="form-control" maxlegth="200" rows="10" cols="40" name="challengenote" id="challengenote" placeholder="Details of the challenge, such as number of matches, start time, etc.">{{ session.challengenote }}</textarea>
                <br /> <h6 class="pull-right" id="count_message"></h6>

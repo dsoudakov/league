@@ -24,20 +24,15 @@ $app->get('/challengeall', function($request,$response,$args) use ($app)
 
 $app->post('/challengeall', function($request,$response,$args) use ($app)
 {
+	$numofmatches = $request->getParam('numofmatches');
 	$challengeInDivision =  $request->getParam('challengeInDivision');
 	$challengedate1 = $request->getParam('challengedate');
 	$challengedate = Carbon::parse($request->getParam('challengedate'));
 	$today = Carbon::today('America/Toronto');
 	$lastDate = Carbon::today('America/Toronto')->addWeeks(2);
 
-    // echo "CD:".$challengedate1 . BR;
-	// echo "TD:".$today . BR;
-
 	$test = Carbon::parse($challengedate)->gte($today);
 	$test2 = Carbon::parse($challengedate)->lte($lastDate);
-
-	// var_dump($test) . BR;
-	// var_dump($test2). BR;
 
 	$challengenote = $request->getParam('challengenote');
 
@@ -46,6 +41,7 @@ $app->post('/challengeall', function($request,$response,$args) use ($app)
 	$v->validate([
 		'challengenote|Challenge note' => [$challengenote, 'required|max(200)'],
 		'challengedate1|Challenge date' => [$challengedate1, 'required|max(30)'],
+		'numofmatches|Number of matches' => [$numofmatches, 'required|int|between(1,5)'],
 		'challengeInDivision|Challenged division' => [$challengeInDivision, 'required|between(1,99)'],
 	]);
 
@@ -70,6 +66,7 @@ $app->post('/challengeall', function($request,$response,$args) use ($app)
 		$c->challengedate = $challengedate;
 		$c->challengenote = $challengenote;
 		$c->challengecreatedat = $now;
+		$c->numofmatches = $numofmatches;
 
 		if (User::storeBean($c)) {
 
@@ -106,22 +103,16 @@ $app->get('/challengespecific', function($request,$response,$args) use ($app)
 $app->post('/challengespecific', function($request,$response,$args) use ($app)
 {
 
+	$numofmatches = $request->getParam('numofmatches');
 	$challengedids =  $request->getParam('challengedids');
-
 	$challengeInDivision =  $request->getParam('challengeInDivision');
 	$challengedate1 = $request->getParam('challengedate');
 	$challengedate = Carbon::parse($request->getParam('challengedate'));
 	$today = Carbon::today('America/Toronto');
 	$lastDate = Carbon::today('America/Toronto')->addWeeks(2);
 
-    // echo "CD:".$challengedate1 . BR;
-	// echo "TD:".$today . BR;
-
 	$test = Carbon::parse($challengedate)->gte($today);
 	$test2 = Carbon::parse($challengedate)->lte($lastDate);
-
-	// var_dump($test) . BR;
-	// var_dump($test2). BR;
 
 	$challengenote = $request->getParam('challengenote');
 
@@ -132,6 +123,7 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 		'challengedate1|Challenge date' => [$challengedate1, 'required'],
 		'challengedids' => [$challengedids, 'required|array|arrayOfInt'],
 		'challengeInDivision|Challenged division' => [$challengeInDivision, 'required|between(1,99)'],
+		'numofmatches|Number of matches' => [$numofmatches, 'required|int|between(1,5)'],
 	]);
 
 	$_SESSION['challengenote'] = $challengenote;
@@ -169,6 +161,7 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 		$c->challengenote = $challengenote;
 		$c->challengecreatedat = $now;
 		$c->challengedids = json_encode($challengedids);
+		$c->numofmatches = $numofmatches;
 
 		if (User::storeBean($c)) {
 

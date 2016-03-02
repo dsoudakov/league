@@ -38,7 +38,9 @@
                  <h2><strong>You have to join at least one division!</strong></h2>
             {% else %}
 
-              <h2><strong>Current Open Challenges</strong><a alt="Refresh" class="btn btn-sm" title="Refresh" id="challengesissuedtablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></h2>
+              <h2><strong>Current Open Challenges</strong><a alt="Refresh" class="btn btn-sm" title="Refresh" id="challengesissuedtablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a>
+              <span class="badge" data-toggle="tooltip" title="Showing challenges within 2 weeks from now.">Help</span>
+              </h2>
               <table id="challengesissuedtable" class="display table table-bordered table-striped table-condensed table-hover" width="100%">
                 <thead>
                   <tr>
@@ -113,6 +115,11 @@
 
     $(document).ready(function() {
 
+      $('[data-toggle="tooltip"]').tooltip({
+        placement: 'bottom',
+        trigger: 'hover focus',
+      });
+
       var userid = {{ user.id | default(0) }};
       var userpid = {{ user.divisionprimary | default(0) }};
       var usersid = {{ user.divisionsecondary | default(0) }};
@@ -136,7 +143,7 @@
             { "data" : "numofplayers" },
           ],
           oLanguage: {
-           sZeroRecords : "No challenges created yet",
+           sZeroRecords : "No challenges within next 2 weeks",
            sProcessing: "Reloading data from server..."
           },
           order: [[ 2, "desc" ]],
