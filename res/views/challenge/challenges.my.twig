@@ -32,47 +32,47 @@
       </div>
       <div class="col-md-8">
         <div class="panel">
-            <div class="panel-body">
-              <h2><strong>My Challenges</strong><a alt="Refresh" class="btn btn-sm" title="Refresh" id="challengesmytablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></h2>
-              <table id="challengesmytable" class="display nowrap table table-bordered table-striped table-condensed table-hover" style="width: 100% !important;">
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Date</th>
-                    <th>Division</th>
-                    <th># Acc/Conf/Can</th>
-                    <th># challenged</th>
-                  </tr>
-                </thead>
-              </table>
+          <div class="panel-body">
+            <h2><strong>My Challenges</strong><a alt="Refresh" class="btn btn-sm" title="Refresh" id="challengesmytablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></h2>
 
-          <h2><strong>Challenges Accepted by Me</strong><a alt="Refresh" class="btn btn-sm" title="Refresh" id="acceptedchallengesmytablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></h2>
+            <table id="challengesmytable" class="display nowrap table table-bordered table-striped table-condensed table-hover" style="width: 100% !important;">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Date</th>
+                  <th>Division</th>
+                  <th># Acc/Conf/Can</th>
+                  <th># challenged</th>
+                </tr>
+              </thead>
+            </table>
 
-              <table id="acceptedchallengesmytable" class="display table table-bordered table-striped table-condensed table-hover" style="width: 100% !important;">
-                <thead>
-                  <tr>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>VS</th>
-                    <th>Division</th>
-                  </tr>
-                </thead>
-              </table>
+            <h2><strong>Challenges Accepted by Me</strong><a alt="Refresh" class="btn btn-sm" title="Refresh" id="acceptedchallengesmytablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></h2>
 
-          <h2><strong>My Challenges Status <a alt="Refresh" class="btn btn-sm" title="Refresh" id="mychallengesstatustablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></strong></h2>
+            <table id="acceptedchallengesmytable" class="display table table-bordered table-striped table-condensed table-hover" style="width: 100% !important;">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>VS</th>
+                  <th>Division</th>
+                </tr>
+              </thead>
+            </table>
 
-              <table id="mychallengesstatustable" class="display nowrap table table-bordered table-striped table-condensed table-hover" style="width: 100% !important;">
-                <thead>
-                  <tr>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Accepted By</th>
-                    <th>Division</th>
-                    <th># challenged</th>
-                  </tr>
-                </thead>
-              </table>
+            <h2><strong>My Challenges Status <a alt="Refresh" class="btn btn-sm" title="Refresh" id="mychallengesstatustablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></strong></h2>
 
+            <table id="mychallengesstatustable" class="display nowrap table table-bordered table-striped table-condensed table-hover" style="width: 100% !important;">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Accepted By</th>
+                  <th>Division</th>
+                  <th># challenged</th>
+                </tr>
+              </thead>
+            </table>
         	</div>
         </div>
       </div>
@@ -201,82 +201,6 @@
   <script type="text/javascript">
 
     $(document).ready(function() {
-
-      var items = [];
-
-      // $.getJSON( "{{ path_for('challenges.my.get.json')}}", function( data ) {
-
-      //   $.each( data, function( key, val ) {
-      //     var item = [];
-
-      //     if (data[key]['confirmed'] == 1 ) {
-
-      //       if (data[key]['cancelnote']) {
-      //         item.push('<a class="btn btn-sm btn-danger disabled">Cancelled</a>');
-      //       } else {
-      //         item.push('<a data-loaded="false" data-toggle="modal" data-target="#cancelModal" data-remote="false"  class="btn btn-sm btn-info" href="{{SITEROOT}}/challenge/cancel/'
-      //           + data[key]['challengeid']
-      //           + '">Cancel</a>');
-      //       }
-      //     } else {
-      //       item.push('<a data-toggle="modal" data-target="#deleteModal" data-remote="false" class="btn btn-sm btn-warning" href="{{SITEROOT}}/challenge/delete/'
-      //         + data[key]['challengeid']
-      //         + '">Delete</a>');
-      //     }
-
-      //     item.push( '<a href="{{SITEROOT}}/challenge/details/' + data[key]['challengeid'] + '" data-toggle="modal" data-target="#challengeDetailsModal" data-remote="false" class="btn btn-sm btn-primary">' + data[key]['challengedate'] + '</a>' );
-      //     item.push(data[key]['challengeddivision'] );
-
-      //     item.push(
-      //         '<a class="btn disabled btn-sm btn-warning" href="{{SITEROOT}}/challenge/details/'
-      //         + data[key]['challengeid']
-      //         + '"> ' + data[key]['numofacceptedchallenges'] + ' </a> / '
-      //         + '<a class="btn disabled btn-sm btn-success" href="{{SITEROOT}}/challenge/details/'
-      //         + data[key]['challengeid']
-      //         + '"> ' + data[key]['numofconfirmedchallenges'] + ' </a> / '
-      //         + '<a class="btn disabled btn-sm btn-danger" href="{{SITEROOT}}/challenge/details/'
-      //         + data[key]['challengeid']
-      //         + '"> ' + data[key]['numofcancelledchallenges'] + ' </a>'
-      //     );
-
-      //     if (data[key]['numofplayers'] ) {
-      //       item.push(data[key]['numofplayers'] );
-      //     } else {
-
-      //       item.push('all');
-      //     }
-
-      //     items.push(item);
-      //   });
-
-      //   if (items.length <= 10) {
-      //     var opts =  {
-      //       responsive: true,
-      //       processing: true,
-      //       "oLanguage": {
-      //         "sZeroRecords": "No records"
-      //       },
-      //       "order": [[ 1, "desc" ]],
-      //       "paging":   false,
-      //       "info":     false,
-      //       "searching": false,
-      //     };
-      //   }
-
-      //   var challengesmytable = $('#challengesmytable').dataTable(opts);
-
-      //   challengesmytable.fnClearTable();
-
-      //   for(var i = 0; i < items.length; i++) {
-      //       challengesmytable.fnAddData([
-      //         items[i][0],
-      //         items[i][1],
-      //         items[i][2],
-      //         items[i][3],
-      //         items[i][4]
-      //       ]);
-      //   };
-      // });
 
       var challengesmytableopts = {
            responsive: true,

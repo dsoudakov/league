@@ -6,10 +6,26 @@
   {{parent()}}
   <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/datatables.min.css" />
   <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/responsive.dataTables.min.css" />
+
+  <style type="text/css" media="screen">
+    #overlay_block_click_div {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9999;
+        background-color: gray;
+        opacity: 0.5;
+        display: none;
+    }
+  </style>
 {% endblock head %}
 
 {% block content %}
-
+<div id="overlay_block_click_div">
+  
+</div>
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-2">
@@ -33,17 +49,18 @@
       <div class="col-md-8">
         <div class="panel">
             <div class="panel-body">
-              <h2><strong>Club Members</strong><a alt="Refresh" class="btn btn-sm" title="Refresh" id="memberstablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></h2>
-              <table id="memberstable" class="display nowrap table table-bordered table-striped table-condensed table-hover" style="width: 100% !important;">
+              <h2><strong>League members</strong><a alt="Refresh" class="btn btn-sm" title="Refresh" id="leaguememberstablerefresh"><img src="{{SITEROOT}}/res/img/reload.png"></a></h2>
+              <table id="leaguememberstable" class="display nowrap table table-bordered table-striped table-condensed table-hover" style="width: 100% !important;">
                 <thead>
                   <tr>
-                    <th>id</th>
                     <th>First</th>
                     <th>Last</th>
                     <th>Home</th>
                     <th>Cell</th>
                     <th>Work</th>
                     <th>E-mail</th>
+                    <th>Pri. div.</th>
+                    <th>Sec. div</th>
                   </tr>
                 </thead>
               </table>
@@ -65,19 +82,42 @@
 
     $(document).ready(function() {
 
-      var tablename_0 = 'memberstable';
-      var memberstableopts = {
+      var initCallback = function () {
+            $('[data-toggle="tooltip"]').tooltip({
+              placement: 'right',
+              trigger: 'hover focus',
+              html: true
+            });
+
+            $('.ajaxadminbtn').click(function (e) {
+              $('#overlay_block_click_div').show();
+              $btn = $(this);
+              e.preventDefault();
+              $.ajax({
+                      method: "GET",
+                      url: $btn.attr('href')
+                    })
+                      .done(function( msg ) {
+                        $('#overlay_block_click_div').hide();
+                        leaguememberstable.ajax.reload(initCallback);
+                      });
+            });
+      }
+
+      var tablename_0 = 'leaguememberstable';
+      var leaguememberstableopts = {
           responsive: true,
           processing: true,
-          ajax: "{{ path_for('club_members_json')}}",
+          ajax: "{{ path_for('league_members_json')}}",
           columns: [
-            { "data" : "id" }, // 0
             { "data" : "firstname" },
             { "data" : "lastname" },
             { "data" : "home" },
             { "data" : "cell" },
             { "data" : "work" },
             { "data" : "email" },
+            { "data" : "divisionprimary" },
+            { "data" : "divisionsecondary" },
           ],
           oLanguage: {
            sZeroRecords : "Nothing to show"
@@ -86,8 +126,7 @@
           paging:   true,
           info:     true,
           searching: true,
-          initComplete: function () {
-          },
+          initComplete: initCallback,
           fnDrawCallback : function(d) {
             if ( d.aiDisplay.length > 10 ) {
                 $('#' + tablename_0 + '_paginate').show();
@@ -96,19 +135,29 @@
               }
           },         
           rowCallback : function( row, full, index ) {
-             full.home = phoneFormat(full.home);
-             full.cell = phoneFormat(full.cell);
-             full.work = phoneFormat(full.work);
-             $('td:eq(3)', row).html( full.home );
-             $('td:eq(4)', row).html( full.cell );
-             $('td:eq(5)', row).html( full.work );
+            full.home = phoneFormat(full.home);
+            full.cell = phoneFormat(full.cell);
+            full.work = phoneFormat(full.work);
+            $('td:eq(2)', row).html( full.home );
+            $('td:eq(3)', row).html( full.cell );
+            $('td:eq(4)', row).html( full.work );
+
+            if (!full.is_admin ) {
+              output_col_0 = '<a data-toggle="tooltip" title="Make admin" class="ajaxadminbtn btn btn-sm btn-success" href="{{SITEROOT}}/admin/makeadmin/'
+                + full.id + '">A</a> ' + full.firstname;
+            } else {
+              output_col_0 = '<a data-toggle="tooltip" title="Remove admin" class="ajaxadminbtn btn btn-sm btn-danger" href="{{SITEROOT}}/admin/removeadmin/'
+                + full.id + '">R</a> ' + full.firstname;
+            }
+
+            $('td:eq(0)', row).html( output_col_0 );
           }
       };
 
-      memberstable = $('#memberstable').DataTable(memberstableopts);
+      leaguememberstable = $('#leaguememberstable').DataTable(leaguememberstableopts);
 
-      $('#memberstablerefresh').on( 'click', function () {
-          memberstable.ajax.reload();
+      $('#leaguememberstablerefresh').on( 'click', function () {
+          leaguememberstable.ajax.reload();
       });
 
       function phoneFormat(tel) {
@@ -154,7 +203,8 @@
           return (country + " (" + city + ") " + number).trim();
       };
 
-  });
+     
+    });      
 
   </script>
 {% endblock js %}

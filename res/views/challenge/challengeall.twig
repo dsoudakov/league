@@ -80,9 +80,8 @@
 
 	          	<form method="post" action="{{ path_for('challenge.create.all.post') }}">
 	          	  <label for="challengedate">Select a date:</label>
-                <input class="date form-control" type="text" data-date-end-date="+14d" name="challengedate" id="challengedate" placeholder="date within 14 days from today">
+                <input class="date form-control" type="text" data-date-end-date="+14d" name="challengedate" id="challengedate" placeholder="date within 14 days from today" autocomplete="off">
                 <label for="matchesGroup1">Number of matches:</label>
-
                 <div id="matchesGroup1" class="btn-group" data-toggle="buttons">
                   <label class="btn btn-default active" data-active-class="primary">
                     <input type="radio" name="numofmatches" id="option1" value="1" autocomplete="off" checked>1

@@ -118,6 +118,7 @@
       $('[data-toggle="tooltip"]').tooltip({
         placement: 'bottom',
         trigger: 'hover focus',
+        html: true
       });
 
       var userid = {{ user.id | default(0) }};

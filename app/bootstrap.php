@@ -29,3 +29,4 @@ require ROOT . 'app/routes/backup.php';
 require ROOT . 'app/routes/messageboard.php';
 require ROOT . 'app/routes/standings.php';
 require ROOT . 'app/routes/emailstests.php';
+require ROOT . 'app/routes/admin.php';

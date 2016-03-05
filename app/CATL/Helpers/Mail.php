@@ -6,16 +6,34 @@ use Mailgun\Mailgun;
 
 class Mail
 {
+	public $days;
 	protected $domain;
 	protected $template;
+	protected $templateBody;
 	protected $message;
-	protected $messageBody = [];
 	protected $instance;
 
 	public function __construct($config)
 	{
 
 		global $app;
+
+		$this->templateBody = [
+			'subject' => 'Test title 1',
+			'title' => 'Test body title 1',
+			'body' => 'Test message 1',
+			'signature' => 'League admin',
+		];
+
+		$this->days = [
+		    'Monday',
+		    'Tuesday',
+		    'Wednesday',
+		    'Thursday',
+		    'Friday',
+		    'Saturday',
+		    'Sunday',
+		];
 
 		$cfg = $app->getContainer()->get('config');
 		$first = $cfg->get('services.mailgun.first');
@@ -38,7 +56,7 @@ class Mail
 		$view = $app->getContainer()->get('view');
 
 		$html = $view->fetch($this->template, [
-					'message' => $this->messageBody,
+					'message' => $this->templateBody,
 				]);
 
 		$this->body($html);
@@ -95,14 +113,19 @@ class Mail
         $this->message->setHtmlBody($body);
     }
 
-	public function message($subject = 'League subject', $title = 'League title', $body = 'Message body.', $signature = '-- League Admin')
+	public function message($templateBody = [])
 	{
-		$this->subject($subject);
-		$this->messageBody = [
-			'subject' => $subject,
-			'title' => $title,
-			'body' => $body,
-			'signature' => $signature,
+		if (!$templateBody) {
+			$templateBody = $this->templateBody;
+		}
+
+		$this->subject($templateBody['subject']);
+		$this->templateBody = [
+			'subject' => $templateBody['subject'],
+			'title' => $templateBody['title'],
+			'body' => $templateBody['body'],
+			'signature' => $templateBody['signature'],
 		];
+
 	}
 }

@@ -139,6 +139,19 @@ $c['view'] = function ($c)
         return $ua['count'];
     });
 
+    $addUsersOnlineList = new Twig_SimpleFunction('listOfUsersOnline', function () use ($app) {
+
+        $ua = R::getAll('SELECT concat(u.first_name, \' \', u.last_name) as email FROM usersactive ua LEFT JOIN users u on u.id = ua.user_id WHERE last_active > NOW() - INTERVAL 15 MINUTE');
+
+        foreach ($ua as $v) {
+            $out .= $v['email'] . BR;
+        }
+
+        return $out;
+
+    });
+
+
     $value_selected = new Twig_SimpleFunction('value_selected', function ($value, $field) use ($app) {
         
         if ($app->auth) {
@@ -162,6 +175,7 @@ $c['view'] = function ($c)
     $view->getEnvironment()->addFunction($rendered);
     $view->getEnvironment()->addFunction($addActivityCheck);
     $view->getEnvironment()->addFunction($addUsersOnlineCheck);
+    $view->getEnvironment()->addFunction($addUsersOnlineList);
 
     return $view;
 };

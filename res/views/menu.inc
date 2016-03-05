@@ -13,14 +13,23 @@
     <li class="{{ path_for('challenges.my')|isActive }}"><a href="{{ path_for('challenges.my') }}">My challenges</a></li>
     <li class="{{ path_for('challenge.create')|isActive }}"><a href="{{ path_for('challenge.create') }}">Create challange</a>  </li>
   </ul>
-  {% endblock challenges_dropdown_contents %}  
+  {% endblock challenges_dropdown_contents %}
 
   {% block admin_dropdown_contents %}
   <ul class="dropdown-menu" aria-labelledby="admindropdownmenu">
     <li class=""><a href="#">Admin Users</a></li>
-    <li class=""><a href="#">Assign Admin</a></li>
-    <li class=""><a href="#">Revoke Admin</a></li>
-    <li role="separator" class="divider"></li>
     <li class=""><a href="#">League settings</a></li>
+    <li class=""><a href="#">Divisions</a></li>
   </ul>
-  {% endblock admin_dropdown_contents %}  
+  {% endblock admin_dropdown_contents %}
+
+  {% block members_dropdown_contents %}
+  <ul class="dropdown-menu" aria-labelledby="membersdropdownmenu">
+    <li class="{{ path_for('club_members')|isActive }}">
+      <a href="{{ path_for('club_members') }}">Club members</a>
+    </li>
+    <li class="{{ path_for('league_members')|isActive }}">
+      <a href="{{ path_for('league_members') }}">League members</a>
+    </li>
+  </ul>
+  {% endblock members_dropdown_contents %}

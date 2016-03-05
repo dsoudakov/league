@@ -10,12 +10,15 @@
              <span class="icon-bar"></span>
           </button> <a class="navbar-brand" href="{{SITEROOT}}">FHTL</a>
         </div>
-        
+
         <div class="collapse navbar-collapse" id="menu-1">
           <ul class="nav navbar-nav">
             {% if auth.isAdmin() %}
-              <li class="{{ path_for('club_members')|isActive }}">
-                  <a href="{{ path_for('club_members') }}">Club members</a>
+              <li class="dropdown">
+                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Members<strong class="caret"></strong></a>
+                 {% block members_dropdown_contents %}
+                  {{parent()}}
+                 {% endblock members_dropdown_contents %}
               </li>
             {% endif %}
             <li class="dropdown">
@@ -29,26 +32,22 @@
             </li>
             <li class="{{ path_for('standings')|isActive }}">
               <a href="{{ path_for('standings') }}">Standings</a>
-            </li>            
+            </li>
             {% if auth.isAdmin() %}
               <li class="{{ path_for('upload')|isActive }}">
                 <a href="{{ path_for('upload') }}">Upload</a>
               </li>
-
             {% endif %}
-
-
           </ul>
           <ul class="nav navbar-nav navbar-right">
-
-            <li><a>Users online: <span class="badge">{{numOfUsersOnline()}}</span></a></li>
+            <li><a>Users online: <span class="badge" data-toggle="tooltip" title="{{listOfUsersOnline()|raw}}">{{numOfUsersOnline()}}</span></a></li>
             {% if auth.isAdmin() %}
             <li class="dropdown">
                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin<strong class="caret"></strong></a>
                  {% block admin_dropdown_contents %}
                   {{parent()}}
                  {% endblock admin_dropdown_contents %}
-            </li>            
+            </li>
             {% endif %}
             <li class="dropdown">
                <a href="#" class="dropdown-toggle" data-toggle="dropdown"><strong class="glyphicon glyphicon-home">
@@ -61,5 +60,4 @@
         </div>
       </div>
     </nav>
-
 {% endblock nav %}

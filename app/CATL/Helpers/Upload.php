@@ -8,7 +8,8 @@ class Upload {
 
 	public static $newname;
 
-	public static function file_upload_max_size() {
+	public static function file_upload_max_size()
+	{
 	  static $max_size = -1;
 
 	  if ($max_size < 0) {
@@ -25,7 +26,7 @@ class Upload {
 	  return $max_size;
 	}
 
-	public static function parse_size($size) 
+	public static function parse_size($size)
 	{
 	  $unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
 	  $size = preg_replace('/[^0-9\.]/', '', $size); // Remove the non-numeric characters from the size.
@@ -38,10 +39,10 @@ class Upload {
 	  }
 	}
 
-	public static function check($filename) 
+	public static function check($filename)
 	{
 		try {
-		    
+
 		    // Undefined | Multiple Files | $_FILES Corruption Attack
 		    // If this request falls under any of them, treat it invalid.
 		    if (
@@ -64,7 +65,7 @@ class Upload {
 		            throw new RuntimeException('Unknown errors.');
 		    }
 
-		    // You should also check filesize here. 
+		    // You should also check filesize here.
 		    if ($_FILES[$filename]['size'] > self::file_upload_max_size()) {
 		        throw new RuntimeException('Exceeded filesize limit.');
 		    }
@@ -99,7 +100,7 @@ class Upload {
 		            sha1_file($_FILES[$filename]['tmp_name']),
 		            $ext
 		    );
-		    
+
 		    if (!move_uploaded_file($_FILES[$filename]['tmp_name'],self::$newname)) {
 		        throw new RuntimeException('Failed to move uploaded file.');
 		    }
@@ -123,14 +124,31 @@ class Upload {
 			  $newlines = preg_replace('/.*/', '', $line);
 			  //echo strlen($newlines) . BR;
 			  if (strlen(str_replace(',', '', trim($line) )) > strlen($newlines)) {
-			  	$linecount++;	
+			  	$linecount++;
 			  }
 			}
 
 			fclose($handle);
-			return $linecount;				
+			return $linecount;
 		} catch (\Exception $e) {
 			return 0;
+		}
+	}
+
+	public static function checkMembersHeader($file)
+	{
+		$validHeader = '"id","firstname","lastname","home","cell","work","email"';
+		$ret = false;
+		try {
+			$handle = fopen($file, "r");
+  	 		$line = fgets($handle);
+  	 		if ($line == $validHeader) {
+  	 			$ret = true;
+  	 		}
+			fclose($handle);
+			return $ret;
+		} catch (\Exception $e) {
+			return $ret;
 		}
 
 	}

@@ -35,15 +35,15 @@ class User
                 $this->user = $user;
                 $this->id = $user->id;
                 $this->exists = true;
-            } 
-        } 
+            }
+        }
 
         if ($this->exists) {
         	$this->authtokens = new Authtokens($this->id);
         }
     }
 
-    public function isMember() 
+    public function isMember()
     {
         // check if user's email = member's email
         if ($this->exists) {
@@ -80,7 +80,7 @@ class User
         foreach ($divisions as $div) {
             $ret .= '<option value="' . $div->id . '">' . $div->divisionname . ' (' . $div->divisiondesc . ')' . '</option>';
         }
-        
+
         $ret  .= '</select>';
 
 
@@ -103,7 +103,7 @@ class User
         foreach ($divisions as $div) {
             $ret .= '<option value="' . $div->divisiondesc . '">' . $div->divisiondesc . '</option>';
         }
-        
+
         $ret  .= '</select>';
 
 
@@ -119,7 +119,7 @@ class User
         foreach ($divisions as $div) {
             $ret .= '<option value="' . $div->id . '">' . $div->divisionname . ' (' . $div->divisiondesc . ')' . '</option>';
         }
-        
+
         $ret  .= '</select>';
 
         if ($opt == 'primary') {
@@ -132,18 +132,18 @@ class User
 
         return $ret;
     }
-    
+
     public function genDivisionSelect2($name, $opt = false)
     {
         $divisions = R::findAll('divisions');
-        
+
         $ret  .= '<select id="'. $name . '" name="'. $name . '" class="form-control">';
-        $ret .= '<option value="">All divisions</option>';    
+        $ret .= '<option value="">All divisions</option>';
 
         foreach ($divisions as $div) {
             $ret .= '<option value="' . $div->divisiondesc . '">' . $div->divisiondesc . '</option>';
         }
-        
+
         $ret  .= '</select>';
 
         if ($opt == 'primary') {
@@ -155,7 +155,7 @@ class User
         }
 
         return $ret;
-    }    
+    }
 
     public function selected($select, $value)
     {
@@ -169,7 +169,7 @@ class User
             $user = R::findOne('users', ' active_hash = :hash ', [
                 ':hash' => $hash,
             ]);
-            
+
             if ($user) {
 
                 if ($user->active) {
@@ -186,9 +186,9 @@ class User
                 return null;
             }
 
-        } 
-        return null;   
-    } 
+        }
+        return null;
+    }
 
     public static function create($identifier, $password)
     {
@@ -202,7 +202,7 @@ class User
         $res = R::store($u);
 
         return new self($res);
-        
+
     }
 
     public function setApp(&$app)
@@ -219,17 +219,17 @@ class User
                 return true;
             }
             return false;
-        } 
+        }
         return false;
     }
-    
+
     public function updateRememberCredentials($identifier, $token)
     {
            return $this->update([
                 'remember_identifier' => $identifier,
                 'remember_token' => $token
             ]);
-    }    
+    }
 
     public function update($values = [])
     {
@@ -251,9 +251,9 @@ class User
         }
         return null;
     }
- 
+
     public function createAuthToken($app, $value = null)
-    {   
+    {
 
         if (!$value) { //create
             $rememberIdentifier = $app->randomlib->generateString(128);
@@ -336,9 +336,9 @@ class User
     public function authtokenExists($value = null)
     {
         if ($value) {
-            return $this->valueExists($value, 'authtokens', 'remember_identifier');    
+            return $this->valueExists($value, 'authtokens', 'remember_identifier');
         }
-        return $this->valueExists($this->remember_identifier, 'authtokens', 'remember_identifier'); 
+        return $this->valueExists($this->remember_identifier, 'authtokens', 'remember_identifier');
     }
 
     public function valueExists($value, $table, $column)
@@ -359,6 +359,7 @@ class User
         if ($this->exists) {
             return (bool) $this->user->is_admin;
         }
+        return false;
     }
 
     public function removeRememberCredentials()
@@ -401,7 +402,7 @@ class User
                         //echo "4";
                         return false;
                     }
-                }                
+                }
             }
         } else {
             if ($s2 < 6) {
@@ -417,8 +418,8 @@ class User
                         //echo "4";
                         return false;
                     }
-                }                
-            }           
+                }
+            }
         }
 
         return true;
@@ -437,7 +438,7 @@ class User
             }
 
         } else { // check 3 sets
-            
+
             if ($s3[0] < $s3[1]) {
                 return false;
             }
