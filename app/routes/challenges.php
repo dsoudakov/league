@@ -878,31 +878,6 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 	$v = $this->get('validator');
 
-	if ($args['action'] == 'create') {
-
-		$challengeInDivision = $request->getParam('challengeInDivision');
-
-	    $v->validate([
-	        'challengeInDivision|Challenged division' => [$challengeInDivision, 'required|between(1,99)'],
-	    ]);
-
-
-	    if ($v->passes()) {
-
-			$_SESSION['challengeInDivision'] = $challengeInDivision;
-			$response = $response->withRedirect($this->get('router')->pathFor('challenge.'. $args['action'] .'.'.$args['challengeid']));
-			return $response;
-
-	    } else {
-
-			$this->get('flash')->addMessage('global_error', 'Errors... Failed to create challenge.');
-			$response = $response->withRedirect($this->get('router')->pathFor('challenge.create'));
-			return $response;
-
-		}
-
-	}
-
 	if ($args['action'] == 'delete') {
 
 		$v->validate([
@@ -934,14 +909,58 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 			    R::begin();
 			    try{
+			        // notify people who accepted challenge
+
+					$challenge_accepted = R::getAll( 'select *
+													  from acceptedchallenges
+													  where acceptedchallengeid = :acid',
+													[
+														':acid' => $args['challengeid'],
+													]
+													);
+
+			        if ($challenge_accepted) {
+
+			        	foreach ($challenge_accepted as $k => $v) {
+			        		$ids[] = $v['acceptedbyuserid'];
+			        	}
+
+			        	$mail = $this->get('mail2');
+
+			        	$emails = User::idsToEmails($ids);
+
+			        	if (count($emails) > 0) {
+
+				        	$mail->toA($emails);
+
+							$challengedate = Carbon::parse($challenges['challengedate']);
+							$challengedate1 = $challengedate->toFormattedDateString();
+
+							$body = [
+								'subject' => 'Challenge deleted',
+								'title' => 'Challenge deleted (which you accepted)',
+								'body' => 'Challenger: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
+								'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR,
+								'signature' => '',
+							];
+
+							$mail->message($body);
+							$mres = $mail->send();
+
+			        	}
+
+			        }
+
 			        R::exec( 'DELETE FROM challenges where id = ' . $args['challengeid'] );
 			        R::exec( 'DELETE FROM acceptedchallenges where acceptedchallengeid = ' . $args['challengeid'] );
 			        R::commit();
-					$this->get('flash')->addMessage('global', 'Challenge deleted!');
+
+					$this->get('flash')->addMessage('global', 'Challenge deleted! ' . count($emails) . ' player(s) notified!');
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 					return $response;
 			    }
 			    catch( Exception $e ) {
+
 			        R::rollback();
 					$this->get('flash')->addMessage('global_error', 'Challenge NOT deleted! Error: ' . $e->getMessage());
 					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
