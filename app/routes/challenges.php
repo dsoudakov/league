@@ -61,73 +61,35 @@ $app->post('/challengeall', function($request,$response,$args) use ($app)
 	   		return $response->withRedirect($this->get('router')->pathFor('challenge.create.all'));
 		}
 
-		// check if there are > 0 people to challenge, otherwise its pointless to create a challenge
+		if ($challengeInDivision == $app->user->divisionprimary || $challengeInDivision == $app->user->divisionsecondary) {
+
+		} else {
+	    	$this->get('flash')->addMessage('global_error', 'You are not allow to challenge these divisions.');
+	   		return $response->withRedirect($this->get('router')->pathFor('challenge.create.specific'));
+		}
+
+		$mail = $this->get('mail2');
+
+		$emails = User::sendToEmails($challengeInDivision);
 
 		$c = R::dispense('challenges');
 		$c->challengerid = $app->auth->id;
 		$c->challengeInDivision = $challengeInDivision;
 		$c->challengedate = $challengedate;
 		$c->challengenote = $challengenote;
-		$c->challengecreatedat = $now;
+		$c->challengecreatedat = $now->toDateTimeString();
 		$c->numofmatches = $numofmatches;
 
-		// select all ids in division with vacation bit not set
-
-		$dids = R::getAll('select id from users where donotnotifyme = 0 and active = 1
-						 and (divisionprimary = :did or divisionsecondary = :did)',
-							[':did' => $challengeInDivision]
-						);
-		foreach($dids as $k=>$v) {
-		    $dids2[] = $v['id'];
-		}
-
-		$dids_list = implode(',', $dids2);
-
-		// if # > 0 proceed to next check
-		if (count($dids) > 0) {
-
-			// select all challenges/acceptedchallenges played/reported/winnerid/matchtype = 1
-			// in the division with challengerid or acceptedbyuserid in list of those ids
-
-			$ccc = R::getAll('select c.challengerid, ac.acceptedbyuserid
-							  from challenges c inner join acceptedchallenges ac on c.id = ac.acceptedchallengeid
-							  where (c.challengerid = :cid and ac.acceptedbyuserid IN (' . $dids_list . '))
-							  or (c.challengerid IN  (' . $dids_list . ') and ac.acceptedbyuserid = :cid)
-							  and winnerid is not null and reportconfirmed is not null
-							  and challenge_in_division = :did and matchtype = 1',[
-							  		':cid' => $app->auth->id,
-							  		':did' => $challengeInDivision,
-							  ]);
-			// cross check challengerid and (acceptedbyuserid or challengerid)
-			// if check exists - drop that id from the list of division ids
-
-			$excluded_ids[] = $app->auth->id;
-
-			foreach ($ccc as $k => $v) {
-				if ( $v['challengerid'] == $app->auth->id ) {
-					$excluded_ids[] = $v['acceptedbyuserid'];
-				} else {
-					$excluded_ids[] = $v['challengerid'];
-				}
-			}
-
-			$send_to = array_diff($dids2, $excluded_ids);
-
-		}
 
 		if (User::storeBean($c)) {
 
-			// challenge saved, send email to everyone in the division
-
-			if (count($send_to) > 0) {
-				// send emails out
-				$mail = $this->get('mail2');
+			if (count($emails) > 0) {
 
 				$body = [
-					'subject' => 'New challenge: ' . $challengedate1 . ' (' . $mail->days[$challengedate->day] . ')',
+					'subject' => 'New challenge: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
 					'title' => 'New challenge',
 					'body' => 'Challenger: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
-					'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->day] . ')' . BR .
+					'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
 					'Number of matches: ' . $numofmatches . BR .
 					'Note: ' . $challengenote,
 					'signature' => '',
@@ -135,18 +97,13 @@ $app->post('/challengeall', function($request,$response,$args) use ($app)
 
 				$mail->message($body);
 
-				$emails = R::getAll('select email from users where id in (' . implode(',', $send_to) . ')');
-
-				// ids convert to emails and send email stating the info about challenge created
-				foreach ($emails as $k => $v) {
-					$mail->to($v['email']);
-				}
+				$mail->toA($emails);
 
 				$mres = $mail->send();
 
 				if ($mres) {
-					Audit::log('Challenge created. Mail sent, result: ' . $mres->http_response_code . ' ' . count($send_to) . ' player(s) notified.');
-			    	$this->get('flash')->addMessage('global', 'Challenge created successfully. ' . count($send_to) . ' player(s) notified!');
+					Audit::log('Challenge created. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
+			    	$this->get('flash')->addMessage('global', 'Challenge created successfully. ' . count($emails) . ' player(s) notified!');
 			   		return $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 
 				} else {
@@ -249,31 +206,69 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 		$c->challengeInDivision = $challengeInDivision;
 		$c->challengedate = $challengedate;
 		$c->challengenote = $challengenote;
-		$c->challengecreatedat = $now;
+		$c->challengecreatedat = $now->toDateTimeString();
 		$c->challengedids = json_encode($challengedids);
 		$c->numofmatches = $numofmatches;
 
+		$mail = $this->get('mail2');
+
 		if (User::storeBean($c)) {
+
+			$emails = $app->auth->idsToEmails($challengedids);
+			$names = $app->auth->idsToNames($challengedids);
+
+			if (count($emails) > 0 ) {
+
+				$body = [
+					'subject' => 'New challenge: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+					'title' => 'New challenge',
+					'body' => 'Challenger: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
+					'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+					'Number of matches: ' . $numofmatches . BR .
+					'Note: ' . $challengenote . BR .
+					'Notified players: ' . BR . implode(BR, $names) . BR,
+					'signature' => '',
+				];
+
+				$mail->message($body);
+				$mail->toA($emails);
+				$mres = $mail->send();
+
+			}
 
 			unset($_SESSION['challengenote']);
 			unset($_SESSION['challengedate']);
 			unset($_SESSION['checkedids']);
 
-	    	$this->get('flash')->addMessage('global', 'Challenge created successfully.');
-	   		return $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+			if ($mres) {
+
+				Audit::log('Challenge created. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
+		    	$this->get('flash')->addMessage('global', 'Challenge created successfully. ' . count($emails) . ' player(s) notified!');
+		   		return $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+
+			} else {
+
+				Audit::log('Mail NOT sent.');
+		    	$this->get('flash')->addMessage('global', 'Challenge created successfully. E-mail notification failed.');
+		   		return $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+			}
 
 		} else {
+
 	    	$this->get('flash')->addMessage('global_error', 'Failed to create challenge. Please try again.');
 	   		return $response->withRedirect($this->get('router')->pathFor('challenge.create.specific'));
 		}
 
 	} else {
+
 		if (!$test || !$test2) {
+
 	    	$this->get('flash')->addMessage('global_error', 'Challenge date is incorrect.');
 	   		return $response->withRedirect($this->get('router')->pathFor('challenge.create.specific'));
 		}
 
 		if ($challengedids == null) {
+
 			$this->get('flash')->addMessage('global_error', 'No players selected!');
 			return $response->withRedirect($this->get('router')->pathFor('challenge.create.specific'));
 		}

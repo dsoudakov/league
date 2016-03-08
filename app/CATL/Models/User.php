@@ -5,6 +5,7 @@ namespace CATL\Models;
 use CATL\Auth\Authtokens;
 use CATL\R;
 use CATL\Helpers\Hash;
+use CATL\Helpers\Audit;
 
 class User
 {
@@ -41,6 +42,112 @@ class User
         if ($this->exists) {
         	$this->authtokens = new Authtokens($this->id);
         }
+    }
+
+    public static function sendToEmails($divid, $send_to_all = false)
+    {
+        global $app;
+
+        $dids = R::getAll('select id from users where donotnotifyme = 0 and active = 1
+                         and (divisionprimary = :did or divisionsecondary = :did)',
+                            [':did' => $divid]
+                        );
+        foreach($dids as $k=>$v) {
+            $dids2[] = $v['id'];
+        }
+
+        $dids_list = implode(',', $dids2);
+
+        // if # > 0 proceed to next check
+        if (count($dids) > 0 && !$send_to_all) {
+
+            // select all challenges/acceptedchallenges played/reported/winnerid/matchtype = 1
+            // in the division with challengerid or acceptedbyuserid in list of those ids
+
+            $ccc = R::getAll('SELECT c.challengerid, ac.acceptedbyuserid
+                              FROM challenges c inner join acceptedchallenges ac on c.id = ac.acceptedchallengeid
+                              WHERE ((c.challengerid = :cid AND ac.acceptedbyuserid IN (' . $dids_list . '))
+                              OR (c.challengerid IN  (' . $dids_list . ') AND ac.acceptedbyuserid = :cid))
+                              AND winnerid is not null AND reportconfirmed is not null
+                              AND challenge_in_division = :did
+                              AND matchtype = 1',
+                              [
+                                    ':cid' => $app->auth->id,
+                                    ':did' => $divid,
+                              ]
+                            );
+            // cross check user id with acceptedbyuserid or challengerid
+            // if check exists - drop that id from the list of division ids
+
+            $excluded_ids[] = $app->auth->id;
+
+            foreach ($ccc as $k => $v) {
+                if ( $v['challengerid'] == $app->auth->id ) {
+                    $excluded_ids[] = $v['acceptedbyuserid'];
+                } else {
+                    $excluded_ids[] = $v['challengerid'];
+                }
+            }
+
+            $send_to = array_diff($dids2, $excluded_ids);
+
+            $emails = self::idsToEmails($send_to);
+
+            return $emails;
+
+        }
+
+        if ($send_to_all) {
+
+                $emails = self::idsToEmails($dids2);
+                return $emails;
+
+        }        
+
+    }
+
+    public function idsToEmails($ids = [])
+    {
+            $emails2 = [];
+
+            if (count($ids) > 0) {
+
+                $emails = R::getAll('SELECT email 
+                                     FROM users 
+                                     WHERE donotnotifyme = 0 
+                                     AND active = 1 
+                                     AND id IN (' . implode(',', $ids) . ')'
+                                    );
+
+                foreach ($emails as $k => $v) {
+                    $emails2[] = $v['email'];
+                }
+
+            }
+
+
+            return $emails2;
+    }
+
+    public function idsToNames($ids = [])
+    {
+            $names2 = [];
+
+            if (count($ids) > 0) {
+
+                $names = R::getAll('SELECT first_name, last_name 
+                                     FROM users 
+                                     WHERE donotnotifyme = 0 
+                                     AND active = 1 
+                                     AND id IN (' . implode(',', $ids) . ')'
+                                    );
+                foreach ($names as $k => $v) {
+                    $names2[] = $v['first_name'] . ' ' . $v['last_name'];
+                }
+
+            }
+
+            return $names2;
     }
 
     public function isMember()
@@ -320,15 +427,29 @@ class User
 
     public static function storeBean($bean)
     {
+
+        global $app;
+
         R::begin();
+
         try {
+
             $id = R::store( $bean );
             R::commit();
+
         }
         catch( Exception $e ) {
+
             R::rollback();
+
+            $mail = $app->getContainer()->get('mail2');
+            $mail->mailErrorToAdmin($e->getMessage());
+            Audit::log($e->getMessage());
+
             return false;
+
         }
+
         return $id;
     }
 

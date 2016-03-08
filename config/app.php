@@ -7,7 +7,8 @@ return [
 		'hash' => [
 			'algo' => PASSWORD_BCRYPT,
 			'cost' => 10
-		]
+		],
+		'admin' => 'dsoudakov@gmail.com',
 	],
 
 	'mode' => file_get_contents(ROOT . 'config/mode.php'),

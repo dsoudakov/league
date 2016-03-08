@@ -3,6 +3,7 @@
 namespace CATL\Helpers;
 
 use Mailgun\Mailgun;
+use Carbon\Carbon;
 
 class Mail
 {
@@ -26,13 +27,13 @@ class Mail
 		];
 
 		$this->days = [
+		    'Sunday',
 		    'Monday',
 		    'Tuesday',
 		    'Wednesday',
 		    'Thursday',
 		    'Friday',
 		    'Saturday',
-		    'Sunday',
 		];
 
 		$cfg = $app->getContainer()->get('config');
@@ -46,6 +47,28 @@ class Mail
 		$this->message = $this->instance->MessageBuilder();
 		$this->message->setFromAddress($from, ["first" => $first, "last" => $last]);
 		$this->message();
+	}
+
+	public function mailErrorToAdmin($errormessage)
+	{
+		global $app;
+
+		$now = Carbon::now('America/Toronto');
+
+		$cfg = $app->getContainer()->get('config');
+		
+		$this->message->setSubject('ERROR IN LEAGUE');
+		$this->templateBody = [
+			'subject' => 'ERROR IN LEAGUE',
+			'title' => 'ERROR for user: ' . $app->auth->id . ', ' . $app->user->email,
+			'body' => $errormessage,
+			'signature' => $now->toDateTimeString(),
+		];
+
+		$this->to($cfg->get('app.admin'));
+
+		$this->send();
+
 	}
 
 	public function send()
@@ -70,7 +93,8 @@ class Mail
 			return $mres;
 
 		} catch (Exception $e) {
-
+			Audit::log($e->getMessage());
+			//$this->mailErrorToAdmin($e->getMessage());
 			// $this->flash->addMessage('global_error', 'Message was NOT sent: ' . $e->getMessage());
 			// return $response->withRedirect($app->router->pathFor('home'));
 			return false;
@@ -87,6 +111,16 @@ class Mail
 	{
 		$this->message->addToRecipient($to, ["first" => $first, "last" => $last]);
 	}
+
+	public function toA($tos = [])
+	{
+		foreach ($tos as $to) {
+
+			$this->to($to, '', '');
+
+		}
+	}
+
 
 	public function from($from, $first = '', $last = '')
 	{
