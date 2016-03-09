@@ -137,7 +137,7 @@ class Upload {
 
 	public static function checkMembersHeader($file)
 	{
-		$validHeader = '"id","firstname","lastname","home","cell","work","email"';
+		$validHeader = '"firstname","lastname","home","cell","work","email"';
 		$ret = false;
 		try {
 			$handle = fopen($file, "r");

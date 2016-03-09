@@ -3,6 +3,7 @@
 use CATL\R;
 use CATL\Models\User;
 use Carbon\Carbon;
+use CATL\Helpers\Audit;
 
 // Report a completed challenge
 // only possible to do when date of challenge is at least equal to current date
@@ -94,36 +95,48 @@ $app->post('/confirmreport/{challengeid}', function($request,$response,$args) us
 
 
 	  		if (!$correctcheck) {
+
 	  			$c->incorrectdetails = $incorrectdetails;
+
 	  		} else {
+
 	  			$c->incorrectdetails = null;
 		  		$c->reportconfirmed = 1;
 		  		$c->reportconfirmedat = Carbon::now('America/Toronto')->toDateTimeString();
+
 	  		}
 
 	  		$r = User::storeBean($c);
 
 	  		if ($r) {
+
 	  			if (!$correctcheck) {
+
 	  				echo '<h3><span class="label label-pill label-warning">Reported successfully denied!</span></h3>';
+
 	  			} else {
+
 	  				echo '<h3><span class="label label-pill label-success">Reported successfully confirmed!</span></h3>';
+
 	  			}
+
 	  		} else {
+
 	  			echo '<h3><span class="label label-pill label-danger">Report failed. Please try again!</span></h3>';
+
 	  		}
 
 		} else {
+
 			echo 'Cannot confirm this report.';
+
 		}
 
 	} else {
+
 		echo 'Validation failed';
+
 	}
-
-
-	// dump($_POST);
-	// die();
 
 })->setName('challenge.confirm.report.post')
   ->add($isMember)
@@ -131,9 +144,6 @@ $app->post('/confirmreport/{challengeid}', function($request,$response,$args) us
 
 $app->post('/report/{challengeid}', function($request,$response,$args) use ($app)
 {
-
-	// dump($_POST);
-	// die();
 
 	$v = $this->get('validator');
 
@@ -186,8 +196,6 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
         '$loser_3|Loser set 3 score' => [$loser_3, 'int|0to7'],
 
     ]);
-
-	//echo implode("<br />", $set);
 
     if ($v->passes()) {
 		if ($matchtype == 1 && !$loserscore) {
@@ -277,6 +285,8 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 	  	$c = R::getRow( 'SELECT
 	  						ac.id,
 	  						c.challengerid,
+	  						c.challengedate,
+	  						c.challengenote,
 	  						ac.acceptedbyuserid,
 	  						ac.winnerid,
 	  						d.id as divisionid
@@ -301,6 +311,9 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 	  	// die();
 
 	  	if (!$c['winnerid']) {
+
+	  		$mail = $this->get('mail2');
+
 	  		$cc = R::findOne('acceptedchallenges', 'id = :id', [
 	  			':id' => $args['challengeid'],
 	  		]);
@@ -336,6 +349,7 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 	  		$cc->retired = $retired;
 	  		$cc->retirednote = $retirednote;
 	  		$cc->reportedbyuserid = $app->user->id;
+	  		$cc->reportconfirmhash = $this->get('hash')->hash($this->get('randomlib')->generateString(128));
 
 		 if ($matchtype == 2) {
 
@@ -353,20 +367,109 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 	  		$res2 = User::storeBean($bloser);
 
 	  		if ($res && $res1 && $res2) {
-	  			echo '<h3><span class="label label-pill label-success">Reported successfully!</span></h3>';
+
+	  			$challengername = User::idsToNames([$c['challengerid']]);
+	  			$acceptedbyusername = User::idsToNames([$c['acceptedbyuserid']]);
+
+	  			if ($c['challengerid'] == $app->user->id) {
+
+	  				$emails = User::idsToEmails([$c['acceptedbyuserid']]);
+
+	  			} else {
+
+					$emails = User::idsToEmails([$c['challengerid']]);
+
+	  			}
+
+
+				if (count($emails) > 0) {
+
+					$challengedate = Carbon::parse($c['challengedate']);
+
+					if ($matchtype == 2) {
+
+						$body = [
+							'subject' => 'Challenge report: ' . $challengedate->toFormattedDateString()  . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+							'title' => 'Challenge report',
+							'body' => $challengername[0] . ' vs ' . $acceptedbyusername[0] . BR .
+							'Match type: Best of 3 sets' . BR .
+							'Date: ' . $challengedate->toFormattedDateString() . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+							'Winner: ' . User::idsToNames([$winner])[0] . BR .
+							'Score: ' . User::setScoresToStr([[$winner_1,$loser_1],[$winner_2,$loser_2],[$winner_3,$loser_3]]),
+							'signature' => '<a class="btn btn-primary btn-lg btn-block btn-warning" href="' .
+								$this->get('router')->pathFor('challenge.report.confirm.link', ['hash' => $cc->reportconfirmhash]) .
+								'" style="box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; padding: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;">
+								Confirm</a>',
+						];
+
+					} else {
+
+						$body = [
+							'subject' => 'Challenge report: ' . $challengedate->toFormattedDateString()  . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+							'title' => 'Challenge report',
+							'Match type: Best of 7 games' . BR .
+							'body' => $challengername[0] . ' vs ' . $acceptedbyusername[0] . BR .
+							'Date: ' . $challengedate->toFormattedDateString() . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+							'Winner: ' . User::idsToNames([$winner])[0] . BR .
+							'Score: 7:' . $loserscore,
+							'signature' => '<a class="btn btn-primary btn-lg btn-block btn-warning" href="' .
+								$this->get('router')->pathFor('challenge.report.confirm.link', ['hash' => $cc->reportconfirmhash]) .
+								'" style="box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; padding: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;">
+								Confirm</a>',
+						];
+
+					}
+
+					if ($retired) {
+
+						$body['body'] .= BR . 'Opponent retired.' . BR;
+
+					}
+
+					$mail->message($body);
+					$mail->toA($emails);
+					$mres = $mail->send();
+
+					foreach ($body as $k => $v) {
+						$auditlog[] = str_replace(BR, "\n", $v);
+					}
+
+					if ($mres) {
+
+						Audit::log('Challenge reported. Mail sent, result: ' . $mres->http_response_code . ' ' . implode(' ', $auditlog));
+
+					} else {
+
+						Audit::log('Mail NOT sent. ' . implode(' ', $auditlog));
+						echo '<h3><span class="label label-pill label-danger">E-mail notification failed. Please try again!</span></h3>';
+
+					}
+
+				} else {
+
+					Audit::log('Opponent has DND set in profile.');
+					echo '<h3><span class="label label-pill label-danger">Opponent has DND set in profile. E-mail not sent.</span></h3>';
+
+				}
+
+	  			echo '<h3><span class="label label-pill label-success">Reported successfully! Opponent notified.</span></h3>';
+
 	  		} else {
+
 	  			echo '<h3><span class="label label-pill label-danger">Report failed. Please try again!</span></h3>';
+
 	  		}
-
-
 
 	  	} else {
 
 	  		echo '<h3><span class="label label-pill label-danger">Already reported!</span></h3>';
 	  	}
+
     } else {
+
     	echo '<h3><span class="label label-pill label-danger">Not reported! Check inputs</span></h3>';
     	echo '<h3><span class="label label-pill label-danger">'. $v->errors()->first() .'</span></h3>';
+
     }
 
 })->setName('challenge.report.post')
@@ -457,5 +560,25 @@ $app->get('/reportjson[/{challengeid}]', function($request,$response,$args) use 
 	echo json_encode($challengesreport);
 
 })->setName('challenge.report.get.json')
+  ->add($isMember)
+  ->add($authenticated);
+
+$app->get('/reportconfirm/{hash}', function($request,$response,$args) use ($app)
+{
+	if (!$args['hash'] || strlen($args['hash']) !== 64) {
+        return $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+    }
+
+    $res = User::confirmReportFromActiveHash($args['hash']);
+
+    if (!$res) {
+       return $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+    }
+
+    $this->view->render($response, 'challenge/challenge.report.confirm.twig', [
+        'report_status'=> $res,
+    ]);
+
+})->setName('challenge.report.confirm.link')
   ->add($isMember)
   ->add($authenticated);

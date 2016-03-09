@@ -6,6 +6,7 @@ use CATL\Auth\Authtokens;
 use CATL\R;
 use CATL\Helpers\Hash;
 use CATL\Helpers\Audit;
+use Carbon\Carbon;
 
 class User
 {
@@ -102,20 +103,20 @@ class User
                 $emails = self::idsToEmails($dids2);
                 return $emails;
 
-        }        
+        }
 
     }
 
-    public function idsToEmails($ids = [])
+    public static function idsToEmails($ids = [])
     {
             $emails2 = [];
 
             if (count($ids) > 0) {
 
-                $emails = R::getAll('SELECT email 
-                                     FROM users 
-                                     WHERE donotnotifyme = 0 
-                                     AND active = 1 
+                $emails = R::getAll('SELECT email
+                                     FROM users
+                                     WHERE donotnotifyme = 0
+                                     AND active = 1
                                      AND id IN (' . implode(',', $ids) . ')'
                                     );
 
@@ -129,16 +130,16 @@ class User
             return $emails2;
     }
 
-    public function idsToNames($ids = [])
+    public static function idsToNames($ids = [])
     {
             $names2 = [];
 
             if (count($ids) > 0) {
 
-                $names = R::getAll('SELECT first_name, last_name 
-                                     FROM users 
-                                     WHERE donotnotifyme = 0 
-                                     AND active = 1 
+                $names = R::getAll('SELECT first_name, last_name
+                                     FROM users
+                                     WHERE donotnotifyme = 0
+                                     AND active = 1
                                      AND id IN (' . implode(',', $ids) . ')'
                                     );
                 foreach ($names as $k => $v) {
@@ -295,6 +296,116 @@ class User
 
         }
         return null;
+    }
+
+    public static function confirmReportFromActiveHash($hash = null)
+    {
+        global $app;
+
+        if (strlen($hash) == 64) {
+
+            $cc = R::findOne('acceptedchallenges', ' reportconfirmhash = :hash ', [
+                ':hash' => $hash,
+            ]);
+
+            if ($cc) {
+
+                if ($cc->reportconfirmed) {
+
+                    return "Report is already confirmed!";
+
+                } else {
+
+                    $cc->reportconfirmed = 1;
+                    $cc->reportconfirmedat = Carbon::now('America/Toronto')->toDateTimeString();
+
+                    $mail = $app->getContainer()->get('mail2');
+
+                    $emails = self::idsToEmails([$cc->reportedbyuserid]);
+
+                    if (count($emails) > 0 ) {
+
+                        $challenge = R::findOne('challenges', ' id = :cid ', [
+                            ':cid' => $cc->acceptedchallengeid,
+                        ]);
+
+                        $challengername = self::idsToNames([$cc->challengerid]);
+                        $acceptedbyusername = self::idsToNames([$cc->acceptedbyuserid]);
+
+                        $challengedate = Carbon::parse($challenge->challengedate);
+                        $matchtype = $cc->matchtype;
+                        $loserscore = $cc->loserscore;
+                        $winner = $cc->winnerid;
+                        $winner_1 = $cc->winner_1;
+                        $winner_2 = $cc->winner_2;
+                        $winner_3 = $cc->winner_3;
+                        $loser_1 = $cc->loser_1;
+                        $loser_2 = $cc->loser_2;
+                        $loser_3 = $cc->loser_3;
+                        $retired = $cc->retired;
+
+                        if ($matchtype == 2) {
+
+                            $body = [
+                                'subject' => 'Challenge report confirmed: ' . $challengedate->toFormattedDateString()  . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+                                'title' => 'Challenge report confirmed',
+                                'body' => $challengername[0] . ' vs ' . $acceptedbyusername[0] . BR .
+                                'Match type: Best of 3 sets' . BR .
+                                'Date: ' . $challengedate->toFormattedDateString() . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+                                'Winner: ' . self::idsToNames([$winner])[0] . BR .
+                                'Score: ' . self::setScoresToStr([[$winner_1,$loser_1],[$winner_2,$loser_2],[$winner_3,$loser_3]]),
+                                'signature' => 'Confirmed!',
+                            ];
+
+                        } else {
+
+                            $body = [
+                                'subject' => 'Challenge report: ' . $challengedate->toFormattedDateString()  . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+                                'title' => 'Challenge report',
+                                'Match type: Best of 7 games' . BR .
+                                'body' => $challengername[0] . ' vs ' . $acceptedbyusername[0] . BR .
+                                'Date: ' . $challengedate->toFormattedDateString() . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+                                'Winner: ' . self::idsToNames([$winner])[0] . BR .
+                                'Score: 7:' . $loserscore,
+                                'signature' => 'Confirmed!',
+                            ];
+
+                        }
+
+                        if ($retired) {
+
+                            $body['body'] .= BR . 'Opponent retired.' . BR;
+
+                        }
+
+                        $mail->message($body);
+                        $mail->toA($emails);
+
+                        if (self::storeBean($cc)) {
+
+                            $mres = $mail->send();
+                            return "Report confirmed! Opponent notified.";
+
+                        }
+
+                    }
+
+                    if (self::storeBean($cc)) {
+
+                        return "Report confirmed! Opponent was not notified (DND set).";
+
+                    }
+
+                }
+
+            } else {
+
+                return false;
+            }
+
+        }
+
+        return false;
     }
 
     public static function create($identifier, $password)
@@ -571,6 +682,25 @@ class User
         }
 
         return true;
+    }
+
+    public static function setScoresToStr($sets = [])
+    {
+        if ($sets) {
+
+            if ($sets[2][0] && $sets[2][1]) {
+
+                return $sets[0][0] . ':' . $sets[0][1] . ', ' . $sets[1][0] . ':' . $sets[1][1] . ', ' . $sets[2][0] . ':' . $sets[2][1];
+
+            } else {
+
+                return $sets[0][0] . ':' . $sets[0][1] . ', ' . $sets[1][0] . ':' . $sets[1][1];
+
+            }
+
+        }
+
+        return 'n/a';
     }
 
 }
