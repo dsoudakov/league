@@ -1,8 +1,9 @@
-<form method="post" action="challenge/delete/{{ challengeid }}">
+<form id="deleteChallengeModalForm" method="post" action="challenge/delete/{{ challengeid }}">
 
-<label>Are you sure?</label>
-<br />
-<input type="submit" class="btn btn-primary" value="Delete"> 
+	<label>Are you sure?</label>
+	<br />
+	<input id="deleteModalSubmitButton" type="submit" class="btn btn-primary" value="Delete">
+	<div id="deleteResult" style="display:none"></div>
+	{% include 'auth/csrf.inc' %}
 
-{% include 'auth/csrf.inc' %} 
 </form>

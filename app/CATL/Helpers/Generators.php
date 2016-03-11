@@ -3,13 +3,25 @@
 namespace CATL\Helpers;
 
 use CATL\R;
+use CATL\Models\User;
 
 class Generators {
 
 	static function players_table_checkboxes($div = '1', $checkedids = [])
 	{
+
 		global $app;
-		$players = R::findall('users', ' (divisionprimary = :div1 or divisionsecondary = :div1) and id <> :userid', 
+
+		$not_played_ids = User::sendToEmails($div, false, true);
+
+		if (count($not_played_ids) == 0) {
+			
+			$ret = '<h3>No players are available or you have not played with.</h3>';
+
+			return $ret;
+		}
+
+		$players = R::findall('users', ' (divisionprimary = :div1 or divisionsecondary = :div1) and id <> :userid',
 		[
 			':div1' => $div,
 			':userid' => $app->user->id,
@@ -22,7 +34,6 @@ class Generators {
 	      <tr>
 	        <th></th>
 	        <th></th>
-	        <th></th>
 	      </tr>
 	    </thead>
 	    <tbody>
@@ -30,36 +41,38 @@ class Generators {
 
 		foreach ($players as $p) {
 
-			if (!empty($checkedids) && in_array((string)$p->id, $checkedids)) {
+			if (in_array($p->id, $not_played_ids)) {
 
-				$checked = 'checked';
+				if (!empty($checkedids) && in_array((string)$p->id, $checkedids)) {
 
-			} else {
+					$checked = 'checked';
 
-				$checked = '';
+				} else {
+
+					$checked = '';
+
+				}
+
+				$ret .= '<tr><td><input type="checkbox" ' . $checked . ' class="players" name="challengedids[]" value="'
+					 . $p->id
+					 . '" /></td><td>'
+					 . $p->first_name
+					 . ' '
+					 . $p->last_name
+					 . '</td></tr>';
 
 			}
 
-			$ret .= '<tr><td><input type="checkbox" ' . $checked . ' class="players" name="challengedids[]" value="' 
-				 . $p->id 
-				 . '" /></td><td>' 
-				 . $p->first_name 
-				 . ' ' 
-				 . $p->last_name 
-				 .'</td><td>' 
-				 . $p->email 
-				 . '</td></tr>';	
-			
-		}
+			$ret .= '</tbody></table></div>';
 
-		$ret .= '</tbody></table></div>';
+		}
 
 		return $ret;
 	}
 
 	static function getDivNameByID($id = 0)
 	{
-		
+
 		if (!$id) {
 			return 'No division.';
 		}

@@ -225,10 +225,10 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 			if (count($emails) > 0 ) {
 
 				$body = [
-					'subject' => 'New challenge: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+					'subject' => 'New challenge: ' . $challengedate->toFormattedDateString() . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
 					'title' => 'New challenge',
 					'body' => 'Challenger: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
-					'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+					'Date: ' . $challengedate->toFormattedDateString() . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
 					'Number of matches: ' . $numofmatches . BR .
 					'Note: ' . $challengenote . BR .
 					'Notified players: ' . BR . implode(BR, $names) . BR,
@@ -451,7 +451,7 @@ $app->get('/myacceptedchallengesjson2[/{yyyymmdd}]', function($request,$response
 								LEFT JOIN divisions d on d.id = c.challenge_in_division
 								LEFT JOIN users u on u.id = c.challengerid
 								WHERE ac.acceptedbyuserid = :uid
-								AND c.cancelnote IS NULL
+								-- AND c.cancelnote IS NULL
 
 								', [
 								':uid' => $app->user->id,
@@ -957,95 +957,93 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 			if ($challenges) {
 
 				if ($challenges['confirmed'] == 1) {
-					$this->get('flash')->addMessage('global_error', 'Challenge NOT deleted! Cannot delete confirmed challenges. Can only cancel with reasons.');
-					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;
+					//$this->get('flash')->addMessage('global_error', 'Challenge NOT deleted! Cannot delete confirmed challenges. Can only cancel with reasons.');
+					echo '<h3><span class="label label-lg label-danger">Challenge NOT deleted! Cannot delete confirmed challenges. Can only cancel with reasons.</span></h3>';
+					//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+					//return $response;
+					die();
 				}
 
-			    R::begin();
-			    try{
-			        // notify people who accepted challenge
+		    	$emails = [];
+				$challenge_accepted = R::getAll( 'select *
+												  from acceptedchallenges
+												  where acceptedchallengeid = :acid',
+												[
+													':acid' => $args['challengeid'],
+												]
+												);
 
-					$challenge_accepted = R::getAll( 'select *
-													  from acceptedchallenges
-													  where acceptedchallengeid = :acid',
-													[
-														':acid' => $args['challengeid'],
-													]
-													);
+		        if ($challenge_accepted) {
 
-			        if ($challenge_accepted) {
+		        	foreach ($challenge_accepted as $k => $v) {
+		        		$ids[] = $v['acceptedbyuserid'];
+		        	}
 
-			        	foreach ($challenge_accepted as $k => $v) {
-			        		$ids[] = $v['acceptedbyuserid'];
-			        	}
+		        	$emails = User::idsToEmails($ids);
 
-			        	$emails = User::idsToEmails($ids);
+		        }
 
-			        	if (count($emails) > 0) {
+		        R::begin();
 
-				        	$mail->toA($emails);
-
-							$challengedate = Carbon::parse($challenges['challengedate']);
-							$challengedate1 = $challengedate->toFormattedDateString();
-
-							$body = [
-								'subject' => 'Challenge deleted: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
-								'title' => 'Challenge deleted (which you accepted)',
-								'body' => 'Challenger: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
-								'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR,
-								'signature' => '',
-							];
-
-							$mail->message($body);
-							$mres = $mail->send();
-
-							if ($mres) {
-
-								Audit::log('Challenge deleted. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
-
-							} else {
-
-								Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
-
-							}
-
-			        	}
-
-			        }
+			    try {
 
 			        R::exec( 'DELETE FROM challenges where id = ' . $args['challengeid'] );
 			        R::exec( 'DELETE FROM acceptedchallenges where acceptedchallengeid = ' . $args['challengeid'] );
 			        R::commit();
 
-			        if (count($emails) > 0) {
+			        Audit::log('Challenge deleted.');
 
-						$this->get('flash')->addMessage('global', 'Challenge deleted! ' . count($emails) . ' player(s) notified!');
+					//$this->get('flash')->addMessage('global', 'Challenge deleted!');
+					echo '<h3><span class="label label-lg label-success">Challenge deleted!</span></h3>';
 
-					} else {
-
-						$this->get('flash')->addMessage('global', 'Challenge deleted!');
-
-					}
-
-					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;
-			    } catch( Exception $e ) {
+					//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+					//return $response;
+			    } catch ( Exception $e ) {
 
 			    	Audit::log('Challenge NOT deleted! Error: ' . $e->getMessage());
 			    	$mail->mailErrorToAdmin('Challenge NOT deleted! Error: ' . $e->getMessage());
 
 			        R::rollback();
-					$this->get('flash')->addMessage('global_error', 'Challenge NOT deleted! Error: ' . $e->getMessage());
-					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;
+					//$this->get('flash')->addMessage('global_error', 'Challenge NOT deleted! Error: ' . $e->getMessage());
+					echo '<h3><span class="label label-lg label-danger">Challenge NOT deleted! Error: ' . $e->getMessage() . '</span></h3>';
+					//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+					//return $response;
+					die();
 
 			    }
+
+	        	if (count($emails) > 0) {
+
+		        	$mail->toA($emails);
+
+					$challengedate = Carbon::parse($challenges['challengedate']);
+					$challengedate1 = $challengedate->toFormattedDateString();
+
+					$body = [
+						'subject' => 'Challenge deleted: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+						'title' => 'Challenge deleted (which you accepted)',
+						'body' => 'Challenger: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
+						'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR,
+						'signature' => '',
+					];
+
+					$mail->message($body);
+					$mres = $mail->send();
+
+					if ($mres) {
+
+						Audit::log('Challenge deleted. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
+						echo '<h3><span class="label label-lg label-success">E-mail notification sent to ' . count($emails) . ' player(s).</span></h3>';
+
+					} else {
+
+						Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
+						echo '<h3><span class="label label-lg label-danger">E-mail notification failed!</span></h3>';
+					}
+
+	        	}
 			}
 
-	    } else {
-	    	//dump($v->errors());
-	    	//echo 'validation failed';
 	    }
 
 	}
@@ -1102,55 +1100,14 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 				        	$emails = User::idsToEmails($ids);
 
-				        	if (count($emails) > 0) {
-
-					        	$mail->toA($emails);
-
-								$challengedate = Carbon::parse($challenge['challengedate']);
-								$challengedate1 = $challengedate->toFormattedDateString();
-
-								$body = [
-									'subject' => 'Challenge cancelled: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
-									'title' => 'Challenge cancelled (which you accepted)',
-									'body' => 'Challenger: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
-									'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
-									'Cancel note: ' . $challengeCancelNote,
-									'signature' => '',
-								];
-
-								$mail->message($body);
-								$mres = $mail->send();
-
-								if ($mres) {
-
-									Audit::log('Challenge cancelled. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
-
-								} else {
-
-									Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
-
-								}
-
-				        	}
-
 				        }
-
-				        if (count($emails) > 0) {
-
-							$this->get('flash')->addMessage('global', 'Challenge cancelled! ' . count($emails) . ' player(s) notified!');
-
-						} else {
-
-							$this->get('flash')->addMessage('global', 'Challenge cancelled!');
-
-						}
 
 				    	$c->cancelnote = $challengeCancelNote;
 				    	R::store($c);
 				        R::commit();
-
-						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;
+						echo '<h3><span class="label label-lg label-success">Challenge cancelled!</span></h3>';
+						//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+						//return $response;
 
 				    } catch( Exception $e ) {
 
@@ -1158,19 +1115,53 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 				    	$mail->mailErrorToAdmin('Challenge NOT cancelled! Error: ' . $e->getMessage());
 
 				        R::rollback();
-						$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! Error: ' . $e->getMessage());
-						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;
+						//$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! Error: ' . $e->getMessage());
+						//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+						//return $response;
+						echo '<h3><span class="label label-lg label-danger">Challenge NOT cancelled! Error: ' . $e->getMessage() . '</span></h3>';
+						die();
 
 				    }
+
+		        	if (count($emails) > 0) {
+
+			        	$mail->toA($emails);
+
+						$challengedate = Carbon::parse($challenge['challengedate']);
+						$challengedate1 = $challengedate->toFormattedDateString();
+
+						$body = [
+							'subject' => 'Challenge cancelled: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+							'title' => 'Challenge cancelled (which you accepted)',
+							'body' => 'Challenger: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
+							'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+							'Cancel note: ' . $challengeCancelNote,
+							'signature' => '',
+						];
+
+						$mail->message($body);
+						$mres = $mail->send();
+
+						if ($mres) {
+
+							echo '<h3><span class="label label-lg label-success">Players notified!</span></h3>';
+							Audit::log('Challenge cancelled. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
+
+						} else {
+							echo '<h3><span class="label label-lg label-danger">E-mail notification failed!</span></h3>';
+							Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
+
+						}
+
+		        	}
 				}
 			}
 
 	    } else {
-			$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! ' . implode(',', $v->errors()->all()));
-			$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-			return $response;
-
+			// $this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! ' . implode(',', $v->errors()->all()));
+			// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+			// return $response;
+			echo '<h3><span class="label label-lg label-danger">Challenge NOT cancelled! ' . implode(',', $v->errors()->all()) . '</span></h3>';
 	    }
 
 	}
@@ -1207,65 +1198,72 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 			        	$emails = User::idsToEmails([$challenge['challengerid']]);
 
-			        	$mail->toA($emails);
+					    R::begin();
+					    try {
 
-						$challengedate = Carbon::parse($challenge['challengedate']);
-						$challengedate1 = $challengedate->toFormattedDateString();
+					    	$c->cancelnote = $challengeCancelAcceptedNote;
+					    	R::store($c);
+					        R::commit();
+        					echo '<h3><span class="label label-lg label-success">Challenge cancelled!</span></h3>';
+							//$this->get('flash')->addMessage('global', 'Challenge cancelled! Player notified.');
+							//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+							//return $response;
 
-						$body = [
-							'subject' => 'Challenge cancelled by opponent: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
-							'title' => 'Challenge cancelled by opponent',
-							'body' => 'Opponent: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
-							'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
-							'Cancel note: ' . $challengeCancelAcceptedNote,
-							'signature' => '',
-						];
+					    } catch( Exception $e ) {
 
-						$mail->message($body);
-						$mres = $mail->send();
+					    	Audit::log('Challenge NOT cancelled! Error: ' . $e->getMessage());
+					    	$mail->mailErrorToAdmin('Challenge NOT cancelled! Error: ' . $e->getMessage());
+					        R::rollback();
+							//$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! Error: ' . $e->getMessage());
+							//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+							//return $response;
+							echo '<h3><span class="label label-lg label-danger">Challenge NOT cancelled! Error: ' . $e->getMessage() . '</span></h3>';
+							die();
+					    }
 
-						if ($mres) {
+			        	if(count($emails) > 0) {
 
-							Audit::log('Challenge cancelled. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
+				        	$mail->toA($emails);
 
-						} else {
+							$challengedate = Carbon::parse($challenge['challengedate']);
+							$challengedate1 = $challengedate->toFormattedDateString();
 
-							Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
+							$body = [
+								'subject' => 'Challenge cancelled by opponent: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+								'title' => 'Challenge cancelled by opponent',
+								'body' => 'Opponent: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
+								'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+								'Cancel note: ' . $challengeCancelAcceptedNote,
+								'signature' => '',
+							];
 
+							$mail->message($body);
+							$mres = $mail->send();
+
+							if ($mres) {
+
+								Audit::log('Challenge you accepted was cancelled. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
+
+							} else {
+
+								Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
+
+							}
 						}
-
 			        }
 
-				    R::begin();
-				    try{
 
-				    	$c->cancelnote = $challengeCancelAcceptedNote;
-				    	R::store($c);
-				        R::commit();
-						$this->get('flash')->addMessage('global', 'Challenge cancelled! Player notified.');
-						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;
-
-				    } catch( Exception $e ) {
-
-				    	Audit::log('Challenge NOT cancelled! Error: ' . $e->getMessage());
-				    	$mail->mailErrorToAdmin('Challenge NOT cancelled! Error: ' . $e->getMessage());
-				        R::rollback();
-						$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! Error: ' . $e->getMessage());
-						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;
-
-				    }
 			}
 
 	    } else {
 
-			$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! ' . implode(',', $v->errors()->all()));
-			$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-			return $response;
-
+			// $this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! ' . implode(',', $v->errors()->all()));
+			// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+			// return $response;
+			echo '<h3><span class="label label-lg label-danger">Challenge NOT cancelled! ' . implode(',', $v->errors()->all()) . '</span></h3>';
 	    }
 
+	    die();
 	}
 
 	if ($args['action'] == 'accept') {
@@ -1325,33 +1323,42 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 		        	$emails = User::idsToEmails([$canacceptchallenge['challengerid']]);
 
-		        	$mail->toA($emails);
+		        	if (count($emails) > 0) {
 
-					$challengedate = Carbon::parse($canacceptchallenge['challengedate']);
-					$challengedate1 = $challengedate->toFormattedDateString();
+			        	$mail->toA($emails);
 
-					$body = [
-						'subject' => 'Challenge accepted: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
-						'title' => 'Challenge accepted',
-						'body' => 'Accepted by: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
-						'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
-						'Accept note: ' . $challengeAcceptNote . BR . BR .
-						'Visit league website if you wish to confirm.',
-						'signature' => '',
-					];
+						$challengedate = Carbon::parse($canacceptchallenge['challengedate']);
+						$challengedate1 = $challengedate->toFormattedDateString();
 
-					$mail->message($body);
-					$mres = $mail->send();
+						$body = [
+							'subject' => 'Challenge accepted: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+							'title' => 'Challenge accepted',
+							'body' => 'Accepted by: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
+							'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+							'Accept note: ' . $challengeAcceptNote . BR . BR .
+							'Visit league website if you wish to confirm.',
+							'signature' => '',
+						];
 
-					if ($mres) {
+						$mail->message($body);
+						$mres = $mail->send();
 
-						Audit::log('Challenge accepted. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
-						echo '<h3><span class="label label-lg label-success">Accepted successfully! Opponent notified.';
+						if ($mres) {
+
+							Audit::log('Challenge accepted. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
+							echo '<h3><span class="label label-lg label-success">Accepted successfully! Opponent notified.</span></h3>';
+
+						} else {
+
+							Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
+							echo '<h3><span class="label label-lg label-success">Accepted successfully! E-mail notification failed.</span></h3>';
+						}
 
 					} else {
 
 						Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
-						echo '<h3><span class="label label-lg label-success">Accepted successfully! E-mail notification failed.';
+						echo '<h3><span class="label label-lg label-success">Accepted successfully! Nobody was notified though.</span></h3>';
+
 					}
 
 					die();
@@ -1359,14 +1366,14 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 			    } catch( Exception $e ) {
 
 			        R::rollback();
-					echo '<h3><span class="label label-lg label-danger">Accept failed. Error: ' . $e->getMessage();
+					echo '<h3><span class="label label-lg label-danger">Accept failed. Error: ' . $e->getMessage() . '</span></h3>';
 					die();
 
 			    }
 
 			} else {
 
-				echo '<h3><span class="label label-lg label-success">Accepted successfully!';
+				echo '<h3><span class="label label-lg label-success">Accepted successfully!</span></h3>';
 				die();
 
 			}
@@ -1409,9 +1416,11 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 				if ($checkalreadyconfirmed) {
 
-					$this->get('flash')->addMessage('global_error', 'Challenge ALREADY confirmed! Please refresh the page.');
-					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;
+					// $this->get('flash')->addMessage('global_error', 'Challenge ALREADY confirmed! Please refresh the page.');
+					// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+					// return $response;
+					echo '<h3><span class="label label-lg label-success">Challenge ALREADY confirmed! Please refresh the table.</span></h3>';
+					die();
 
 				}
 
@@ -1425,38 +1434,9 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 					$c->confirmnote = $challengeConfirmNote;
 					$c->confirmedat = Carbon::now('America/Toronto')->toDateTimeString();
 
-					$challenge = R::getRow('select * from challanges where id = ' . $c->acceptedchallengeid);
+					$challenge = R::getRow('select * from challenges where id = ' . $c->acceptedchallengeid);
 
 		        	$emails = User::idsToEmails([$c->acceptedbyuserid]);
-
-		        	$mail->toA($emails);
-
-					$challengedate = Carbon::parse($challenge['challengedate']);
-					$challengedate1 = $challengedate->toFormattedDateString();
-
-					$body = [
-						'subject' => 'Challenge confirmed: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
-						'title' => 'Challenge confirmed',
-						'body' => 'Confirmed by: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
-						'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
-						'Challenge note: ' . $challenge['challengenote'] . BR . BR .
-						'Accept note: ' . $c->acceptednote . BR . BR .
-						'Confirm note: ' . $challengeConfirmNote . BR,
-						'signature' => '',
-					];
-
-					$mail->message($body);
-					$mres = $mail->send();
-
-					if ($mres) {
-
-						Audit::log('Challenge confirmed. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
-
-					} else {
-
-						Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
-
-					}
 
 				    R::begin();
 				    try {
@@ -1465,40 +1445,83 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 				        R::commit();
 
 				        Audit::log('Challenge confirmed! ac.id: ' . $c->id . ', c.id: ' . $c->acceptedchallengeid);
-						$this->get('flash')->addMessage('global', 'Challenge confirmed!');
-						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;
+						// $this->get('flash')->addMessage('global', 'Challenge confirmed!');
+						// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+						// return $response;
+						echo '<h3><span class="label label-lg label-success">Challenge confirmed!</span></h3>';
+
 
 				    } catch( Exception $e ) {
 
 				        R::rollback();
 				        Audit::log('Challenge NOT confirmed! Error: ' . $e->getMessage());
 				        $mail->mailErrorToAdmin('Challenge NOT confirmed! ac.id: ' . $c->id . ', c.id: ' . $c->acceptedchallengeid . ' Error: ' . $e->getMessage());
-						$this->get('flash')->addMessage('global_error', 'Challenge NOT confirmed! Error: ' . $e->getMessage());
-						$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-						return $response;
+						// $this->get('flash')->addMessage('global_error', 'Challenge NOT confirmed! Error: ' . $e->getMessage());
+						// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+						// return $response;
+						echo '<h3><span class="label label-lg label-success">Challenge NOT confirmed! Error: ' . $e->getMessage() . '</span></h3>';
+						die();
 
 				    }
 
+		        	if(count($emails) > 0) {
+
+			        	$mail->toA($emails);
+
+						$challengedate = Carbon::parse($challenge['challengedate']);
+						$challengedate1 = $challengedate->toFormattedDateString();
+
+						$body = [
+							'subject' => 'Challenge confirmed: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+							'title' => 'Challenge confirmed',
+							'body' => 'Confirmed by: ' . $app->user->first_name . ' ' . $app->user->last_name . BR .
+							'Date: ' . $challengedate1 . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+							'Challenge note: ' . $challenge['challengenote'] . BR . BR .
+							'Accept note: ' . $c->acceptednote . BR . BR .
+							'Confirm note: ' . $challengeConfirmNote . BR,
+							'signature' => '',
+						];
+
+						$mail->message($body);
+						$mres = $mail->send();
+
+						if ($mres) {
+
+							Audit::log('Challenge confirmed. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
+							echo '<h3><span class="label label-lg label-success">Opponent was notified!</span></h3>';
+
+						} else {
+
+							Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
+							echo '<h3><span class="label label-lg label-danger">Notification failed!</span></h3>';
+
+						}
+
+					} else {
+
+						echo '<h3><span class="label label-lg label-danger">Opponent was NOT notified!</span></h3>';
+					}
+
 				} else {
 
-					$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-					return $response;
+					// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+					// return $response;
 
 				}
 
 			} else {
 
-				$response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
-				return $response;
+				// $response = $response->withRedirect($this->get('router')->pathFor('challenges.home'));
+				// return $response;
 
 			}
 
 	    } else {
 
-	    	$this->get('flash')->addMessage('global_error', 'Challenge NOT confirmed! ' . implode(',',$v->errors()->all()) );
-			$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
-			return $response;
+	  		// $this->get('flash')->addMessage('global_error', 'Challenge NOT confirmed! ' . implode(',',$v->errors()->all()) );
+			// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
+			// return $response;
+			echo '<h3><span class="label label-lg label-danger">Challenge NOT confirmed! ' . implode(',',$v->errors()->all()) . '</span></h3>';
 
 	    }
 	}

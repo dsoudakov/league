@@ -3,7 +3,7 @@
 return [
 
 	'app' => [
-		'url' => 'http://www.catennisleague.com/new/',
+		'url' => 'http://www.catennisleague.com',
 		'hash' => [
 			'algo' => PASSWORD_BCRYPT,
 			'cost' => 10

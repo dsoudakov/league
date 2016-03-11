@@ -381,6 +381,7 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 
 	  			}
 
+	  			$mode = $this->get('config')->get('mode');
 
 				if (count($emails) > 0) {
 
@@ -396,7 +397,7 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 							'Date: ' . $challengedate->toFormattedDateString() . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
 							'Winner: ' . User::idsToNames([$winner])[0] . BR .
 							'Score: ' . User::setScoresToStr([[$winner_1,$loser_1],[$winner_2,$loser_2],[$winner_3,$loser_3]]),
-							'signature' => '<a class="btn btn-primary btn-lg btn-block btn-warning" href="' .
+							'signature' => '<a class="btn btn-primary btn-lg btn-block btn-warning" href="' . $this->get('config')->get('url.' . $mode) . SITEROOT .
 								$this->get('router')->pathFor('challenge.report.confirm.link', ['hash' => $cc->reportconfirmhash]) .
 								'" style="box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; padding: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;">
 								Confirm</a>',
@@ -407,12 +408,12 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 						$body = [
 							'subject' => 'Challenge report: ' . $challengedate->toFormattedDateString()  . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
 							'title' => 'Challenge report',
-							'Match type: Best of 7 games' . BR .
 							'body' => $challengername[0] . ' vs ' . $acceptedbyusername[0] . BR .
 							'Date: ' . $challengedate->toFormattedDateString() . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+							'Match type: Best of 7 games' . BR .
 							'Winner: ' . User::idsToNames([$winner])[0] . BR .
 							'Score: 7:' . $loserscore,
-							'signature' => '<a class="btn btn-primary btn-lg btn-block btn-warning" href="' .
+							'signature' => '<a class="btn btn-primary btn-lg btn-block btn-warning" href="' . $this->get('config')->get('url.' . $mode) . SITEROOT .
 								$this->get('router')->pathFor('challenge.report.confirm.link', ['hash' => $cc->reportconfirmhash]) .
 								'" style="box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; padding: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;">
 								Confirm</a>',
@@ -534,7 +535,7 @@ $app->get('/reportjson[/{challengeid}]', function($request,$response,$args) use 
 						ac.retirednote,
 						IF(ac.matchtype = 1,
 							concat(\'7:\',ac.loserscore),
-							IF(loser_3 IS NULL,
+							IF(winner_3 IS NULL,
 								concat(winner_1,\':\',loser_1,\',\',winner_2,\':\',loser_2),
 								concat(winner_1,\':\',loser_1,\', \',winner_2,\':\',loser_2,\', \',winner_3,\':\',loser_3)
 							)

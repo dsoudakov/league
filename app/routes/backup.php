@@ -7,7 +7,7 @@ use CATL\Models\User;
 
 $app->get('/backupsql', function($request,$response,$args) use ($app)
 {
-	
+
 	$mg = $this->get('mail');
 	$c = $this->get('config');
 	$domain = $c->get('services.mailgun.domain');
@@ -20,7 +20,7 @@ $app->get('/backupsql', function($request,$response,$args) use ($app)
 	echo "TASK: Perform back into Backup Folder. E-mail the result. Delete file.<br />";
 
 	try {
-		$fname = R::performMysqlBackup("backup");	
+		$fname = R::performMysqlBackup("backup");
 	} catch (Exception $e) {
 		echo $e->getMessage();
 		die();
@@ -35,19 +35,19 @@ $app->get('/backupsql', function($request,$response,$args) use ($app)
 		$m->setSubject("FHTL SQL Backup.");
 		$m->setTextBody("SQL Backup completed!");
 		$m->addAttachment("@" . $path . "/../../backup/" . $fname . '.gz');
-		
+
 		$res = $mg->post("{$domain}/messages", $m->getMessage(), $m->getFiles());
 
 		if ($res) {
-			
+
 			unlink($path . "/../../backup/" . $fname);
 			unlink($path . "/../../backup/" . $fname . '.gz');
-			echo 'Backup success.';	
+			echo 'Backup success.';
 		} else {
 
 			echo 'Email failed.';
 		}
-		
+
 	} else {
 		echo 'Backup failed';
 	}
@@ -55,3 +55,31 @@ $app->get('/backupsql', function($request,$response,$args) use ($app)
 
 })->setName('backupsql')->add($isAdmin)->add($isMember)->add($authenticated);
 
+$app->get('/flushsql333', function($request,$response,$args) use ($app)
+{
+	$c = $this->get('config');
+
+	if ($c->get('mode') == '_dev') {
+
+		echo 'Flusing tables.' . BR;
+
+		$tables = [
+					'challenges',
+					'acceptedchallenges',
+					'points',
+					'auditlog',
+				  ];
+
+		foreach ($tables as $t) {
+			R::exec('truncate ' . $t);
+			//R::exec('ALTER TABLE ' . $t . 'AUTO_INCREMENT =1');
+		}
+
+		echo 'Done.';
+
+	} else {
+
+		echo 'In prod mode.';
+
+	}
+})->setName('flushsql333')->add($isAdmin)->add($isMember)->add($authenticated);

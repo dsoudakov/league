@@ -45,8 +45,9 @@ class User
         }
     }
 
-    public static function sendToEmails($divid, $send_to_all = false)
+    public static function sendToEmails($divid, $send_to_all = false, $ids_only = false)
     {
+
         global $app;
 
         $dids = R::getAll('select id from users where donotnotifyme = 0 and active = 1
@@ -92,6 +93,12 @@ class User
 
             $send_to = array_diff($dids2, $excluded_ids);
 
+            if ($ids_only) {
+
+                return $send_to;
+
+            }
+
             $emails = self::idsToEmails($send_to);
 
             return $emails;
@@ -104,7 +111,6 @@ class User
                 return $emails;
 
         }
-
     }
 
     public static function idsToEmails($ids = [])
@@ -134,14 +140,15 @@ class User
     {
             $names2 = [];
 
-            if (count($ids) > 0) {
+            if (!empty($ids)) {
 
-                $names = R::getAll('SELECT first_name, last_name
+                $sql = 'SELECT first_name, last_name
                                      FROM users
                                      WHERE donotnotifyme = 0
                                      AND active = 1
-                                     AND id IN (' . implode(',', $ids) . ')'
-                                    );
+                                     AND id IN (' . implode(',', $ids) . ')';
+
+                $names = R::getAll($sql);
                 foreach ($names as $k => $v) {
                     $names2[] = $v['first_name'] . ' ' . $v['last_name'];
                 }
@@ -329,7 +336,7 @@ class User
                             ':cid' => $cc->acceptedchallengeid,
                         ]);
 
-                        $challengername = self::idsToNames([$cc->challengerid]);
+                        $challengername = self::idsToNames([$challenge->challengerid]);
                         $acceptedbyusername = self::idsToNames([$cc->acceptedbyuserid]);
 
                         $challengedate = Carbon::parse($challenge->challengedate);
@@ -350,8 +357,8 @@ class User
                                 'subject' => 'Challenge report confirmed: ' . $challengedate->toFormattedDateString()  . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
                                 'title' => 'Challenge report confirmed',
                                 'body' => $challengername[0] . ' vs ' . $acceptedbyusername[0] . BR .
-                                'Match type: Best of 3 sets' . BR .
                                 'Date: ' . $challengedate->toFormattedDateString() . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+                                'Match type: Best of 3 sets' . BR .
                                 'Winner: ' . self::idsToNames([$winner])[0] . BR .
                                 'Score: ' . self::setScoresToStr([[$winner_1,$loser_1],[$winner_2,$loser_2],[$winner_3,$loser_3]]),
                                 'signature' => 'Confirmed!',
@@ -360,11 +367,11 @@ class User
                         } else {
 
                             $body = [
-                                'subject' => 'Challenge report: ' . $challengedate->toFormattedDateString()  . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
-                                'title' => 'Challenge report',
-                                'Match type: Best of 7 games' . BR .
+                                'subject' => 'Challenge report confirmed: ' . $challengedate->toFormattedDateString()  . ' (' . $mail->days[$challengedate->dayOfWeek] . ')',
+                                'title' => 'Challenge report confirmed',
                                 'body' => $challengername[0] . ' vs ' . $acceptedbyusername[0] . BR .
                                 'Date: ' . $challengedate->toFormattedDateString() . ' (' . $mail->days[$challengedate->dayOfWeek] . ')' . BR .
+                                'Match type: Best of 7 games' . BR .
                                 'Winner: ' . self::idsToNames([$winner])[0] . BR .
                                 'Score: 7:' . $loserscore,
                                 'signature' => 'Confirmed!',

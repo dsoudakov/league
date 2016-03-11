@@ -477,20 +477,21 @@
           $.get( link_2 ).done( function(data) {
               form = data;
           })
-                  .done( function () {
-                      elem1.prepend(form);
-                  })
-                  .done( function () {
+            .done( function () {
+                elem1.prepend(form);
+            })
+              .done( function () {
 
-                      $.get( link_1 ).done( function(data) {
-                          details = data;
-                      })
-                              .done( function () {
-                                  elem2.prepend(details);
-                                  loadingElem.hide();
-                              });
-
+                $.get( link_1 ).done( function(data) {
+                    details = data;
+                })
+                  .done( function () {
+                      elem2.prepend(details);
+                      initSubmitForm( "#challengeConfirmForm", "#challengeConfirmFormSubmit", "#challengeConfirmResult" );
+                      loadingElem.hide();
                   });
+
+              });
       });
 
       $("#cancelModal").on("show.bs.modal", function(e) {
@@ -523,6 +524,7 @@
           })
                   .done(function () {
                       elem1.prepend(cancel_form);
+                      initSubmitForm( "#cancelChallengeModalForm", "#cancelChallengeModalFormSubmit", "#cancelChallengeResult" );
                       $.get(new_link2).done(function (data) {
                           challenge_details = "";
                           challenge_details = data;
@@ -568,6 +570,9 @@
           })
                   .done(function () {
                       elem1.prepend(cancel_form);
+                      //console.log(cancel_form);
+                      initSubmitForm( "#cancelAcceptedChallengeModalForm", "#cancelAcceptedChallengeModalFormSubmit", "#cancelAcceptedChallengeResult" );
+
                   })
                   .done(function () {
 
@@ -593,6 +598,7 @@
       });
 
       $("#deleteModal").on("show.bs.modal", function(e) {
+
           $(this).find(".modal-body-inner1").html("");
           $(this).find(".modal-body-inner2").html("");
           var loadingElem = $(this).find("#loading1");
@@ -616,14 +622,14 @@
                       elem2.prepend(form);
                   })
                   .done( function () {
-
-                      $.get( link_1 ).done( function(data) {
-                          details = data;
-                      })
-                              .done( function () {
-                                  elem1.prepend(details);
-                                  loadingElem.hide();
-                              });
+                    $.get( link_1 ).done( function(data) {
+                        details = data;
+                    })
+                      .done( function () {
+                          elem1.prepend(details);
+                          initSubmitForm( "#deleteChallengeModalForm", "#deleteModalSubmitButton", "#deleteResult" );
+                          loadingElem.hide();
+                      });
 
                   });
       });
@@ -631,9 +637,55 @@
       $("#challengeDetailsModal, #deleteModal, #cancelModal, #cancelAcceptedModal, #confirmModal")
        .on("hide.bs.modal", function(e) {
 
-          $(this).find(".modal-body-inner1").html("");
-          $(this).find(".modal-body-inner2").html("");
+        if ($('#deleteChallengeModalForm #deleteResult').html() !== undefined) {
+          if ($('#deleteChallengeModalForm #deleteResult').html().indexOf('Challenge deleted!')) {
+            challengesmytable.ajax.reload();
+          }
+        }
+
+        if ($('#cancelChallengeModalForm #cancelChallengeResult').html() !== undefined) {
+          if ($('#cancelChallengeModalForm #cancelChallengeResult').html().indexOf('Challenge cancelled!')) {
+            challengesmytable.ajax.reload();
+          }
+        }
+
+        if ($('#cancelAcceptedChallengeModalForm #cancelAcceptedChallengeResult').html() !== undefined) {
+          if ($('#cancelAcceptedChallengeModalForm #cancelAcceptedChallengeResult').html().indexOf('Challenge cancelled!')) {
+            acceptedchallengesmytable.ajax.reload();
+          }
+        }
+
+        if ($('#challengeConfirmForm #challengeConfirmResult').html() !== undefined) {
+          if ($('#challengeConfirmForm #challengeConfirmResult').html().indexOf('Challenge confirmed!')) {
+            challengesstatusmytable.ajax.reload();
+          }
+        }
+
+        $(this).find(".modal-body-inner1").html("");
+        $(this).find(".modal-body-inner2").html("");
       });
+
+      function initSubmitForm (form_id, submit_button_id, ajax_result_div_id) {
+        $(form_id).submit(function (e) {
+            e.preventDefault();
+            var loadingElem2 = $(this).find("#loading2");
+
+            var $form = $( this );
+            var url = $form.attr( "action" );
+            var posting = $.post( url, $form.serialize() );
+
+            loadingElem2.show();
+            $(submit_button_id).hide();
+
+            posting.done(function( data ) {
+              loadingElem2.hide();
+              $(form_id + ' ' + ajax_result_div_id).html(data);
+              $(form_id + ' ' + ajax_result_div_id).show();
+            }).fail(function() {
+              $(form_id + ' ' + ajax_result_div_id).html('Failed. Please retry.');
+            });
+          });
+      }
   });
 
   </script>

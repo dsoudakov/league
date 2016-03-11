@@ -1,8 +1,11 @@
-<form method="post" action="{{SITEROOT}}/challenge/cancelaccepted/{{ challengeid }}">
+<form id="cancelAcceptedChallengeModalForm" method="post" action="{{SITEROOT}}/challenge/cancelaccepted/{{ challengeid }}">
 
 <label for="challengeCancelAcceptedNote">Cancel reason:</label> <textarea class="form-control" maxlegth="200" rows="10" cols="20" name="challengeCancelAcceptedNote" id="challengeCancelAcceptedNote" placeholder="Why? (required)"></textarea> 
 <br />
-<input type="submit" class="btn btn-primary" value="Submit"> 
-
+<div id="loading2" style="display:none">
+	<img src="{{SITEROOT}}/res/img/ajax-loader.gif">
+</div>
+<input id="cancelAcceptedChallengeModalFormSubmit" type="submit" class="btn btn-primary" value="Cancel"> 
+<div id="cancelAcceptedChallengeResult" style="display:none"></div>
 {% include 'auth/csrf.inc' %} 
 </form>

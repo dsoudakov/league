@@ -222,14 +222,16 @@
               placement: 'bottom',
             },
           },
-          submitHandler: function(form) {
-              submitAcceptForm(form);
+          submitHandler: function(id, e) {
+              submitAcceptForm(id,e);
           },
         });
       }
 
-      function submitAcceptForm (form) {
-        id = '#acceptChallengeForm';
+      function submitAcceptForm (form, e) {
+        e.preventDefault();
+
+        id = form.id;
         var $form = $(form);
 
         var loadingElem2 = $form.find("#loading2");
@@ -242,16 +244,18 @@
 
         posting.done(function( data ) {
           loadingElem2.hide();
-          $(id + ' #acceptResult').html(data);
-          $(id + ' #acceptResult').show();
+          $('#' + id + ' #acceptResult').html(data);
+          $('#' + id + ' #acceptResult').show();
         }).fail(function() {
-          $(id + ' #acceptResult').html('<h3><span class="label label-lg label-danger">Failed... please try again.</span></h3>');
+          $('#' + id + ' #acceptResult').html('<h3><span class="label label-lg label-danger">Failed... please try again.</span></h3>');
         });        
       }
 
-      function initSubmitAcceptForm (id) {
-        $(id).submit(function (e) {
+      //not used
+      function initSubmitForm (form_id, submit_button_id, ajax_result_div_id) {
+        $(form_id).submit(function (e) {
             e.preventDefault();
+
             var loadingElem2 = $(this).find("#loading2");
 
             var $form = $( this );
@@ -259,14 +263,14 @@
             var posting = $.post( url, $form.serialize() );
 
             loadingElem2.show();
-            $('#acceptChallengeSubmit').hide();
+            $(submit_button_id).hide();
 
             posting.done(function( data ) {
               loadingElem2.hide();
-              $(id + ' #acceptResult').html(data);
-              $(id + ' #acceptResult').show();
+              $(form_id + ' ' + ajax_result_div_id).html(data);
+              $(form_id + ' ' + ajax_result_div_id).show();
             }).fail(function() {
-              $(id + ' #acceptResult').html('Failed... please try again.');
+              $(form_id + ' ' + ajax_result_div_id).html('Failed. Please retry.');
             });
           });        
       }
