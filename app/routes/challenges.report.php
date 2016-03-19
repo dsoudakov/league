@@ -438,7 +438,7 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 					if ($mres) {
 
 						Audit::log('Challenge reported. Mail sent, result: ' . $mres->http_response_code . ' ' . implode(' ', $auditlog));
-
+						echo '<h3><span class="label label-pill label-success">E-mail notification sent!</span></h3>';
 					} else {
 
 						Audit::log('Mail NOT sent. ' . implode(' ', $auditlog));
@@ -453,7 +453,7 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 
 				}
 
-	  			echo '<h3><span class="label label-pill label-success">Reported successfully! Opponent notified.</span></h3>';
+	  			echo '<h3><span class="label label-pill label-success">Reported successfully!</span></h3>';
 
 	  		} else {
 

@@ -86,6 +86,28 @@ class Generators {
 		}
 
 		return 'No division.';
+	}
 
+	static function tableHTML($id, $classes, $fields = [])
+	{
+		
+        if (count($fields) == 0) {
+        	return null;
+        }	
+
+        $out = '<div class="table-responsive">' .
+	       	   '<table id="' . $id . '" class="' . $classes . '">' .
+	       	   '<thead><tr>';
+
+		foreach ($fields as $f) {
+			$out .= '<th>' . $f . '</th>';
+		}
+
+		$out .= '   </tr>
+                  </thead>
+                </table>
+              </div>	';
+
+        return $out;
 	}
 }

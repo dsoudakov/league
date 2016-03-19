@@ -9,7 +9,9 @@ $app->get('/standings', function($request,$response,$args) use ($app)
 
 	return $this->view->render($response, 'standings/standings.twig', []);
 
-})->setName('standings')->add($isMember)->add($authenticated);
+})->setName('standings')
+  ->add($isMember)
+  ->add($authenticated);
 
 $app->get('/standingsjson[/{divisionid}]', function($request,$response,$args) use ($app)
 {
@@ -54,7 +56,11 @@ $app->get('/standingsjson[/{divisionid}]', function($request,$response,$args) us
 				');				
 	}
 
-	$output = ['data' => $standings];
+	$output = [
+				'data' => $standings,
+				'test' => '123',
+
+			  ];
 
 	echo json_encode($output);
 
@@ -68,6 +74,7 @@ $app->get('/playerdetailsjson/{userid}', function($request,$response,$args) use 
 	$playerdetails = R::getAll( ' SELECT  
 
 					concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate,
+					concat(u.first_name, \' \', u.last_name) as player,
 					IF(c.challengerid = :uid,
 						concat(uu.first_name, \' \', uu.last_name),
 						concat(uuu.first_name, \' \', uuu.last_name)
@@ -91,9 +98,25 @@ $app->get('/playerdetailsjson/{userid}', function($request,$response,$args) use 
 					':uid' => $args['userid'],
 				]);	
 
-	$output = ['data' => $playerdetails];
+	$output = [
+				'data' => $playerdetails,
+				'player' => $playerdetails[0]['player'],
+
+			  ];
 	echo json_encode($output);
 
 })->setName('playerdetails.get.json')
+  ->add($isMember)
+  ->add($authenticated);
+
+$app->get('/columnstest', function($request,$response,$args) use ($app)
+{
+
+	foreach (R::inspect('members') as $k => $v) {
+		echo $k . BR;
+	}
+	
+
+})->setName('columnstest')
   ->add($isMember)
   ->add($authenticated);

@@ -430,11 +430,6 @@ class User
 
     }
 
-    public function setApp(&$app)
-    {
-        $this->app = $app;
-    }
-
     //check password provided with password in the database
     //return true if all good
     public function checkPassword($password)

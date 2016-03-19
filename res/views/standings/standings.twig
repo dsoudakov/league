@@ -1,4 +1,4 @@
-{% extends 'templates/default.twig' %}
+  {% extends 'templates/default.twig' %}
 {% use 'nav.inc' %}
 
 {% block head %}
@@ -9,8 +9,8 @@
   <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/bootstrap-switch.min.css">
 
   <style type="text/css">
-    .modal.modal-wide .modal-dialog {
-      width: 60%;
+    .modal-dialog {
+      width: 90%;
     }
   </style>
 {% endblock head %}
@@ -35,7 +35,6 @@
           {% block nav %}
             {{ parent() }}
           {% endblock nav %}
-
       </div>
       <div class="col-md-8">
         <div class="panel">
@@ -77,24 +76,26 @@
             border-top-right-radius: 5px;
         ">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Player details</h4>
+          <h4 class="modal-title">Player: <span id="playername"></span>
+          </h4>
         </div>
-        <div class="modal-body modal-wide">
+        <div class="modal-body">
           <div id="loading1">
               <img src="{{SITEROOT}}/res/img/loader.gif">
           </div>
           <div class="modal-body-inner1">
-                <table id="playerdetailstable" class="display compact table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>VS</th>
-                      <th>Division</th>
-                      <th>Result</th>
-                      <th>Points</th>
-                    </tr>
-                  </thead>
-              </table>
+            <table id="playerdetailstable" class="display compact table table-bordered table-striped table-condensed table-hover" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Player</th>
+                  <th>VS</th>
+                  <th>Division</th>
+                  <th>Result</th>
+                  <th>Points</th>
+                </tr>
+              </thead>
+            </table>
           </div>
 
          </div>
@@ -137,8 +138,10 @@
               fnDrawCallback:function(d){
                 if ( d.aiDisplay.length > 10 ) {
                   $('#' + tablename_0 + '_paginate').show();
+                  $('#' + tablename_0 + '_length').show();
                 } else {
                   $('#' + tablename_0 + '_paginate').hide();
+                  $('#' + tablename_0 + '_length').hide();
                 }
               },
               oLanguage: {
@@ -176,6 +179,7 @@
           ajax       : "start",
           columns    : [
             { "data" : "challengedate" },
+            { "data" : "player" },
             { "data" : "vsplayer" },
             { "data" : "division" },
             { "data" : "result" },
@@ -191,24 +195,27 @@
           fnDrawCallback: function(d) {
               if ( d.aiDisplay.length > 10 ) {
                 $('#' + tablename_1 + '_paginate').show();
+                $('#' + tablename_1 + '_length').show();
               } else {
                 $('#' + tablename_1 + '_paginate').hide();
+                $('#' + tablename_1 + '_length').hide();
               }
           },
           aoColumnDefs : [],
           rowCallback : function( row, full, index ) {
             if (full.result == "W") {
-              output_col_3 = '<div class="label label-success label-sm">' + full.result + '</div>';
+              output_col_4 = '<div class="label label-success label-sm">' + full.result + '</div>';
             } else {
-              output_col_3 = '<div class="label label-danger label-sm">' + full.result + '</div>';
+              output_col_4 = '<div class="label label-danger label-sm">' + full.result + '</div>';
             }
 
-            $('td:eq(3)', row).html( output_col_3 );
+            $('td:eq(4)', row).html( output_col_4 );
           }
       };
 
       $("#playerDetailsModal").on("show.bs.modal", function(e) {
             var loadingElem = $(this).find("#loading1");
+            var playerName = $(this).find("#playername");
             loadingElem.show();
 
             $('#playerdetailstable').hide();
@@ -217,6 +224,7 @@
 
             var link = $(e.relatedTarget);
             var link_1 = link.attr("href");
+            var playerdetailstablejson;
 
             if ( ! $.fn.DataTable.isDataTable( '#playerdetailstable' ) ) {
 
@@ -232,6 +240,14 @@
               });
 
             }
+
+            playerdetailstable.on( 'xhr', function () {
+
+              playerdetailstablejson = playerdetailstable.ajax.json();
+              playerName.html(playerdetailstablejson.player);
+              //console.log(playerName);
+
+            } );
 
             loadingElem.hide();
       });

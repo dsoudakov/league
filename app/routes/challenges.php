@@ -487,6 +487,7 @@ $app->get('/issuedchallengesjson[/{yyyymmdd}]', function($request,$response,$arg
 										ac.acceptedbyuserid,
 										ac.confirmed,
 										ac.cancelnote,
+										c.cancelnote as challengecancelnote,
 										LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1 as numofplayers
 								FROM challenges c
 								LEFT JOIN users u on c.challengerid = u.id
@@ -495,7 +496,7 @@ $app->get('/issuedchallengesjson[/{yyyymmdd}]', function($request,$response,$arg
 								WHERE Date(challengedate) BETWEEN CURDATE() AND CURDATE() + INTERVAL 15 DAY
 										and challengerid <> :cid
 										and (c.challengedids like \'%"' . $app->user->id . '"%\' or c.challengedids IS NULL )
-								AND c.cancelnote IS NULL
+								-- AND c.cancelnote IS NULL
 								',
 								[
 									':cid' => $app->user->id,
@@ -513,6 +514,74 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 {
 
 	$v = $this->get('validator');
+
+	if ($args['action'] == 'infojson') {
+
+		$v->validate([
+	        'challengeid' => [$args['challengeid'], 'required|int|between(1,2147483647)'],
+	    ]);
+
+	    if ($v->passes()) {
+
+			$challenges = R::getAll( 'SELECT
+
+				c.id AS challengeid,
+				concat(u.first_name, \' \', u.last_name) as challenger,
+				concat(uu.first_name, \' \', uu.last_name) as acceptedby,
+				concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate,
+				concat(d.divisiondesc,  \' (\', d.divisionname,  \') \') AS challengeddivision,
+				challengenote,
+				challengecreatedat,
+				c.challenge_in_division,
+				ac.acceptedbyuserid,
+				ac.acceptedat,
+				-- COUNT(ac.acceptedbyuserid) as acceptedbynumofplayers,
+				ac.confirmed,
+				ac.cancelnote as accancelnote,
+				IF(ac.cancelnote IS NOT NULL, \'Opponent cancelled\', IF(ac.confirmed = 1, \'Confirmed\' ,\'Not confirmed\')) as status,
+				c.cancelnote,
+				1 as action,
+				numofmatches,
+				IFNULL(LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1,\'all\') as numofplayers
+				FROM acceptedchallenges ac
+				LEFT JOIN challenges c on ac.acceptedchallengeid = c.id
+				LEFT JOIN users u on c.challengerid = u.id
+				LEFT JOIN users uu on ac.acceptedbyuserid = uu.id
+				LEFT JOIN divisions d on c.challenge_in_division = d.id
+				WHERE c.id = :cid ',
+				[
+					':cid' => $args['challengeid'],
+				]);
+
+			$matchesconfirmed = 0;
+
+			if ($challenges) {
+
+				foreach ($challenges as $c) {
+
+					if (!$c['accancelnote'] && $c['confirmed'] == 1) {
+						$matchesconfirmed++;
+					}
+
+				}
+
+				echo json_encode([
+									'data' => $challenges,
+									'matchesconfirmed' => $matchesconfirmed,
+								]);
+
+			} else {
+
+				echo json_encode([
+									'data' => [],
+									'matchesconfirmed' => 0,
+								]);
+
+			}
+
+	    }
+
+	}
 
 	if ($args['action'] == 'create') {
 
@@ -768,6 +837,59 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 				'challengeddivision' => $challenge['challengeddivision'],
 				'challengenote' => $challenge['challengenote'],
 			]);
+		}
+
+	}
+
+	if ($args['action'] == 'details2') {
+
+		$v->validate([
+	        'challengeid' => [$args['challengeid'], 'required|int|between(-2147483648,2147483647)'],
+	    ]);
+
+		if ($v->passes()) {
+
+			$challenge = R::getRow( 'SELECT
+										c.id AS challengeid,
+										concat(u.first_name, \' \', u.last_name) as challenger,
+										concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate,
+										concat(d.divisiondesc,  \' (\', d.divisionname,  \') \') AS challengeddivision,
+										challengenote,
+										challengecreatedat,
+										c.challenge_in_division,
+										numofmatches,
+										cancelnote
+								FROM challenges c
+								LEFT JOIN users u on c.challengerid = u.id
+								LEFT JOIN divisions d on c.challenge_in_division = d.id
+								WHERE c.id = :cid and (c.challenge_in_division = u.divisionprimary or c.challenge_in_division = u.divisionsecondary)',
+								[
+									':cid' => $args['challengeid'],
+								]);
+
+			$status = 'Ready';
+
+			if ($challenge) {
+
+				if ($challenge['cancelnote']) {
+					$status = 'Cancelled';
+				}
+
+				echo json_encode([
+									'data' => $challenge,
+								  	'status' => $status,
+								]);
+
+			} else {
+
+				echo json_encode([
+									'data' => [],
+								  	'status' => 'NODATA',
+								]);
+
+			}
+
+
 		}
 
 	}
