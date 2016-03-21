@@ -443,9 +443,10 @@ $app->get('/myacceptedchallengesjson2[/{yyyymmdd}]', function($request,$response
 								d.divisiondesc as challengeddivision,
 								ac.acceptednote as challengenote,
 								ac.confirmed,
-								ac.cancelnote,
+								ac.cancelnote as accancelnote,
 								ac.winnerid,
-								ac.reportconfirmed
+								ac.reportconfirmed,
+								c.cancelnote
 								FROM acceptedchallenges ac
 								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
 								LEFT JOIN divisions d on d.id = c.challenge_in_division
