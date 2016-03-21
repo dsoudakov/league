@@ -1,12 +1,12 @@
-  {% extends 'templates/default.twig' %}
+{% extends 'templates/default.twig' %}
 {% use 'nav.inc' %}
 
 {% block head %}
 
   {{parent()}}
-  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/datatables.min.css"/>
-  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/responsive.dataTables.min.css">
-  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/bootstrap-switch.min.css">
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/datatables.min.css" />
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/responsive.dataTables.min.css" />
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/bootstrap-switch.min.css" />
 
   <style type="text/css">
     .modal-dialog {
@@ -103,9 +103,6 @@
     </div>
   </div>
 
-  <div id="divisionselectmodal" style="display:none;">
-    {{ auth.genJoinedDivisionSelect2('usersdivisionsmodal')  | raw }}
-  </div>
 {% endblock content %}
 
 {% block js %}
@@ -119,7 +116,6 @@
       var tablename_0 = 'standingstable';
       var tablename_1 = 'playerdetailstable';
 
-      var divisionselectmodal = $('#divisionselectmodal').html();
       var standingstable;
       var standingstableopts =  {
               responsive: true,

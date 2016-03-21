@@ -105,8 +105,7 @@
           <div class="modal-body-inner1">
             <table id="challengedetails"
                    class="display compact table table-condensed borderless"
-                   width="100%"
-                   style="display:none;">
+                   width="100%">
               <tbody>
                 <tr><td><label>Status:</label></td><td id="challengestatus"></td></tr>
                 <tr><td><label>Date:</label></td><td id="challengedate"></td></tr>
@@ -119,9 +118,8 @@
             </table>
           </div>
           <div class="modal-body-inner2">
-            <div class="table-responsive" style="border:none !important;">
-              <table id="challengedetailstable"
-                     class="display dt-responsive compact table table-bordered table-striped table-condensed table-hover"
+            <table id="challengedetailstable"
+                     class="display compact table table-bordered table-striped table-condensed table-hover"
                      cellspacing="0"
                      width="100%">
                   <thead>
@@ -132,8 +130,7 @@
                     </tr>
                   </thead>
             </table>
-           </div>
-        </div>
+          </div>
         </div>
       </div>
     </div>
@@ -148,10 +145,11 @@
   <script type="text/javascript" src="{{SITEROOT}}/res/js/datatables.min.js"></script>
   <script type="text/javascript" src="{{SITEROOT}}/res/js/dataTables.responsive.min.js"></script>
 
-
   <script type="text/javascript">
 
     $(document).ready(function() {
+
+      var wwidth = 0;
 
       $('[data-toggle="tooltip"]').tooltip({
         placement: 'bottom',
@@ -244,6 +242,17 @@
           }
       };
 
+      $( window ).resize(function() {
+
+        if ( Math.abs(wwidth - $( window ).width()) > 25) {
+          wwidth = $( window ).width();
+          $('#' + tablename_0 ).DataTable()
+          .columns.adjust()
+          .responsive.recalc();
+        }
+
+      });
+
       challengesissuedtable = $('#' + tablename_0 ).DataTable(challengesissuedtableopts);
 
       $('#' + tablename_0 + 'refresh').on( 'click', function () {
@@ -335,30 +344,51 @@
            sZeroRecords : "Nobody accepted yet",
            sProcessing  : "Reloading data from server..."
           },
-          order        : [[ 0, "desc" ]],
+          order        : [[ 1, "asc" ]],
           paging       : false,
           info         : false,
           searching    : false,
           initComplete : function () {
-            $('#challengedetailstable').show();
+            //$('#challengedetailstable').show();
           },
-          rowCallback : function( row, full, index ) {
-            var output_col_2 = "";
+          aoColumnDefs : [
+            {
+              targets: 2,
+              render: function ( data, type, full, meta ) {
+                if (full.status == "Not confirmed") {
 
-            if (full.status == "Not confirmed") {
+                  output_col_2 = '<h4><span class="label label-warning">Not confirmed yet</span></h4>';
 
-              output_col_2 = '<h4><span class="label label-warning">Not confirmed yet</span></h4>';
+                } else if (full.status == "Confirmed") {
 
-            } else if (full.status == "Confirmed") {
+                  output_col_2 = '<h4><span class="label label-success">Confirmed</span></h4>';
 
-              output_col_2 = '<h4><span class="label label-success">Confirmed</span></h4>';
+                } else if (full.status == "Opponent cancelled") {
 
-            } else if (full.status == "Opponent cancelled") {
+                  output_col_2 = '<h4><span class="label label-danger">Opponent cancelled</span></h4>';
+                }
 
-              output_col_2 = '<h4><span class="label label-danger">Opponent cancelled</span></h4>';
+                return output_col_2;
+              }
             }
+          ],
+          rowCallback : function( row, full, index ) {
+            // var output_col_2 = "";
 
-            $('td:eq(2)', row).html( output_col_2 );
+            // if (full.status == "Not confirmed") {
+
+            //   output_col_2 = '<h4><span class="label label-warning">Not confirmed yet</span></h4>';
+
+            // } else if (full.status == "Confirmed") {
+
+            //   output_col_2 = '<h4><span class="label label-success">Confirmed</span></h4>';
+
+            // } else if (full.status == "Opponent cancelled") {
+
+            //   output_col_2 = '<h4><span class="label label-danger">Opponent cancelled</span></h4>';
+            // }
+
+            // $('td:eq(2)', row).html( output_col_2 );
           }
       };
 
@@ -414,11 +444,8 @@
           var numofmatches = $(this).find("#numofmatches");
           var numofmatchestoplay = $(this).find("#numofmatchestoplay");
 
-          // elem1.html("");
-          //challengedetailstable.hide();
           elem1.hide();
-          // elem2.html("");
-          elem2.hide();
+          //elem2.hide();
 
           loadingElem.show();
 
@@ -442,8 +469,14 @@
 
             challengedetailstableDT.ajax.url( link_2 );
             challengedetailstableDT.ajax.reload(function () {
-              challengedetailstable.show();
               challengedetailsjson = challengedetailstableDT.ajax.json();
+
+              // if (challengedetailsjson.data.length == 0) {
+              //     $("#challengedetailstable").hide();
+              // } else {
+              //     $("#challengedetailstable").show();
+              // }
+
               numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
             });
 
@@ -481,12 +514,9 @@
               .done( function () {
 
                   loadingElem.hide();
-                  challengedetails.show();
+                  //challengedetails.show();
                   elem1.show();
-
-                  if (challengedetailsjson.data.length > 0) {
-                    elem2.show();
-                  }
+                  //elem2.show();
 
               });
 
