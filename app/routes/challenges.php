@@ -536,12 +536,13 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 				c.challenge_in_division,
 				ac.acceptedbyuserid,
 				ac.acceptedat,
+				ac.acceptednote,
 				-- COUNT(ac.acceptedbyuserid) as acceptedbynumofplayers,
 				ac.confirmed,
 				ac.cancelnote as accancelnote,
 				IF(ac.cancelnote IS NOT NULL, \'Opponent cancelled\', IF(ac.confirmed = 1, \'Confirmed\' ,\'Not confirmed\')) as status,
 				c.cancelnote,
-				1 as action,
+				ac.cancelnote as accancelnote,
 				numofmatches,
 				IFNULL(LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1,\'all\') as numofplayers
 				FROM acceptedchallenges ac
