@@ -1,0 +1,6 @@
+/vendor/*
+/test/*
+.htaccess
+.idea/
+/uploads/*
+*.zip
