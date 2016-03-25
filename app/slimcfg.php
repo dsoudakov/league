@@ -135,13 +135,13 @@ $c['view'] = function ($c)
 
     $addUsersOnlineCheck = new Twig_SimpleFunction('numOfUsersOnline', function () use ($app) {
 
-        $ua = R::getRow('SELECT count(*) as count FROM usersactive WHERE last_active > NOW() - INTERVAL 15 MINUTE');
+        $ua = R::getRow('SELECT count(*) as count FROM usersactive WHERE last_active > (NOW() + INTERVAL 3 HOUR - INTERVAL 15 MINUTE)');
         return $ua['count'];
     });
 
     $addUsersOnlineList = new Twig_SimpleFunction('listOfUsersOnline', function () use ($app) {
 
-        $ua = R::getAll('SELECT concat(u.first_name, \' \', u.last_name) as email FROM usersactive ua LEFT JOIN users u on u.id = ua.user_id WHERE last_active > NOW() - INTERVAL 15 MINUTE');
+        $ua = R::getAll('SELECT concat(u.first_name, \' \', u.last_name, \' (\', u.email, \')\') as email FROM usersactive ua LEFT JOIN users u on u.id = ua.user_id WHERE last_active >(NOW() + INTERVAL 3 HOUR - INTERVAL 15 MINUTE)');
 
         foreach ($ua as $v) {
             $out .= $v['email'] . BR;

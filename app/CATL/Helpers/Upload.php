@@ -120,7 +120,7 @@ class Upload {
 			$linecount = 0;
 			$handle = fopen($file, "r");
 			while(!feof($handle)){
-			  $line = fgets($handle);
+			  $line = trim(fgets($handle));
 			  $newlines = preg_replace('/.*/', '', $line);
 			  //echo strlen($newlines) . BR;
 			  if (strlen(str_replace(',', '', trim($line) )) > strlen($newlines)) {
@@ -135,14 +135,15 @@ class Upload {
 		}
 	}
 
-	public static function checkMembersHeader($file)
+	public static function checkMembersHeader($file, $validHeader)
 	{
-		$validHeader = '"firstname","lastname","home","cell","work","email"';
+		
 		$ret = false;
 		try {
 			$handle = fopen($file, "r");
   	 		$line = fgets($handle);
-  	 		if ($line == $validHeader) {
+
+  	 		if (strtolower(trim($line)) == strtolower(trim($validHeader))) {
   	 			$ret = true;
   	 		}
 			fclose($handle);

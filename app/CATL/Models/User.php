@@ -50,10 +50,13 @@ class User
 
         global $app;
 
+        $dids2 = [];
+
         $dids = R::getAll('select id from users where donotnotifyme = 0 and active = 1
                          and (divisionprimary = :did or divisionsecondary = :did)',
                             [':did' => $divid]
                         );
+
         foreach($dids as $k=>$v) {
             $dids2[] = $v['id'];
         }

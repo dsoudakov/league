@@ -63,9 +63,9 @@ class Generators {
 
 			}
 
-			$ret .= '</tbody></table></div>';
-
 		}
+
+		$ret .= '</tbody></table></div>';
 
 		return $ret;
 	}
