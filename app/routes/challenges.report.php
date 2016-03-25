@@ -112,17 +112,17 @@ $app->post('/confirmreport/{challengeid}', function($request,$response,$args) us
 
 	  			if (!$correctcheck) {
 
-	  				echo '<h3><span class="label label-pill label-warning">Reported successfully denied!</span></h3>';
+	  				echo '<h3><span style="max-width:200px;" class="wordwrap label label-pill label-warning">Reported successfully denied!</span></h3>';
 
 	  			} else {
 
-	  				echo '<h3><span class="label label-pill label-success">Reported successfully confirmed!</span></h3>';
+	  				echo '<h3><span style="max-width:200px;" class="wordwrap label label-pill label-success">Reported successfully confirmed!</span></h3>';
 
 	  			}
 
 	  		} else {
 
-	  			echo '<h3><span class="label label-pill label-danger">Report failed. Please try again!</span></h3>';
+	  			echo '<h3><span style="max-width:200px;" class="wordwrap label label-pill label-danger">Report failed. Please try again!</span></h3>';
 
 	  		}
 
@@ -200,12 +200,12 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
     if ($v->passes()) {
 		if ($matchtype == 1 && !$loserscore) {
 
-			echo '<h3><span class="label label-danger">Report failed. Number of games that loser won is not specified!</span></h3>';
+			echo '<h3><span style="max-width:200px;" class="wordwrap label label-danger">Report failed. Number of games that loser won is not specified!</span></h3>';
 			die();
 
 		} else if ($matchtype == 2 && $retired != 1 && ((!$winner_1 || !$winner_2 || !$loser_1 || !$loser_2))  ) {
 
-			echo '<h3><span class="label label-lg label-danger">Report failed. Check your set scores. Missing numbers.</span></h3>';
+			echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Report failed. Check your set scores. Missing numbers.</span></h3>';
 			die();
 
 
@@ -215,12 +215,12 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 
 			if ($winner_1 && $loser_1 && $winner_2 && $loser_2 && $winner_3 && $loser_3 ) {
 				if (!User::checkSetScore($winner_1,$loser_1) ||!User::checkSetScore($winner_2,$loser_2) || !User::checkSetScore($winner_3,$loser_3)  ) {
-					echo '<h3><span class="label label-lg label-danger">Set scores are invalid for 3 sets. (1)</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Set scores are invalid for 3 sets. (1)</span></h3>';
 					die();
 				}
 
 				if (!User::checkScores([$winner_1,$loser_1],[$winner_2,$loser_2],[$winner_3,$loser_3])) {
-					echo '<h3><span class="label label-lg label-danger">Match score is invalid for 3 sets. (2)</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Match score is invalid for 3 sets. (2)</span></h3>';
 					die();
 				}
 
@@ -228,16 +228,16 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 				if ($winner_1 && $loser_1 && $winner_2 && $loser_2) {
 
 					if (!User::checkSetScore($winner_1,$loser_1) ||!User::checkSetScore($winner_2,$loser_2)) {
-						echo '<h3><span class="label label-lg label-danger">Set scores are invalid for 2 sets. (2)</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Set scores are invalid for 2 sets. (2)</span></h3>';
 						die();
 					}
 
 					if (!User::checkScores([$winner_1,$loser_1],[$winner_2,$loser_2])) {
-						echo '<h3><span class="label label-lg label-danger">Match score is invalid for 2 sets.</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Match score is invalid for 2 sets.</span></h3>';
 						die();
 					}
 				} else {
-					echo '<h3><span class="label label-lg label-danger">Set scores are missing.</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Set scores are missing.</span></h3>';
 					die();
 				}
 			}
@@ -249,12 +249,12 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 			if ($winner_3 && $loser_3) {
 				//check 2nd and 1st
 				if (!User::checkSetScore($winner_2,$loser_2)) {
-					echo '<h3><span class="label label-lg label-danger">Report failed. Set 2 score is invalid.</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Report failed. Set 2 score is invalid.</span></h3>';
 					die();
 				}
 
 				if (!User::checkSetScore($winner_1,$loser_1)) {
-					echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is invalid.</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Report failed. Set 1 score is invalid.</span></h3>';
 					die();
 				}
 
@@ -262,19 +262,19 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 				if ($winner_2 && $loser_2) {
 					//check 1st
 					if (!User::checkSetScore($winner_1,$loser_1)) {
-						echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is invalid here.</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Report failed. Set 1 score is invalid here.</span></h3>';
 						die();
 					}
 
 				} else {
 					if ($winner_1 && $loser_1) {
 						if ($winner_1 == $loser_1 && $winner_1 == 7) {
-							echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is invalid.</span></h3>';
+							echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Report failed. Set 1 score is invalid.</span></h3>';
 							die();
 						}
 
 					} else {
-						echo '<h3><span class="label label-lg label-danger">Report failed. Set 1 score is missing.</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Report failed. Set 1 score is missing.</span></h3>';
 						die();
 					}
 
@@ -438,38 +438,38 @@ $app->post('/report/{challengeid}', function($request,$response,$args) use ($app
 					if ($mres) {
 
 						Audit::log('Challenge reported. Mail sent, result: ' . $mres->http_response_code . ' ' . implode(' ', $auditlog));
-						echo '<h3><span class="label label-pill label-success">E-mail notification sent!</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-pill label-success">E-mail notification sent!</span></h3>';
 					} else {
 
 						Audit::log('Mail NOT sent. ' . implode(' ', $auditlog));
-						echo '<h3><span class="label label-pill label-danger">E-mail notification failed. Please try again!</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-pill label-danger">E-mail notification failed. Please try again!</span></h3>';
 
 					}
 
 				} else {
 
 					Audit::log('Opponent has DND set in profile.');
-					echo '<h3><span class="label label-pill label-danger">Opponent has DND set in profile. E-mail not sent.</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-pill label-danger">Opponent has DND set in profile. E-mail not sent.</span></h3>';
 
 				}
 
-	  			echo '<h3><span class="label label-pill label-success">Reported successfully!</span></h3>';
+	  			echo '<h3><span style="max-width:200px;" class="wordwrap label label-pill label-success">Reported successfully!</span></h3>';
 
 	  		} else {
 
-	  			echo '<h3><span class="label label-pill label-danger">Report failed. Please try again!</span></h3>';
+	  			echo '<h3><spanstyle="max-width:200px;" class="wordwrap label label-pill label-danger">Report failed. Please try again!</span></h3>';
 
 	  		}
 
 	  	} else {
 
-	  		echo '<h3><span class="label label-pill label-danger">Already reported!</span></h3>';
+	  		echo '<h3><span style="max-width:200px;" class="wordwrap label label-pill label-danger">Already reported!</span></h3>';
 	  	}
 
     } else {
 
-    	echo '<h3><span class="label label-pill label-danger">Not reported! Check inputs</span></h3>';
-    	echo '<h3><span class="label label-pill label-danger">'. $v->errors()->first() .'</span></h3>';
+    	echo '<h3><span style="max-width:200px;" class="wordwrap  label-pill label-danger">Not reported! Check inputs</span></h3>';
+    	echo '<h3><span style="max-width:200px;" class="wordwrap label label-pill label-danger">'. $v->errors()->first() .'</span></h3>';
 
     }
 

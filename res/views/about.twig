@@ -1,0 +1,93 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block content %}
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2">
+          {% block nav %}
+            {{ parent() }}
+          {% endblock nav %}
+      </div>
+      <div class="col-md-8">
+        <div class="panel">
+             <div class="panel-body">
+
+                <p><span style="mso-no-proof:yes"><img id="_x0000_i1028" src="{{SITEROOT}}/res/img/Rules.gif" alt="Rules.gif" height="120" width="644"></span></p>
+                <p><strong><span style="font-size:10.0pt;font-family:&quot;Arial&quot;,&quot;sans-serif&quot;;
+                color:#009900">1. Scheduling</span></strong><span style="font-size:10.0pt;
+                font-family:&quot;Arial&quot;,&quot;sans-serif&quot;"><br>
+                For each division there is a timeframe and schedule for you to complete your
+                games. It is your responsibility to get in touch with your opponent for the
+                week in order to find a time convenient for the both of you, in which to play
+                your match. The schedule will run for the duration of the summer.<span style="mso-spacerun:yes">&nbsp; </span>However, if you feel you were initially put
+                in a division that does not suit your skills, let me know and I will change
+                you accordingly.<span style="mso-spacerun:yes">&nbsp; </span>Alternatively, if you
+                want to get more matches in over the summer, and want to play in 2 divisions,
+                you can do this as well.<span style="mso-spacerun:yes">&nbsp; </span>At the end of
+                the summer, either the top 4 or top 6 (top 2 advance to semi’s, 3 – 6 play
+                each other) each division play a semi-final and final match to see who is the
+                champion of each division, with the winner receiving a small price.<span style="mso-spacerun:yes">&nbsp; </span>I will decide which divisions will be top 4
+                and which will be top 6 based on how active each division is.<span style="mso-spacerun:yes">&nbsp; </span>It is in your best interest to play all
+                your games so that you can obtain the maximum amount of points possible in
+                order to make it into the top 4 (or top 6). In past years, people have often
+                scheduled more than one match a week (or even back to back on the same day)
+                when they have time and want to play.<span style="mso-spacerun:yes">&nbsp;
+                </span>Remember the more matches you play, the more points you can get.<span style="mso-spacerun:yes">&nbsp; </span>Those who are in 2 divisions can be in 2
+                sets of playoffs provided they have make the top 4 (or top 6) in scoring in
+                their divisions.<span style="mso-spacerun:yes">&nbsp; </span></span></p>
+                <p><strong><span style="font-size:10.0pt;font-family:&quot;Arial&quot;,&quot;sans-serif&quot;;
+                color:#009900">2. Match Length</span></strong><span style="font-size:10.0pt;
+                font-family:&quot;Arial&quot;,&quot;sans-serif&quot;"><br>
+                All matches are to be played using regular tennis rules, except that instead
+                of playing a best of 3 sets (to keep game times reasonable), games will be
+                decided on a "FIRST to SEVEN games" (NOT BEST OF SEVEN!!) basis,
+                with deuces. If the score is 6-6, then play a regular style tie breaker to
+                determine the winner (1-2-2-2, etc). Division A may decide (collectively) to
+                play best of 3 sets to make it more realistic, but for the time being, we
+                will stick with first to SEVEN games and see how it works for people. This
+                will help us keep games under 1 hour.</span></p>
+                <p><strong><span style="font-size:10.0pt;font-family:&quot;Arial&quot;,&quot;sans-serif&quot;;
+                color:#009900">3. Points System / Scoring</span></strong><span style="font-size:10.0pt;font-family:&quot;Arial&quot;,&quot;sans-serif&quot;"><br>
+                The first person to win 7 games will receive 7 points, minus 0.5 for each
+                game his opponent wins, which the opponent will get. (i.e., if you win 7-4,
+                you get 5 points (7 – (4 x 0.5), and your opponent gets the other 2 points).
+                Thus, it is in your best interest to get to 7 and limit your opponent to as
+                few games as possible, in addition to getting all your games in, as any games
+                missed are potential points that you miss out on. This way, even if you are
+                down by a large amount, you still have reason to try to win a couple more
+                games in order to get some points and limit the number of points your
+                opponent gets. <span style="mso-spacerun:yes">&nbsp; </span>If your opponent does not show up for a
+                scheduled match, you will be awarded the full 7 points on default. <o:p></o:p></span></p>
+                <p><strong><span style="color:#009900">4. Playoffs<br>
+                </span></strong><span style="font-size:10.0pt;font-family:&quot;Arial&quot;,&quot;sans-serif&quot;">Ordering
+                for tiebreakers are as follows:<br>
+                1. Winner of head to head matchup<br>
+                2. If players have never played each other, then the person who got their
+                points in the FEWER amount of games <br>
+                3. If never played and same amount of games played, then tied players will
+                have to play a sudden death match.<span style="mso-spacerun:yes">&nbsp; </span><o:p></o:p></span></p>
+                <p><strong><span style="font-size:10.0pt;font-family:&quot;Arial&quot;,&quot;sans-serif&quot;;
+                color:#009900">4. Club Rules</span></strong><span style="font-size:10.0pt;
+                font-family:&quot;Arial&quot;,&quot;sans-serif&quot;"><br>
+                Remember that we have regular membership privileges at the Forest Hill Tennis
+                Club. Based on historical experience at this Tennis Club, it rarely gets busy
+                to a point where you get booted off the courts for longer than 10-15 minutes,
+                if at all. Last summer you could play almost daily for 2-3 hours a night and
+                never get booted. If there is a time when the courts are busy, the supervisor
+                on duty will get you on the next available court as soon as possible (there
+                are 40 minute minimum playing times), so realistically, you shouldn’t’ have
+                to wait very long to get a court. If you get kicked off while playing, you
+                should get put on the court in about 10-15 minutes.</span></p>
+                <p>&nbsp;</p>
+  
+            </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

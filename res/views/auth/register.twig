@@ -1,5 +1,8 @@
 {% extends 'templates/default.twig' %}
 
+{% block head %}
+{% endblock %}
+
 {% block content %}
 	<div class="container center-block center-position">    
 		<div class="col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">           <!-- Div Panel -->
@@ -95,47 +98,46 @@
 {% endblock %}
 
 {% block js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
-<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-<script>
-	$(function () {
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
+	<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
+	<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+	<script>
+		$(function () {
 
-		$('[data-toggle="tooltip"]').tooltip({
-			placement: 'bottom',
-			trigger: 'hover focus',
-		});
+			$('[data-toggle="tooltip"]').tooltip({
+				placement: 'bottom',
+				trigger: 'hover focus',
+			});
 
-		$( "#registerForm" ).validate({
-			rules: {
-				identifier: {
-					required: true,
-					email: true
+			$( "#registerForm" ).validate({
+				rules: {
+					identifier: {
+						required: true,
+						email: true
+					},
+					password: {
+						required: true,
+						minlength: 6
+					},			
+					password_match: {
+						required: true,
+						minlength: 6,
+						equalTo: "#password"
+					},	
 				},
-				password: {
-					required: true,
-					minlength: 6
-				},			
-				password_match: {
-					required: true,
-					minlength: 6,
-					equalTo: "#password"
-				},	
-			},
 
-			tooltip_options: {
-				identifier: { 
-					placement: 'bottom'
-				},
-				password: { 
-					placement: 'bottom'
-				},
-				password_match: { 
-					placement: 'bottom'
-				},
-			}
-		});
-	})
-</script>
-{{ parent() }}
+				tooltip_options: {
+					identifier: { 
+						placement: 'bottom'
+					},
+					password: { 
+						placement: 'bottom'
+					},
+					password_match: { 
+						placement: 'bottom'
+					},
+				}
+			});
+		})
+	</script>
 {% endblock %}

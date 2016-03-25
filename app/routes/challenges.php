@@ -41,11 +41,13 @@ $app->post('/challengeall', function($request,$response,$args) use ($app)
 	$mail = $this->get('mail2');
 
 	$v->validate([
-		'challengenote|Challenge note' => [$challengenote, 'required|max(200)'],
+		'challengenote|Challenge note' => [$challengenote, 'required|max(100)'],
 		'challengedate1|Challenge date' => [$challengedate1, 'required|max(30)'],
 		'numofmatches|Number of matches' => [$numofmatches, 'required|int|between(1,5)'],
 		'challengeInDivision|Challenged division' => [$challengeInDivision, 'required|between(1,99)'],
 	]);
+
+	$challengenote = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $challengenote);
 
 	if ($v->passes() && $test && $test2) {
 		$now = Carbon::now('America/Toronto');
@@ -173,12 +175,14 @@ $app->post('/challengespecific', function($request,$response,$args) use ($app)
 	$mail = $this->get('mail2');
 
 	$v->validate([
-		'challengenote|Challenge note' => [$challengenote, 'required|max(200)'],
+		'challengenote|Challenge note' => [$challengenote, 'required|max(100)'],
 		'challengedate1|Challenge date' => [$challengedate1, 'required'],
 		'challengedids' => [$challengedids, 'required|array|arrayOfInt'],
 		'challengeInDivision|Challenged division' => [$challengeInDivision, 'required|between(1,99)'],
 		'numofmatches|Number of matches' => [$numofmatches, 'required|int|between(1,5)'],
 	]);
+
+	$challengenote = preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "\n", $challengenote);
 
 	$_SESSION['challengenote'] = $challengenote;
 	$_SESSION['challengedate'] = $challengedate1;
@@ -366,6 +370,7 @@ $app->get('/mychallengesjson2[/{yyyymmdd}]', function($request,$response,$args) 
 					challengecreatedat,
 					count(ac.id) as numofacceptedchallenges,
 					IFNULL(sum(ac.confirmed),0) as numofconfirmedchallenges,
+					IFNULL(sum(ac.reportedbyuserid),0) as numofreportedchallenges,
 					count(ac.cancelnote) as numofcancelledchallenges,
 			LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1 as numofplayers,
 					ac.confirmed,
@@ -446,6 +451,7 @@ $app->get('/myacceptedchallengesjson2[/{yyyymmdd}]', function($request,$response
 								ac.cancelnote as accancelnote,
 								ac.winnerid,
 								ac.reportconfirmed,
+								ac.reportedbyuserid,
 								c.cancelnote
 								FROM acceptedchallenges ac
 								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
@@ -541,10 +547,26 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 				ac.confirmed,
 				ac.cancelnote as accancelnote,
 				IF(ac.cancelnote IS NOT NULL, \'Opponent cancelled\', IF(ac.confirmed = 1, \'Confirmed\' ,\'Not confirmed\')) as status,
+				IF(ac.reportedbyuserid IS NOT NULL, IF(ac.reportconfirmed IS NOT NULL, \'Completed\', \'Reported\') , NULL ) as reportstatus,
 				c.cancelnote,
 				ac.cancelnote as accancelnote,
 				numofmatches,
-				IFNULL(LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1,\'all\') as numofplayers
+				IFNULL(LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1,\'all\') as numofplayers,
+				IF(ac.reportedbyuserid IS NOT NULL AND ac.reportconfirmed IS NOT NULL,
+					IF(ac.matchtype = 1,
+							concat(\'7:\',ac.loserscore),
+							IF(winner_3 IS NULL,
+								concat(winner_1,\':\',loser_1,\',\',winner_2,\':\',loser_2),
+								concat(winner_1,\':\',loser_1,\', \',winner_2,\':\',loser_2,\', \',winner_3,\':\',loser_3)
+							)
+					),
+				\'Not confirmed\'
+				) AS score,
+				IF(ac.winnerid IS NOT NULL,
+					IF(ac.winnerid = u.id, concat(u.first_name, \' \', u.last_name),
+						concat(uu.first_name, \' \', uu.last_name)),
+				\'Not reported\'
+				) as winner
 				FROM acceptedchallenges ac
 				LEFT JOIN challenges c on ac.acceptedchallengeid = c.id
 				LEFT JOIN users u on c.challengerid = u.id
@@ -873,13 +895,55 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 
 			if ($challenge) {
 
+				$challenges = [];
+
 				if ($challenge['cancelnote']) {
 					$status = 'Cancelled';
+				} else {
+					$challenges = R::getAll('SELECT c.id
+											FROM acceptedchallenges ac
+											LEFT JOIN challenges c on ac.acceptedchallengeid = c.id
+											WHERE c.id = :cid
+											AND ac.cancelnote IS NULL
+											AND ac.confirmed = 1
+											',
+											[
+												':cid' => $args['challengeid'],
+											]);
+				}
+
+				$acchallenge = [];
+
+				$moreInfoACChallenge = $request->getParam('moreInfoACChallenge');
+
+				if ($moreInfoACChallenge) {
+
+						$v->validate([
+					        'moreInfoACChallenge' => [$moreInfoACChallenge, 'int|between(1,2147483647)'],
+					    ]);
+
+						if ($v->passes()) {
+
+							$acchallenge = R::getRow('SELECT
+											ac.acceptednote,
+											concat(u.first_name, \' \', u.last_name) as vschallenger
+											FROM acceptedchallenges ac
+											LEFT JOIN users u ON u.id = ac.acceptedbyuserid
+											-- LEFT JOIN challenges c on ac.acceptedchallengeid = c.id
+											WHERE ac.id = :cid AND ac.cancelnote IS NULL
+											',
+											[
+												':cid' => $moreInfoACChallenge,
+											]);
+						}
+
 				}
 
 				echo json_encode([
 									'data' => $challenge,
 								  	'status' => $status,
+								  	'numofmatchestoplay' => count($challenges),
+								  	'acchallenge' => $acchallenge,
 								]);
 
 			} else {
@@ -887,6 +951,8 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 				echo json_encode([
 									'data' => [],
 								  	'status' => 'NODATA',
+								  	'numofmatchestoplay' => 0,
+								  	'acchallenge' => [],
 								]);
 
 			}
@@ -1082,7 +1148,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 				if ($challenges['confirmed'] == 1) {
 					//$this->get('flash')->addMessage('global_error', 'Challenge NOT deleted! Cannot delete confirmed challenges. Can only cancel with reasons.');
-					echo '<h3><span class="label label-lg label-danger">Challenge NOT deleted! Cannot delete confirmed challenges. Can only cancel with reasons.</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Challenge NOT deleted! Cannot delete confirmed challenges. Can only cancel with reasons.</span></h3>';
 					//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 					//return $response;
 					die();
@@ -1118,7 +1184,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 			        Audit::log('Challenge deleted.');
 
 					//$this->get('flash')->addMessage('global', 'Challenge deleted!');
-					echo '<h3><span class="label label-lg label-success">Challenge deleted!</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Challenge deleted!</span></h3>';
 
 					//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 					//return $response;
@@ -1129,7 +1195,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 			        R::rollback();
 					//$this->get('flash')->addMessage('global_error', 'Challenge NOT deleted! Error: ' . $e->getMessage());
-					echo '<h3><span class="label label-lg label-danger">Challenge NOT deleted! Error: ' . $e->getMessage() . '</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Challenge NOT deleted! Error: ' . $e->getMessage() . '</span></h3>';
 					//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 					//return $response;
 					die();
@@ -1157,12 +1223,12 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 					if ($mres) {
 
 						Audit::log('Challenge deleted. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
-						echo '<h3><span class="label label-lg label-success">E-mail notification sent to ' . count($emails) . ' player(s).</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">E-mail notification sent to ' . count($emails) . ' player(s).</span></h3>';
 
 					} else {
 
 						Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
-						echo '<h3><span class="label label-lg label-danger">E-mail notification failed!</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">E-mail notification failed!</span></h3>';
 					}
 
 	        	}
@@ -1178,7 +1244,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 		$v->validate([
 	        'challengeid' => [$args['challengeid'], 'required|int|between(-2147483648,2147483647)'],
-	        'challengeCancelNote| Cancel note' => [$challengeCancelNote, 'required|max(200)'],
+	        'challengeCancelNote| Cancel note' => [$challengeCancelNote, 'required|max(100)'],
 	    ]);
 
 	    if ($v->passes()) {
@@ -1229,7 +1295,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 				    	$c->cancelnote = $challengeCancelNote;
 				    	R::store($c);
 				        R::commit();
-						echo '<h3><span class="label label-lg label-success">Challenge cancelled!</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Challenge cancelled!</span></h3>';
 						//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 						//return $response;
 
@@ -1242,7 +1308,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 						//$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! Error: ' . $e->getMessage());
 						//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 						//return $response;
-						echo '<h3><span class="label label-lg label-danger">Challenge NOT cancelled! Error: ' . $e->getMessage() . '</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Challenge NOT cancelled! Error: ' . $e->getMessage() . '</span></h3>';
 						die();
 
 				    }
@@ -1268,11 +1334,11 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 						if ($mres) {
 
-							echo '<h3><span class="label label-lg label-success">Players notified!</span></h3>';
+							echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Players notified!</span></h3>';
 							Audit::log('Challenge cancelled. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
 
 						} else {
-							echo '<h3><span class="label label-lg label-danger">E-mail notification failed!</span></h3>';
+							echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">E-mail notification failed!</span></h3>';
 							Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
 
 						}
@@ -1285,7 +1351,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 			// $this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! ' . implode(',', $v->errors()->all()));
 			// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 			// return $response;
-			echo '<h3><span class="label label-lg label-danger">Challenge NOT cancelled! ' . implode(',', $v->errors()->all()) . '</span></h3>';
+			echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Challenge NOT cancelled! ' . implode(',', $v->errors()->all()) . '</span></h3>';
 	    }
 
 	}
@@ -1296,7 +1362,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 		$v->validate([
 	        'challengeid' => [$args['challengeid'], 'required|int|between(-2147483648,2147483647)'],
-	        'challengeCancelAcceptedNote| Cancel note' => [$challengeCancelAcceptedNote, 'required|max(200)'],
+	        'challengeCancelAcceptedNote| Cancel note' => [$challengeCancelAcceptedNote, 'required|max(100)'],
 	    ]);
 
 	    if ($v->passes()) {
@@ -1328,7 +1394,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 					    	$c->cancelnote = $challengeCancelAcceptedNote;
 					    	R::store($c);
 					        R::commit();
-        					echo '<h3><span class="label label-lg label-success">Challenge cancelled!</span></h3>';
+        					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Challenge cancelled!</span></h3>';
 							//$this->get('flash')->addMessage('global', 'Challenge cancelled! Player notified.');
 							//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 							//return $response;
@@ -1341,7 +1407,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 							//$this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! Error: ' . $e->getMessage());
 							//$response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 							//return $response;
-							echo '<h3><span class="label label-lg label-danger">Challenge NOT cancelled! Error: ' . $e->getMessage() . '</span></h3>';
+							echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Challenge NOT cancelled! Error: ' . $e->getMessage() . '</span></h3>';
 							die();
 					    }
 
@@ -1384,7 +1450,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 			// $this->get('flash')->addMessage('global_error', 'Challenge NOT cancelled! ' . implode(',', $v->errors()->all()));
 			// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 			// return $response;
-			echo '<h3><span class="label label-lg label-danger">Challenge NOT cancelled! ' . implode(',', $v->errors()->all()) . '</span></h3>';
+			echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Challenge NOT cancelled! ' . implode(',', $v->errors()->all()) . '</span></h3>';
 	    }
 
 	    die();
@@ -1396,7 +1462,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 		$v->validate([
 	        'challengeid' => [$args['challengeid'], 'required|int|between(-2147483648,2147483647)'],
-	        'challengeAcceptNote|Accept note' => [$challengeAcceptNote, 'required|max(200)'],
+	        'challengeAcceptNote|Accept note' => [$challengeAcceptNote, 'required|max(100)'],
 	    ]);
 
 	    if ($v->passes()) {
@@ -1424,7 +1490,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 				if ($checkalreadyaccepted) {
 
-					echo '<h3><span class="label label-lg label-danger">Accept failed. You already accepted.</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Accept failed. You already accepted.</span></h3>';
 					die();
 
 				}
@@ -1470,18 +1536,18 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 						if ($mres) {
 
 							Audit::log('Challenge accepted. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
-							echo '<h3><span class="label label-lg label-success">Accepted successfully! Opponent notified.</span></h3>';
+							echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Accepted successfully! Opponent notified.</span></h3>';
 
 						} else {
 
 							Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
-							echo '<h3><span class="label label-lg label-success">Accepted successfully! E-mail notification failed.</span></h3>';
+							echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Accepted successfully! E-mail notification failed.</span></h3>';
 						}
 
 					} else {
 
 						Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
-						echo '<h3><span class="label label-lg label-success">Accepted successfully! Nobody was notified though.</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Accepted successfully! Nobody was notified though.</span></h3>';
 
 					}
 
@@ -1490,20 +1556,20 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 			    } catch( Exception $e ) {
 
 			        R::rollback();
-					echo '<h3><span class="label label-lg label-danger">Accept failed. Error: ' . $e->getMessage() . '</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Accept failed. Error: ' . $e->getMessage() . '</span></h3>';
 					die();
 
 			    }
 
 			} else {
 
-				echo '<h3><span class="label label-lg label-success">Accepted successfully!</span></h3>';
+				echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Accepted successfully!</span></h3>';
 				die();
 
 			}
 	    } else {
 
-			echo '<h3><span class="label label-lg label-danger">Accept failed. Error: ' . implode(',',$v->errors()->all());
+			echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Accept failed. Error: ' . implode(',',$v->errors()->all());
 			die();
 
 	    }
@@ -1516,7 +1582,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 
 		$v->validate([
 	        'challengeid' => [$args['challengeid'], 'required|int|between(-2147483648,2147483647)'],
-	        'challengeConfirmNote|Confirm note' => [$challengeConfirmNote, 'max(200)'],
+	        'challengeConfirmNote|Confirm note' => [$challengeConfirmNote, 'max(100)'],
 	    ]);
 
 	    if ($v->passes()) {
@@ -1543,7 +1609,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 					// $this->get('flash')->addMessage('global_error', 'Challenge ALREADY confirmed! Please refresh the page.');
 					// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 					// return $response;
-					echo '<h3><span class="label label-lg label-success">Challenge ALREADY confirmed! Please refresh the table.</span></h3>';
+					echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Challenge ALREADY confirmed! Please refresh the table.</span></h3>';
 					die();
 
 				}
@@ -1572,7 +1638,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 						// $this->get('flash')->addMessage('global', 'Challenge confirmed!');
 						// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 						// return $response;
-						echo '<h3><span class="label label-lg label-success">Challenge confirmed!</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Challenge confirmed!</span></h3>';
 
 
 				    } catch( Exception $e ) {
@@ -1583,7 +1649,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 						// $this->get('flash')->addMessage('global_error', 'Challenge NOT confirmed! Error: ' . $e->getMessage());
 						// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 						// return $response;
-						echo '<h3><span class="label label-lg label-success">Challenge NOT confirmed! Error: ' . $e->getMessage() . '</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Challenge NOT confirmed! Error: ' . $e->getMessage() . '</span></h3>';
 						die();
 
 				    }
@@ -1612,18 +1678,18 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 						if ($mres) {
 
 							Audit::log('Challenge confirmed. Mail sent, result: ' . $mres->http_response_code . ' ' . count($emails) . ' player(s) notified.');
-							echo '<h3><span class="label label-lg label-success">Opponent was notified!</span></h3>';
+							echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-success">Opponent was notified!</span></h3>';
 
 						} else {
 
 							Audit::log('Mail NOT sent. Action = ' . $args['action'] . ', challenge: ' . $args['challengeid']);
-							echo '<h3><span class="label label-lg label-danger">Notification failed!</span></h3>';
+							echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Notification failed!</span></h3>';
 
 						}
 
 					} else {
 
-						echo '<h3><span class="label label-lg label-danger">Opponent was NOT notified!</span></h3>';
+						echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Opponent was NOT notified!</span></h3>';
 					}
 
 				} else {
@@ -1645,7 +1711,7 @@ $app->post('/challenge[/{action}[/{challengeid}]]',
 	  		// $this->get('flash')->addMessage('global_error', 'Challenge NOT confirmed! ' . implode(',',$v->errors()->all()) );
 			// $response = $response->withRedirect($this->get('router')->pathFor('challenges.my'));
 			// return $response;
-			echo '<h3><span class="label label-lg label-danger">Challenge NOT confirmed! ' . implode(',',$v->errors()->all()) . '</span></h3>';
+			echo '<h3><span style="max-width:200px;" class="wordwrap label label-lg label-danger">Challenge NOT confirmed! ' . implode(',',$v->errors()->all()) . '</span></h3>';
 
 	    }
 	}
@@ -1757,7 +1823,8 @@ $app->get('/challengesstatusmyjson2[/{yyyymmdd}]', function($request,$response,$
 								LENGTH(c.challengedids) - LENGTH(REPLACE(c.challengedids, \'\,\', \'\')) + 1 as numofplayers,
 								ac.acceptednote as challengenote,
 								ac.confirmed,
-								ac.cancelnote
+								c.cancelnote,
+								ac.cancelnote as accancelnote
 								FROM acceptedchallenges ac
 								LEFT JOIN challenges c on c.id = ac.acceptedchallengeid
 								LEFT JOIN divisions d on d.id = c.challenge_in_division

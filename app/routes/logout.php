@@ -37,7 +37,7 @@ $app->get('/logout', function($request,$response,$args) use ($app) {
 
 	$this->get('flash')->addMessage('global', 'You have been logged out.');
 
-	$response = $response->withRedirect($this->get('router')->pathFor('login'));
+	$response = $response->withRedirect($this->get('router')->pathFor('home'));
 	return $response;
 
 })->setName('logout')->add($authenticated);

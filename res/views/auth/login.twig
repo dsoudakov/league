@@ -104,39 +104,38 @@
 
 {% block js %}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
-<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
+	<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
 
-<script>
-$(function () {
+	<script>
+	$(function () {
 
-	$('[data-toggle="tooltip"]').tooltip({
-		placement: 'bottom',
-		trigger: 'hover focus',
-	});
+		$('[data-toggle="tooltip"]').tooltip({
+			placement: 'bottom',
+			trigger: 'hover focus',
+		});
 
-	$( "#loginForm" ).validate({
-		rules: {
-			identifier: {
-				required: true,
-				email: true
+		$( "#loginForm" ).validate({
+			rules: {
+				identifier: {
+					required: true,
+					email: true
+				},
+				password: {
+					required: true,
+					minlength: 6,
+				},			
 			},
-			password: {
-				required: true,
-				minlength: 6,
-			},			
-		},
-		tooltip_options: {
-			identifier: { 
-				placement: 'bottom'
-			},
-			password: { 
-				placement: 'bottom',
-			},
-		}
-	});
-})
-</script>
+			tooltip_options: {
+				identifier: { 
+					placement: 'bottom'
+				},
+				password: { 
+					placement: 'bottom',
+				},
+			}
+		});
+	})
+	</script>
 
-{{ parent() }}
 {% endblock %}

@@ -4,7 +4,8 @@
     <li class="{{ path_for('password.change')|isActive }}"><a href="{{ path_for('password.change') }}">Change password</a></li>
     <li class="{{ path_for('profile')|isActive }}"><a href="{{ path_for('profile') }}">Update Profile</a></li>
     <li role="separator" class="divider"></li>
-    <li><a href="{{ path_for('logout') }}">Logout</a>  </li>
+    <li><a href="{{ path_for('about') }}">About/Rules</a></li>
+    <li><a href="{{ path_for('logout') }}">Logout</a></li>
   </ul>
   {% endblock dropdown_contents %}
   {% block challenges_dropdown_contents %}

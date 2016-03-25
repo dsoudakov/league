@@ -84,7 +84,22 @@
           <div id="loading1">
               <img src="{{SITEROOT}}/res/img/loader.gif">
           </div>
-          <div class="modal-body-inner1"></div>
+          <div class="modal-body-inner1">
+            <table id="challengedetails"
+                   class="table-condensed borderless"
+                   cellspacing="0"
+                   width="100%">
+              <tbody>
+                <tr><td><label>Status:</label></td><td id="challengestatus"></td></tr>
+                <tr><td><label>Date:</label></td><td id="challengedate"></td></tr>
+                <tr><td><label>Challenger:</label></td><td id="challenger"></td></tr>
+                <tr><td><label>Division:</label></td><td id="challengeddivision"></td></tr>
+                <tr><td><label># of matches:</label></td><td id="numofmatches"></td></tr>
+                <tr><td><label># to play:</label></td><td id="numofmatchestoplay"></td></tr>
+                <tr><td id="challengenotelabel"><label>Note:</label></td><td style="max-width:150px;" class="wordwrap" id="challengenote"></td></tr>
+              </tbody>
+            </table>
+          </div>
           <div class="modal-body-inner2"></div>
         </div>
       </div>
@@ -104,7 +119,8 @@
           </div>
           <div class="modal-body-inner1">
             <table id="challengedetails"
-                   class="display compact table table-condensed borderless"
+                   class="table-condensed borderless"
+                   cellspacing="0"
                    width="100%">
               <tbody>
                 <tr><td><label>Status:</label></td><td id="challengestatus"></td></tr>
@@ -113,7 +129,7 @@
                 <tr><td><label>Division:</label></td><td id="challengeddivision"></td></tr>
                 <tr><td><label># of matches:</label></td><td id="numofmatches"></td></tr>
                 <tr><td><label># to play:</label></td><td id="numofmatchestoplay"></td></tr>
-                <tr><td id="challengenotelabel"><label>Note:</label></td><td id="challengenote"></td></tr>
+                <tr><td id="challengenotelabel"><label>Note:</label></td><td style="max-width:150px;" class="wordwrap" id="challengenote"></td></tr>
               </tbody>
             </table>
           </div>
@@ -164,6 +180,7 @@
 
       var tablename_0 = 'challengesissuedtable';
       var tablename_1 = 'challengedetailstable';
+
       var challengesissuedtableopts = {
           responsive: true,
           processing: true,
@@ -217,11 +234,10 @@
             if (userpid == full.challenge_in_division || usersid == full.challenge_in_division) {
 
               if (userid == full.acceptedbyuserid) {
-                  if (full.cancelnote) {
-
-                      output_col_0 = '<h4><span class="label label-danger">Cancelled (you)</span></h4>';
-                  } else if (full.challengecancelnote) {
+                  if (full.challengecancelnote) {
                       output_col_0 = '<h4><span class="label label-danger">Cancelled</span></h4>';
+                  } else if (full.cancelnote) {
+                      output_col_0 = '<h4><span class="label label-danger">Cancelled (you)</span></h4>';
                   } else {
                       if (full.confirmed == 1) {
                           output_col_0 = '<h4><span class="label label-success">Confirmed</span></h4>';
@@ -230,27 +246,44 @@
                       }
                   }
               } else {
-               output_col_0 = '<h4><a class="label label-primary" data-toggle="modal" data-target="#acceptModal" data-remote="false" href="{{SITEROOT}}/challenge/accept/' +  full.challengeid + '">Accept</a></h4>';
+
+                if (full.challengecancelnote) {
+                  output_col_0 = '<h4><span class="label label-danger">Cancelled</span></h4>';
+                } else {
+                  output_col_0 = '<h4><a class="label label-primary" data-toggle="modal" data-target="#acceptModal" data-remote="false" href="{{SITEROOT}}/challenge/accept/' +  full.challengeid + '">Accept</a></h4>';
+                }
               }
             } else {
               output_col_0 = 'Not in your division';
             }
 
-          // output_col_4 = '<h4><a class="label label-primary" data-toggle="modal" data-toggle="modal" data-target="#noteModal" data-remote="false" href="{{SITEROOT}}/challenge/details2/' + full.challengeid + '" title="' + full.challengenote + '">Details</a></h4>';
              $('td:eq(0)', row).html( output_col_0 );
-             // $('td:eq(4)', row).html( output_col_4 );
+
           }
       };
 
       $( window ).resize(function() {
 
         if ( Math.abs(wwidth - $( window ).width()) > 25) {
-          wwidth = $( window ).width();
-          $('#' + tablename_0 ).DataTable()
-          .columns.adjust()
-          .responsive.recalc();
-        }
 
+          if ( $.fn.DataTable.isDataTable( '#' + tablename_0 ) ) {
+
+            wwidth = $( window ).width();
+            $('#' + tablename_0 ).DataTable()
+            .columns.adjust()
+            .responsive.recalc();
+
+          }
+
+          if ( $.fn.DataTable.isDataTable( '#' + tablename_1 ) ) {
+
+            wwidth = $( window ).width();
+            $('#' + tablename_1 ).DataTable()
+            .columns.adjust()
+            .responsive.recalc();
+
+          }
+        }
       });
 
       challengesissuedtable = $('#' + tablename_0 ).DataTable(challengesissuedtableopts);
@@ -264,7 +297,7 @@
           rules: {
             challengeAcceptNote: {
               required: true,
-              maxlength: 200,
+              maxlength: 100,
             }
           },
           messages: {
@@ -393,48 +426,11 @@
       };
 
       $("#acceptModal").on("show.bs.modal", function(e) {
+
           var loadingElem = $(this).find("#loading1");
           loadingElem.show();
-          var form = "";
-          var details = "";
-          var elem1 = $(this).find(".modal-body-inner1");
-          var elem2 = $(this).find(".modal-body-inner2");
-          elem1.html("");
-          elem2.html("");
 
-          var link = $(e.relatedTarget);
-          var link_1 = link.attr("href");
-          var link_2 = link_1.replace('accept', 'details');
-
-          $.get( link_1 ).done( function(data) {
-              form = data;
-          })
-          .done( function () {
-              elem2.prepend(form);
-              setJQValidate('#acceptChallengeForm');
-             // initSubmitAcceptForm('#acceptChallengeForm');
-          })
-          .done( function () {
-
-            $.get( link_2 ).done( function(data) {
-                details = data;
-            })
-            .done( function () {
-                elem1.prepend(details);
-                loadingElem.hide();
-            });
-
-          });
-      });
-
-      $("#noteModal").on("show.bs.modal", function(e) {
-
-          var loadingElem = $(this).find("#loading1");
-          var elem1 = $(this).find(".modal-body-inner1");
-          var elem2 = $(this).find(".modal-body-inner2");
           var challengedetails = $(this).find("#challengedetails");
-          var challengedetailstable = $(this).find("#challengedetailstable");
-
           var challenge_date = $(this).find("#challengedate");
           var challenge_status = $(this).find("#challengestatus");
           var challenge_note = $(this).find("#challengenote");
@@ -444,47 +440,18 @@
           var numofmatches = $(this).find("#numofmatches");
           var numofmatchestoplay = $(this).find("#numofmatchestoplay");
 
+          var form = "";
+          var challenge_details = "";
+          var elem1 = $(this).find(".modal-body-inner1");
+          var elem2 = $(this).find(".modal-body-inner2");
           elem1.hide();
-          //elem2.hide();
-
-          loadingElem.show();
+          elem2.html("");
 
           var link = $(e.relatedTarget);
-          var link_1 = link.attr("href");
-          var link_2 = link_1.replace('details2', 'infojson');
+          var link_form = link.attr("href");
+          var link_details = link_form.replace('accept', 'details2');
 
-          var challenge_details = "";
-          var form = "";
-
-          if ( ! $.fn.DataTable.isDataTable( '#challengedetailstable' ) ) {
-
-            challengedetailstableopts.ajax = link_2;
-            challengedetailstableDT = $("#challengedetailstable").DataTable(challengedetailstableopts);
-            challengedetailstableDT.on( 'xhr', function () {
-              challengedetailsjson = challengedetailstableDT.ajax.json();
-              numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
-            } );
-
-          } else {
-
-            challengedetailstableDT.ajax.url( link_2 );
-            challengedetailstableDT.ajax.reload(function () {
-              challengedetailsjson = challengedetailstableDT.ajax.json();
-
-              // if (challengedetailsjson.data.length == 0) {
-              //     $("#challengedetailstable").hide();
-              // } else {
-              //     $("#challengedetailstable").show();
-              // }
-
-              numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
-            });
-
-          }
-
-
-
-          $.getJSON( link_1 )
+          $.getJSON( link_details )
            .done( function(data) {
 
               challenge_details = data;
@@ -506,20 +473,119 @@
               challenger.html(challenge_details.data.challenger);
               challenged_division.html(challenge_details.data.challengeddivision);
 
-
               numofmatches.html(challenge_details.data.numofmatches);
-
+              numofmatchestoplay.html(challenge_details.numofmatchestoplay);
 
             })
               .done( function () {
 
                   loadingElem.hide();
-                  //challengedetails.show();
                   elem1.show();
-                  //elem2.show();
+
+              }).fail( function () {
+
+                  loadingElem.hide();
+                  elem1.html('Failed to load data. Please try again.');
 
               });
 
+          $.get( link_form ).done( function(data) {
+              form = data;
+          })
+          .done( function () {
+
+              elem2.prepend(form);
+              setJQValidate('#acceptChallengeForm');
+
+          }).fail( function () {
+
+                loadingElem.hide();
+                elem2.html('Failed to load data. Please try again.');
+
+              });
+      });
+
+      $("#noteModal").on("show.bs.modal", function(e) {
+
+          var loadingElem = $(this).find("#loading1");
+          var elem1 = $(this).find(".modal-body-inner1");
+          var elem2 = $(this).find(".modal-body-inner2");
+
+          var challengedetailstable = $(this).find("#challengedetailstable");
+
+          var challengedetails = $(this).find("#challengedetails");
+          var challenge_date = $(this).find("#challengedate");
+          var challenge_status = $(this).find("#challengestatus");
+          var challenge_note = $(this).find("#challengenote");
+          var challenge_note_label = $(this).find("#challengenotelabel");
+          var challenged_division = $(this).find("#challengeddivision");
+          var challenger = $(this).find("#challenger");
+          var numofmatches = $(this).find("#numofmatches");
+          var numofmatchestoplay = $(this).find("#numofmatchestoplay");
+
+          elem1.hide();
+          elem2.css('visibility', 'hidden');
+
+          loadingElem.show();
+
+          var link = $(e.relatedTarget);
+          var link_details = link.attr("href");
+          var link_infojson = link_details.replace('details2', 'infojson');
+
+          var challenge_details = "";
+          var form = "";
+
+          if ( ! $.fn.DataTable.isDataTable( '#challengedetailstable' ) ) {
+
+            challengedetailstableopts.ajax = link_infojson;
+            challengedetailstableDT = $("#challengedetailstable").DataTable(challengedetailstableopts);
+            challengedetailstableDT.on( 'xhr', function () {
+              challengedetailsjson = challengedetailstableDT.ajax.json();
+              numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
+            } );
+
+          } else {
+
+            challengedetailstableDT.ajax.url( link_infojson );
+            challengedetailstableDT.ajax.reload(function () {
+              challengedetailsjson = challengedetailstableDT.ajax.json();
+              numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
+            });
+
+          }
+
+          $.getJSON( link_details )
+           .done( function(data) {
+
+              challenge_details = data;
+              if (challenge_details.status == 'Ready') {
+
+                challenge_note.html(challenge_details.data.challengenote);
+                challenge_note_label.html('<label>Note:</label>');
+                challenge_status.html('<h4><span class="label label-success">' + challenge_details.status + '</span></h4>');
+
+              } else if (challenge_details.status == 'Cancelled') {
+
+                challenge_note.html(challenge_details.data.cancelnote);
+                challenge_note_label.html('<label>Cancel note:</label>');
+                challenge_status.html('<h4><span class="label label-danger">' + challenge_details.status + '</span></h4>');
+
+              }
+
+              challenge_date.html(challenge_details.data.challengedate);
+              challenger.html(challenge_details.data.challenger);
+              challenged_division.html(challenge_details.data.challengeddivision);
+
+              numofmatches.html(challenge_details.data.numofmatches);
+              numofmatchestoplay.html(challenge_details.numofmatchestoplay);
+
+            })
+              .done( function () {
+
+                  loadingElem.hide();
+                  elem1.show();
+
+              });
       });
 
       $("#acceptModal").on("hide.bs.modal", function(e) {
@@ -529,9 +595,30 @@
           }
         }
 
-          $(this).find(".modal-body-inner1").html("");
-          $(this).find(".modal-body-inner2").html("");
+        //$(this).find(".modal-body-inner1").html("");
+        $(this).find(".modal-body-inner2").html("");
+      });
 
+      $("#noteModal").on("shown.bs.modal", function(e) {
+
+          var elem2 = $(this).find(".modal-body-inner2");
+
+          if ( $.fn.DataTable.isDataTable( '#' + tablename_0 ) ) {
+            $('#' + tablename_0 ).DataTable()
+            .columns.adjust()
+            .responsive.recalc();
+          }
+
+          if ( $.fn.DataTable.isDataTable( '#' + tablename_1 ) ) {
+
+            wwidth = $( window ).width();
+            $('#' + tablename_1 ).DataTable()
+            .columns.adjust()
+            .responsive.recalc();
+
+          }
+
+          elem2.css('visibility', '');
       });
 
     });

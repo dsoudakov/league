@@ -16,9 +16,18 @@
 {% include 'cssjs.inc' %}
 
 <style type="text/css">
-    .input-username, 
-    .input-password, 
-    .checkbox_remember, 
+
+    .wordwrap {
+       white-space: pre-wrap;      /* CSS3 */
+       white-space: -moz-pre-wrap; /* Firefox */
+       white-space: -pre-wrap;     /* Opera <7 */
+       white-space: -o-pre-wrap;   /* Opera 7 */
+       word-wrap: break-word;      /* IE */
+    }
+
+    .input-username,
+    .input-password,
+    .checkbox_remember,
     .login-button {
         margin-top:15px;
     }
@@ -30,7 +39,7 @@
 
     .ofh {
       width: 100%;
-      height: 100%; 
+      height: 100%;
       position: fixed;
       overflow: hidden;
       z-index: -1000;
@@ -45,7 +54,7 @@
     }
 
     @media (max-width: 600px) {
-      .ofhbg {      
+      .ofhbg {
            background-image: url('{{SITEROOT}}/res/img/optimized-birdview-m.png');
         }
     }
@@ -80,7 +89,7 @@
 
   .borderless tbody tr td, .borderless tbody tr th, .borderless thead tr th {
       border: none;
-  }  
+  }
   .wrapme {
     table-layout: fixed;
     word-wrap: break-word;
@@ -124,32 +133,9 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
 
-  {% block js %}    
-
-
-    <script type="text/javascript">
-      jQuery.extend(jQuery.validator.messages, {
-          // required: "This field is required.",
-          // remote: "Please fix this field.",
-          // email: "Please enter a valid email address.",
-          // url: "Please enter a valid URL.",
-          // date: "Please enter a valid date.",
-          // dateISO: "Please enter a valid date (ISO).",
-          // number: "Please enter a valid number.",
-          // digits: "Please enter only digits.",
-          // creditcard: "Please enter a valid credit card number.",
-          equalTo: "Passwords do not match.",
-          // accept: "Please enter a value with a valid extension.",
-          // maxlength: jQuery.validator.format("Please enter no more than {0} characters."),
-          // minlength: jQuery.validator.format("Please enter at least {0} characters."),
-          // rangelength: jQuery.validator.format("Please enter a value between {0} and {1} characters long."),
-          // range: jQuery.validator.format("Please enter a value between {0} and {1}."),
-          // max: jQuery.validator.format("Please enter a value less than or equal to {0}."),
-          // min: jQuery.validator.format("Please enter a value greater than or equal to {0}.")
-      });
-    </script>
+  {% block js %}
 
   {% endblock %}
-  
+
   </body>
 </html>
