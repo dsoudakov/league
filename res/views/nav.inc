@@ -41,7 +41,7 @@
               {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
-              <li><a>Users online: <span class="badge" data-toggle="tooltip" title="{{listOfUsersOnline()|raw}}">{{numOfUsersOnline()}}</span></a></li>
+              <li><a>Users online: <span id="usersonline" class="badge">{{numOfUsersOnline()}}</span></a></li>
               {% if auth.isAdmin() %}
               <li class="dropdown">
                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin<strong class="caret"></strong></a>

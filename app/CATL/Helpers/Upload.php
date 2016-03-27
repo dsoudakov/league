@@ -3,6 +3,7 @@
 namespace CATL\Helpers;
 
 use \RuntimeException as RuntimeException;
+use CATL\R;
 
 class Upload {
 
@@ -135,7 +136,7 @@ class Upload {
 		}
 	}
 
-	public static function checkMembersHeader($file, $validHeader)
+	public static function checkCSVHeader($file, $validHeader)
 	{
 		
 		$ret = false;
@@ -152,5 +153,91 @@ class Upload {
 			return $ret;
 		}
 
+	}
+
+	public static function exportToCsv($table,$filename = 'export.csv')
+	{
+	    $csv_terminated = "\n";
+	    $csv_separator = ",";
+	    $csv_enclosed = '"';
+	    $csv_escaped = "\\";
+	    $sql_query = "select * from $table";
+	 
+	    // Gets the data from the database
+	    $table_info = R::inspect($table);
+
+	    $result = R::getAll($sql_query);
+	    
+	    $fields_cnt = count($table_info);
+	 
+	 	foreach ($table_info as $k => $v) {
+	 		$fields[] = $k;
+	 	}
+	 
+	    $schema_insert = '';
+	 
+	    for ($i = 0; $i < $fields_cnt; $i++)
+	    {
+	        $l = $csv_enclosed . str_replace($csv_enclosed, $csv_escaped . $csv_enclosed,
+	            stripslashes($fields[$i])) . $csv_enclosed;
+	        $schema_insert .= $l;
+	        $schema_insert .= $csv_separator;
+	    } // end for
+	 
+	    $out = trim(substr($schema_insert, 0, -1));
+	    $out .= $csv_terminated;
+
+	    // echo $out;
+	    // die();
+ 
+	    // Format the data
+	    foreach ($result as $row) 
+	    {
+	        $schema_insert = '';
+	        $j = 0;
+
+	        foreach ($row as $k => $v) 
+	        {
+	            if ($v == '0' || $v != '')
+	            {
+	 
+	                if ($csv_enclosed == '')
+	                {
+	                    $schema_insert .= $v;
+	                } else
+	                {
+	                    $schema_insert .= $csv_enclosed . 
+						str_replace($csv_enclosed, $csv_escaped . $csv_enclosed, $v) . $csv_enclosed;
+	                }
+	            } else
+	            {
+	                $schema_insert .= '';
+	            }
+	 
+	            if ($j < $fields_cnt - 1)
+	            {
+	                $schema_insert .= $csv_separator;
+	            }
+
+	            $j++;
+	        } // end foreach
+	 
+	        $out .= $schema_insert;
+	        $out .= $csv_terminated;
+	    } 
+
+	    //dump($out);
+	    //die();
+	 
+	    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+	    header("Content-Length: " . strlen($out));
+	    // Output to browser with appropriate mime type, you choose ;)
+	    header("Content-type: text/x-csv");
+	    //header("Content-type: text/csv");
+	    //header("Content-type: application/csv");
+	    header("Content-Disposition: attachment; filename=$filename");
+	    echo $out;
+	    exit;
+	 
 	}
 }

@@ -9,6 +9,7 @@
 <link rel="icon" href="{{SITEROOT}}/favicon.ico">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+<link href="{{SITEROOT}}/res/css/opentip.css" rel="stylesheet" type="text/css" />
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <link href="{{SITEROOT}}/res/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
@@ -131,7 +132,29 @@
     <script src="{{SITEROOT}}/res/js/ie10-viewport-bug-workaround.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
+
+    <script src="{{SITEROOT}}/res/js/opentip-jquery.min.js"></script>
+
+    <script>
+      $(function () {
+
+        // $('#usersonline').tooltip({
+         
+        //   placement: 'bottom',
+        //   trigger: 'hover focus',
+        //   content: "{{listOfUsersOnline() | raw}}", 
+        //   items: 'span',
+
+        // });
+
+        Opentip.lastZIndex = 9999;
+
+        var usersonlineOpentip = new Opentip("#usersonline", { target: "#usersonline", joint: "top", style: "dark", offset: [0,20] });
+        usersonlineOpentip.setContent("{{listOfUsersOnline() | raw}}");
+       // $( "#usersonline" ).tooltip( "option", "content", "{{listOfUsersOnline() | raw}}" );
+
+      });
+    </script>
 
   {% block js %}
 

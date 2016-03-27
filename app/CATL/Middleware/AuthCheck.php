@@ -102,7 +102,8 @@ class Authcheck
 
                                 $c->get('flash')->addMessage('global', 'Welcome back!');
 
-                                $this->response = $this->response->withRedirect($c->get('router')->pathFor('home'));
+                                // $this->response = $this->response->withRedirect($c->get('router')->pathFor('home'));
+                                $this->response = $this->response->withRedirect($_SERVER['REQUEST_URI']);
                             }
                     } else { // hash check failed, bad data
 

@@ -11,6 +11,13 @@ $app->get('/upload', function($request,$response,$args) use ($app)
 
 })->setName('upload')->add($authenticated)->add($isAdmin)->add(new GenCsrf);
 
+$app->get('/exportmemberstocsv', function($request,$response,$args) use ($app)
+{
+
+    echo Upload::exportToCsv('members');
+
+})->setName('exportmemberstocsv')->add($authenticated)->add($isAdmin)->add(new GenCsrf);
+
 
 $app->post('/upload', function($request,$response,$args) use ($app)
 {
@@ -126,7 +133,7 @@ $app->post('/uploadmembers', function($request,$response,$args) use ($app)
 
     $file = $newname;
 
-    $headerCheck = Upload::checkMembersHeader($file, $validHeader);
+    $headerCheck = Upload::checkCSVHeader($file, $validHeader);
 
     if (!$headerCheck) {
         $this->get('flash')->addMessage('global_error', 'Upload OK: Table data problem: Header is not correct.');
@@ -266,7 +273,7 @@ $app->post('/uploadmembers', function($request,$response,$args) use ($app)
                 $sql_cmd_insert = 'INSERT INTO ' . $table_name . ' ' . $sql_headers . ' VALUES ' . $data_sql;
 
                 $sql_cmd_update = 'UPDATE ' . $table_name . ' SET ';
-                $sql_cmd_update_ending_orig = ' WHERE email=';
+                $sql_cmd_update_ending_orig = ' WHERE email ';
 
                 try {
 

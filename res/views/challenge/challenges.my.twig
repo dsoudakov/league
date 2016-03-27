@@ -102,6 +102,56 @@
     </div>
   </div>
 
+  <div id="deleteModal" class="modal" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header label-danger" style="
+            height: 50px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        ">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><strong>Delete challenge?</strong></h4>
+        </div>
+        <div class="modal-body">
+            <div id="loading1">
+                <img src="{{SITEROOT}}/res/img/loader.gif">
+            </div>
+          <div class="modal-body-inner1">
+            <table id="challengedetails" class="table-condensed borderless" cellspacing="0" width="100%">
+              <tbody>
+                <tr><td><label>Status:</label></td><td id="challengestatus"></td></tr>
+                <tr><td><label>Date:</label></td><td id="challengedate"></td></tr>
+                <tr><td><label>Challenger:</label></td><td id="challenger"></td></tr>
+                <tr><td><label>Division:</label></td><td id="challengeddivision"></td></tr>
+                <tr><td><label># of matches:</label></td><td id="numofmatches"></td></tr>
+                <tr><td><label># to play:</label></td><td id="numofmatchestoplay"></td></tr>
+                <tr><td id="challengenotelabel"><label>Note:</label></td><td style="max-width:150px;" class="wordwrap" id="challengenote"></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-body-inner2">
+          </div>
+          <div class="modal-body-inner3">
+            <table id="challengedetailstable"
+                     class="display compact table table-bordered table-striped table-condensed table-hover"
+                     cellspacing="0"
+                     width="100%">
+                  <thead>
+                    <tr>
+                      <th>Accepted by</th>
+                      <th>Accepted at</th>
+                      <th>Status</th>
+                      <th id="challengedetailsnote">Note</th>
+                    </tr>
+                  </thead>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="challengeDetailsModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -179,56 +229,6 @@
             </table>
           </div>
           <div class="modal-body-inner2"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="deleteModal" class="modal" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header label-danger" style="
-            height: 50px;
-            border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
-        ">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title"><strong>Delete challenge?</strong></h4>
-        </div>
-        <div class="modal-body">
-            <div id="loading1">
-                <img src="{{SITEROOT}}/res/img/loader.gif">
-            </div>
-          <div class="modal-body-inner1">
-            <table id="challengedetails" class="table-condensed borderless" cellspacing="0" width="100%">
-              <tbody>
-                <tr><td><label>Status:</label></td><td id="challengestatus"></td></tr>
-                <tr><td><label>Date:</label></td><td id="challengedate"></td></tr>
-                <tr><td><label>Challenger:</label></td><td id="challenger"></td></tr>
-                <tr><td><label>Division:</label></td><td id="challengeddivision"></td></tr>
-                <tr><td><label># of matches:</label></td><td id="numofmatches"></td></tr>
-                <tr><td><label># to play:</label></td><td id="numofmatchestoplay"></td></tr>
-                <tr><td id="challengenotelabel"><label>Note:</label></td><td style="max-width:150px;" class="wordwrap" id="challengenote"></td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="modal-body-inner2">
-          </div>
-          <div class="modal-body-inner3">
-            <table id="challengedetailstable"
-                     class="display compact table table-bordered table-striped table-condensed table-hover"
-                     cellspacing="0"
-                     width="100%">
-                  <thead>
-                    <tr>
-                      <th>Accepted by</th>
-                      <th>Accepted at</th>
-                      <th>Status</th>
-                      <th id="challengedetailsnote">Note</th>
-                    </tr>
-                  </thead>
-            </table>
-          </div>
         </div>
       </div>
     </div>
@@ -728,6 +728,11 @@
           }
       };
 
+      $('#challengesmytable').on( 'xhr.dt', function (e, settings, json, xhr) {
+        // console.log('xhr firing for top table (my challenges)...');
+        // console.log(xhr);
+      } );
+
       challengesmytable = $('#challengesmytable').DataTable(challengesmytableopts);
       acceptedchallengesmytable = $('#acceptedchallengesmytable').DataTable(acceptedchallengesmytableopts);
       challengesstatusmytable = $('#mychallengesstatustable').DataTable(challengesstatusmytableopts);
@@ -812,10 +817,17 @@
           var challenge_details = "";
           var form = "";
 
-          if ( ! $.fn.DataTable.isDataTable( '#' + tablename_0 ) ) {
+          $( '#challengeDetailsModal #' + tablename_0 ).on( 'xhr.dt', function (e, settings, json, xhr) {
+            // console.log('xhr firiing in challengeDetailsModal');
+            // console.log(xhr);
+            challengedetailsjson = challengedetailstableDT.ajax.json();
+            numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
+          } );
+
+          if ( ! $.fn.DataTable.isDataTable( '#challengeDetailsModal #' + tablename_0 ) ) {
 
             challengedetailstableopts.ajax = link_2;
-            challengedetailstableDT = $( '#' + tablename_0 ).DataTable(challengedetailstableopts);
+            challengedetailstableDT = $( '#challengeDetailsModal #' + tablename_0 ).DataTable(challengedetailstableopts);
 
             challengedetailstableDT.on( 'responsive-display', function ( e, datatable, row, showHide, update ) {
                 $('li[data-dtr-index="3"] span.dtr-data').css('max-width', '200px');
@@ -830,30 +842,16 @@
                 }
             } );
 
-            challengedetailstableDT.on( 'xhr', function () {
-              challengedetailsjson = challengedetailstableDT.ajax.json();
-              numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
-            } );
-
           } else {
 
             challengedetailstableDT.clear().draw();
             challengedetailstableDT.ajax.url( link_2 );
             challengedetailstableDT.ajax.reload(function () {
               challengedetailsjson = challengedetailstableDT.ajax.json();
-
-              // if (challengedetailsjson.data.length == 0) {
-              //     $("#challengedetailstable").hide();
-              // } else {
-              //     $("#challengedetailstable").show();
-              // }
-
               numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
             });
 
           }
-
-
 
           $.getJSON( link_1 )
            .done( function(data) {
@@ -1031,7 +1029,7 @@
 
       $("#cancelModal").on("show.bs.modal", function(e) {
 
-          var challengedetailstable = $(this).find("#challengedetailstable");
+          var challengedetailstable = $("#cancelModal #challengedetailstable");
           var challengedetails = $(this).find("#challengedetails");
 
           var challenge_date = $(this).find("#challengedate");
@@ -1063,14 +1061,15 @@
           elem2.html("");
           loadingElem.show();
 
+          challengedetailstable.on( 'xhr.dt', function (e, settings, json, xhr) {
+            challengedetailsjson = challengedetailstableDT.ajax.json();
+            numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
+          } );
+
           if ( ! $.fn.DataTable.isDataTable( challengedetailstable ) ) {
 
             challengedetailstableopts.ajax = link_infojson;
             challengedetailstableDT = challengedetailstable.DataTable(challengedetailstableopts);
-            challengedetailstableDT.on( 'xhr', function () {
-              challengedetailsjson = challengedetailstableDT.ajax.json();
-              numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
-            } );
 
           } else {
 
@@ -1140,7 +1139,7 @@
 
       $("#cancelAcceptedModal").on("show.bs.modal", function(e) {
 
-          var challengedetailstable = $(this).find("#challengedetailstable");
+          var challengedetailstable = $("#cancelAcceptedModal #challengedetailstable");
           var challengedetails = $(this).find("#challengedetails");
 
           var challenge_date = $(this).find("#challengedate");
@@ -1174,14 +1173,17 @@
           elem2.html("");
           loadingElem.show();
 
+          challengedetailstable.on( 'xhr.dt', function (e, settings, json, xhr) {
+            // console.log('xhr firing in cancelAcceptedModal');
+            // console.log(xhr);
+            challengedetailsjson = challengedetailstableDT.ajax.json();
+            numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
+          } );
+
           if ( ! $.fn.DataTable.isDataTable( challengedetailstable ) ) {
 
             challengedetailstableopts.ajax = link_infojson;
             challengedetailstableDT = challengedetailstable.DataTable(challengedetailstableopts);
-            challengedetailstableDT.on( 'xhr', function () {
-              challengedetailsjson = challengedetailstableDT.ajax.json();
-              numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
-            } );
 
           } else {
 
@@ -1189,13 +1191,6 @@
             challengedetailstableDT.ajax.url( link_infojson );
             challengedetailstableDT.ajax.reload(function () {
               challengedetailsjson = challengedetailstableDT.ajax.json();
-
-              // if (challengedetailsjson.data.length == 0) {
-              //     $("#challengedetailstable").hide();
-              // } else {
-              //     $("#challengedetailstable").show();
-              // }
-
               numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
             });
 
@@ -1248,7 +1243,7 @@
 
       $("#deleteModal").on("show.bs.modal", function(e) {
 
-          var challengedetailstable = $(this).find("#challengedetailstable");
+          var challengedetailstable = $("#deleteModal #challengedetailstable");
 
           var challengedetails = $(this).find("#challengedetails");
           var challenge_date = $(this).find("#challengedate");
@@ -1277,14 +1272,18 @@
           //elem2.html("");
           loadingElem.show();
 
+         challengedetailstable.on( 'xhr.dt', function (e, settings, json, xhr) {
+            // console.log('xhr in delete firing...');
+            // console.log(xhr);
+            challengedetailsjson = challengedetailstableDT.ajax.json();
+            numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
+          } );
+
           if ( ! $.fn.DataTable.isDataTable( challengedetailstable ) ) {
 
             challengedetailstableopts.ajax = link_infojson;
             challengedetailstableDT = challengedetailstable.DataTable(challengedetailstableopts);
-            challengedetailstableDT.on( 'xhr', function () {
-              challengedetailsjson = challengedetailstableDT.ajax.json();
-              numofmatchestoplay.html(challengedetailsjson.matchesconfirmed);
-            } );
+
 
            } else {
 
@@ -1400,8 +1399,8 @@
 
           var elem2 = $(this).find(".modal-body-inner2");
 
-          if ( $.fn.DataTable.isDataTable( '#' + tablename_0 ) ) {
-            $('#' + tablename_0 ).DataTable()
+          if ( $.fn.DataTable.isDataTable( '#challengeDetailsModal #' + tablename_0 ) ) {
+            $('#challengeDetailsModal #' + tablename_0 ).DataTable()
             .columns.adjust()
             .responsive.recalc();
           }
