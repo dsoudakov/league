@@ -1,19 +1,12 @@
 <?php
 date_default_timezone_set('America/Toronto');
 
-if ($mode === '_prod') {
-
-    $mode = file_get_contents('../config/mode.php');
-    $siteroot = file_get_contents('../config/siteroot.php');
-
-} else {
-
-    $mode = file_get_contents('config/mode.php');
-    $siteroot = file_get_contents('config/siteroot.php');
-
+if (!defined('ROOT')) { // running on the server
+    define('ROOT', __DIR__.DIRECTORY_SEPARATOR . '../');
 }
 
-($mode === '_prod') ? define("ROOT", __DIR__.DIRECTORY_SEPARATOR . '../') : define("ROOT", __DIR__.DIRECTORY_SEPARATOR);
+$mode = file_get_contents(ROOT . 'config/mode.php');
+$siteroot = file_get_contents(ROOT . 'config/siteroot.php');
 
 //($mode === '_prod') ? define('SITEROOT', $siteroot) : define('SITEROOT', '/league');
 define("SITEROOT", $siteroot);
