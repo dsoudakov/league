@@ -4,6 +4,8 @@ date_default_timezone_set('America/Toronto');
 $mode = file_get_contents(ROOT . 'config/mode.php');
 $siteroot = file_get_contents(ROOT . 'config/siteroot.php');
 
+($mode === '_prod') ? define('ROOT', __DIR__.DIRECTORY_SEPARATOR) : null;
+
 //($mode === '_prod') ? define('SITEROOT', $siteroot) : define('SITEROOT', '/league');
 define('SITEROOT', $siteroot);
 
