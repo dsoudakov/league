@@ -1,16 +1,14 @@
 <?php
 date_default_timezone_set('America/Toronto');
 
+($mode === '_prod') ? define("ROOT", __DIR__.DIRECTORY_SEPARATOR . '../') : null;
+
 $mode = file_get_contents(ROOT . 'config/mode.php');
 $siteroot = file_get_contents(ROOT . 'config/siteroot.php');
 
-($mode === '_prod') ? define('ROOT', __DIR__.DIRECTORY_SEPARATOR) : null;
-
-var_dump(__DIR__.DIRECTORY_SEPARATOR);
-
 //($mode === '_prod') ? define('SITEROOT', $siteroot) : define('SITEROOT', '/league');
-define('SITEROOT', $siteroot);
-var_dump(SITEROOT);
+define("SITEROOT", $siteroot);
+
 session_start();
 
 require ROOT . 'vendor/autoload.php';
