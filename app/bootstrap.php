@@ -6,6 +6,8 @@ $siteroot = file_get_contents(ROOT . 'config/siteroot.php');
 
 ($mode === '_prod') ? define('ROOT', __DIR__.DIRECTORY_SEPARATOR) : null;
 
+var_dump(ROOT);
+
 //($mode === '_prod') ? define('SITEROOT', $siteroot) : define('SITEROOT', '/league');
 define('SITEROOT', $siteroot);
 
