@@ -14,7 +14,10 @@ $app->get('/upload', function($request,$response,$args) use ($app)
 $app->get('/exportmemberstocsv', function($request,$response,$args) use ($app)
 {
 
-    echo Upload::exportToCsv('members');
+    $fields = 'firstname,lastname,home,cell,work,email';
+    //$fields = '*';
+
+    echo Upload::exportToCsv('members', $fields, 'members.csv');
 
 })->setName('exportmemberstocsv')->add($authenticated)->add($isAdmin)->add(new GenCsrf);
 
@@ -161,19 +164,61 @@ $app->post('/uploadmembers', function($request,$response,$args) use ($app)
     //     return $response;
     // }
 
+    $members = R::getAll('SELECT * FROM ' . $table_name);
+
+    if (!$members) {
+
+        $members2['emptymemberstable'] =
+                [
+                    'firstname'  => '',
+                    'lastname'   => '',
+                    'home'       => '',
+                    'cell'       => '',
+                    'work'       => '',
+                ];
+    }
+
+    try {
+
+        foreach ($members as $m_row) {
+            if (is_array($m_row)) {
+                $members2[$m_row['email']] =
+                        [
+                            'firstname'  => $m_row['firstname'],
+                            'lastname'   => $m_row['lastname'],
+                            'home'       => $m_row['home'],
+                            'cell'       => $m_row['cell'],
+                            'work'       => $m_row['work'],
+                        ];
+            }
+        }
+
+    } catch (Exception $e) {
+
+        die($e->getMessage());
+
+    }
+
+    unset($members);
+
     $firstRow = true;
     $cols = 0;
     $row = 0;
 
     $handle = fopen($file, "r");
 
-
-
     if ($handle) {
 
+        $pdo = R::getDatabaseAdapter()->getDatabase()->getPDO();
+        $line = 0;
+        $need_update = [];
+        $new_members = [];
+
         while (($data = fgetcsv($handle, 0, ";")) !== FALSE) {
+
             $cols = 0;
             $sql_headers_update = [];
+            $line++;
 
             if ($firstRow) {
 
@@ -191,51 +236,270 @@ $app->post('/uploadmembers', function($request,$response,$args) use ($app)
 
             } else {
 
+                if (trim(implode('', $data)) == '') {
+
+                    echo 'Delete empty lines!' . BR;
+                    echo 'Process terminated.' . BR;
+                    fclose($handle);
+                    unlink($file);
+                    die();
+
+                }
+
                 $cols = 0;
+
+                $trimmed = false;
+                $current_email = trim($data[$email_col]);
+
+                if ($current_email !== $data[$email_col]) {
+                    $trimmed = true;
+                }
+
+                if (!filter_var($current_email, FILTER_VALIDATE_EMAIL) === false) {
+                } else {
+
+                    echo 'Found invalid email on line # ' . $line . BR;
+                    echo 'Invalid email: ' . $current_email . BR;
+                    echo 'Process terminated.' . BR;
+                    fclose($handle);
+                    unlink($file);
+                    die();
+
+                }
+
+                $emails_to_do[] = $current_email;
+
+                $email_exists = false;
+
+                if (isset($members2[$current_email]) || array_key_exists($current_email, $members2)) {
+
+                    $email_exists = true;
+
+                } else {
+
+                    $new_members[$current_email] = [
+                            'firstname' =>  trim($pdo->quote($data[0]),'\''),
+                            'lastname'  =>  trim($pdo->quote($data[1]),'\''),
+                            'home'      =>  trim($pdo->quote($data[2]),'\''),
+                            'cell'      =>  trim($pdo->quote($data[3]),'\''),
+                            'work'      =>  trim($pdo->quote($data[4]),'\''),
+                        ];
+                }
+
+                $b_need_update = false;
 
                 foreach ($data as $v) {
 
-                    $v1 = trim($v);
+                    $v = trim($v);
+                    $v1 = $pdo->quote($v);
 
-                    if ($cols == $email_col && $v1) {
-                        $emails_to_do[] = $v1;
+                    if ($v1 !== '\'' . $v . '\'') {
+                        $trimmed = true;
+                        echo $v . BR;
+                        echo $v1 . BR;
+                    }
+
+                    $v1 = trim($v1, '\'');
+
+                    if ($email_exists) {
+
+                        switch ($cols) {
+                            case 0:
+
+                                if ($members2[$current_email]['firstname'] !== $v) {
+                                    // echo $members2[$current_email]['firstname'] . ' ### ' . $v1 . BR;
+                                    $b_need_update = true;
+                                }
+
+                                break;
+
+                            case 1:
+
+                                if ($members2[$current_email]['lastname'] !== $v) {
+                                    $b_need_update = true;
+                                }
+
+                                break;
+
+                            case 2:
+
+                                if ($members2[$current_email]['home'] !== $v) {
+                                    $b_need_update = true;
+                                }
+
+                                break;
+
+                            case 3:
+
+                                if ($members2[$current_email]['cell'] !== $v) {
+                                    $b_need_update = true;
+                                }
+
+                                break;
+
+                            case 4:
+
+                                if ($members2[$current_email]['work'] !== $v) {
+                                    $b_need_update = true;
+                                }
+
+                                break;
+
+                        }
+
+                        if ($b_need_update) {
+                        }
+
                     }
 
                     $cols++;
 
+                    if ($cols > 6) {
+
+                        echo 'Data validation failed on line # ' . $line . BR;
+                        echo 'Columns: '. $cols . BR;
+                        echo 'Check for ";" in the data. ";" cannot be part of the data.' . BR;
+                        echo 'Process terminated.' . BR;
+
+                        fclose($handle);
+                        unlink($file);
+                        die();
+
+                    }
+
+                }
+
+                if ($b_need_update) {
+
+                    $need_update[] = $current_email;
+
+                    $members2[$current_email] = [
+                        'firstname' =>  trim($pdo->quote($data[0]),'\''),
+                        'lastname'  =>  trim($pdo->quote($data[1]),'\''),
+                        'home'      =>  trim($pdo->quote($data[2]),'\''),
+                        'cell'      =>  trim($pdo->quote($data[3]),'\''),
+                        'work'      =>  trim($pdo->quote($data[4]),'\''),
+                    ];
                 }
             }
 
         }
 
+        if ($trimmed) {
+            echo 'Warning: Some data needed to be escaped!' . BR;
+        }
+
         fclose($handle);
+
+
+        // UPDATE members3 m
+        // JOIN (
+        //     SELECT 'a' as email, '10' as _firstname, '20' as _lastname
+        //     UNION ALL
+        //     SELECT 'dsoudakov@gmail.com', 'Dmitri2', 'Soudakov2'
+        //     UNION ALL
+        //     SELECT 'dmitri@soudakov.com', 'Dmitri2', 'Soudakov2'
+        // ) vals ON m.email = vals.email
+        // SET firstname = _firstname, lastname = _lastname, home = _home, cell = _cell, work = _work;
+
+        //dump($new_members);
 
         $emailCount = count($emails_to_do);
         $uniqueEmailCount = count(array_unique($emails_to_do));
 
         if ($emailCount !== $uniqueEmailCount) {
 
-            echo 'Provided CSV has duplicates in the field Email' . BR;
+            echo 'Provided CSV has duplicates in the field Email. Please remove.' . BR;
+            echo 'Process terminated.' . BR;
+            unlink($file);
             die();
 
         }
 
-        $sql_select = '(\'' . implode('\',\'', $emails_to_do) . '\')';
 
-        $emails_to_update = R::getAll('select email from members2 where email IN ' . $sql_select);
-        $emails_to_delete = R::getAll('select email from members2 where email NOT IN ' . $sql_select);
+        $time1 = microtime(true);
 
-        if ($emails_to_update) {
+        if ($new_members) {
 
-            foreach ($emails_to_update as $a) {
-                $emails_to_update2[] = $a['email'];
+            $sql_insert = 'INSERT INTO ' . $table_name . ' (firstname,lastname,home,cell,work,email) VALUES ';
+
+            foreach ($new_members as $k => $v) {
+                $sql_insert .= '(\'' . implode('\',\'', $v) . '\',\'' . $k . '\'),';
+
             }
 
-            $emails_to_add = array_diff($emails_to_do, $emails_to_update2);
+            $sql_insert = rtrim($sql_insert, ',');
 
-            echo 'These users will be added: ' . BR . BR . implode(BR, $emails_to_add) . BR . BR;
+            //echo $sql_insert . BR . BR;
 
+            R::begin();
+
+            try {
+
+                $ret = R::exec($sql_insert);
+
+                R::commit();
+
+                echo 'added records: ' . $ret . BR;
+
+                $time2 = microtime(true);
+
+                echo 'inserted in: ' . ($time2 - $time1) . ' sec ' . BR;
+
+            } catch (\Exception $e) {
+
+                echo 'errors adding new members...' . BR;
+                echo $e->getMessage() . BR;
+
+                R::rollback();
+            }
         }
+
+        $time1 = microtime(true);
+
+        if ($need_update) {
+
+            $sql_update = 'UPDATE ' . $table_name . ' m JOIN ( SELECT \'a\' as email, \'10\' as _firstname, \'20\' as _lastname, \'30\' as _home, \'40\' as _cell, \'50\' as _work ' ;
+
+            // dump($need_update);
+            foreach ($need_update as $email) {
+
+                $sql_update .= 'UNION ALL SELECT \'' . $email . '\', \'' . implode('\',\'', $members2[$email]) . '\' ';
+            }
+
+            $sql_update .= ') vals ON m.email = vals.email SET firstname = _firstname, lastname = _lastname, home = _home, cell = _cell, work = _work;';
+            // echo $sql_update . BR . BR;
+
+            R::begin();
+
+            try {
+
+                $ret = R::exec($sql_update);
+
+                R::commit();
+
+                echo 'updated records: ' . $ret . BR;
+
+                $time2 = microtime(true);
+
+                echo 'updated in: ' . ($time2 - $time1) . ' sec ' . BR;
+
+            } catch (\Exception $e) {
+
+                echo 'errors updating members...' . BR;
+                echo $e->getMessage() . BR;
+
+                R::rollback();
+            }
+        }
+
+        unlink($file);
+
+        $emailsInDB = array_keys($members2);
+
+        $sql_select = '(\'' . implode('\',\'', $emails_to_do) . '\')';
+
+        $emails_to_delete = R::getAll('select email from ' . $table_name . ' where email NOT IN ' . $sql_select);
 
         if ($emails_to_delete) {
 
@@ -245,136 +509,33 @@ $app->post('/uploadmembers', function($request,$response,$args) use ($app)
 
             echo 'These users will be deleted: ' . BR . BR . implode(BR, $emails_to_delete2) . BR . BR;
 
-        }
+            $time1 = microtime(true);
 
-        die();
+            R::begin();
 
-        $handle = fopen($file, "r");
+            try {
 
-        while (($data = fgetcsv($handle, 0, ";")) !== FALSE) {
+                $ret = R::exec('DELETE FROM ' . $table_name . ' where email NOT IN ' . $sql_select);
 
-            $cols = 0;
-            $sql_headers_update = [];
+                R::commit();
 
-            if ($firstRow) {
+                echo 'deleted records: ' . $ret . BR;
 
-                $firstRow = false;
+                $time2 = microtime(true);
 
-                foreach ($data as $col) {
-                    $headers[$cols] = strtolower(trim($col));
-                    $cols += 1;
-                }
+                echo 'deleted in: ' . ($time2 - $time1) . ' sec ' . BR;
 
-                $sql_headers = '(' . implode(',', $headers) . ')';
+            } catch (\Exception $e) {
 
-            } else {
-                // dump( $sql_headers);
-                $data_sql = '(\'' . implode('\',\'', $data) . '\')';
-                $sql_cmd_insert = 'INSERT INTO ' . $table_name . ' ' . $sql_headers . ' VALUES ' . $data_sql;
+                echo 'errors deleting members...' . BR;
+                echo $e->getMessage() . BR;
 
-                $sql_cmd_update = 'UPDATE ' . $table_name . ' SET ';
-                $sql_cmd_update_ending_orig = ' WHERE email ';
-
-                try {
-
-                    //echo $sql_cmd_insert . BR;
-                    $ret = R::exec($sql_cmd_insert);
-
-                } catch (Exception $e) {
-
-                    if ($e->getSQLState() == '23000' && stristr($e->getMessage(), 'email') && stristr($e->getMessage(), 'duplicate')) {
-
-                        $col = 0;
-
-                        foreach ($headers as $h) {
-                            $sql_headers_update[] = strtolower(trim($h)) . '=##p'. $col .'##';
-
-                            if (strtolower(trim($h)) == 'email') {
-                                $email_col = $col;
-                            }
-
-                            $col++;
-                        }
-
-                        $sql_headers_str = implode(',', $sql_headers_update);
-
-                        $col = 0;
-
-                        foreach ($data as $v) {
-
-                            $v1 = trim($v);
-
-                            if (!$v1) {
-
-                                $v1 = 'NULL';
-
-                            } else {
-
-                                $v1 = '\'' . $v . '\'';
-                            }
-
-                            if ($col == $email_col) {
-
-                                $sql_cmd_update_ending = $sql_cmd_update_ending_orig . $v1;
-
-                                if ($v1 !== 'NULL') {
-                                    $emails[] = $v1;
-                                }
-
-                            }
-
-                            $sql_headers_str = str_replace('##p' . $col . '##', $v1, $sql_headers_str);
-                            $col++;
-                        }
-
-                        if ($sql_cmd_update_ending_orig . 'NULL' !== $sql_cmd_update_ending) {
-
-                            $sql_cmd_update = $sql_cmd_update . $sql_headers_str . $sql_cmd_update_ending;
-                            //echo $sql_cmd_update . BR;
-
-                        } else {
-                            // echo 'blank email skip' . BR;
-                        }
-
-
-
-                    }
-
-                }
-
+                R::rollback();
             }
 
         }
 
-        fclose($handle);
-
-        $count_emails = count($emails);
-        $count_emails_unique = count(array_unique($emails));
-
-        if ($count_emails !== $count_emails_unique) {
-            echo 'WARNING: ' . abs($count_emails - $count_emails_unique) .  ' duplicate emails exist in the members CSV!!!' . BR;
-            echo implode(',', array_diff($emails, array_unique($emails))) . BR;
-        }
-
-        $table_rows = R::getRow('SELECT count(*) as count FROM ' . $table_name)['count'];
-
-        // some data needs to be deleted if there are more rows in the table
-
-        if ($table_rows > $lines - 1) {
-
-            echo 'Tables rows: ' . $table_rows . BR;
-            echo 'Lines input: ' . $lines . BR;
-            echo 'Some members need to be deleted!' . BR;
-
-            // $handle = fopen($file, "r");
-
-            // if ($handle) {
-            //     while (($data = fgetcsv($handle, 0, ";")) !== FALSE) {
-
-            //     }
-            // }
-
-        }
+        echo 'Done.' . BR;
 
     }
 

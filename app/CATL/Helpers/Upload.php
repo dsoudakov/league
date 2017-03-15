@@ -155,24 +155,33 @@ class Upload {
 
 	}
 
-	public static function exportToCsv($table,$filename = 'export.csv')
+	public static function exportToCsv($table,$sfields = '*',$filename = 'export.csv')
 	{
 	    $csv_terminated = "\n";
-	    $csv_separator = ",";
+	    $csv_separator = ";";
 	    $csv_enclosed = '"';
 	    $csv_escaped = "\\";
-	    $sql_query = "select * from $table";
+	    $sql_query = 'select '. $sfields .' from ' . $table;
 	 
 	    // Gets the data from the database
-	    $table_info = R::inspect($table);
+	    if ($sfields == '*') {
 
+	    	$table_info = R::inspect($table);	
+		 	foreach ($table_info as $k => $v) {
+
+		 		$fields[] = $k;
+
+		 	}	    	
+
+	    } else {
+
+	    	$fields = explode(',', $sfields);
+
+	    }
+	    
 	    $result = R::getAll($sql_query);
 	    
-	    $fields_cnt = count($table_info);
-	 
-	 	foreach ($table_info as $k => $v) {
-	 		$fields[] = $k;
-	 	}
+	    $fields_cnt = count($fields);
 	 
 	    $schema_insert = '';
 	 

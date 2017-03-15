@@ -20,8 +20,8 @@ $app->post('/profile', function($request,$response,$args) use ($app)
     $skill7 = $request->getParam('skill7');
     $skillOTA = $request->getParam('skillOTA');
     $donotnotifyme = $request->getParam('donotnotifyme');
-    $divisionprimary = $request->getParam('divisionprimary');
-    $divisionsecondary = $request->getParam('divisionsecondary');
+//    $divisionprimary = $request->getParam('divisionprimary');
+//    $divisionsecondary = $request->getParam('divisionsecondary');
     
     $v = $this->get('validator');
 
@@ -32,8 +32,8 @@ $app->post('/profile', function($request,$response,$args) use ($app)
         'hand|Hand' => [$hand, 'required|max(15)'],
         'skill7|Skill 7.0' => [$skill7, 'required|max(15)'],
         'donotnotifyme|On vacation' => [$donotnotifyme, 'between(0,1)'],
-        'divisionprimary|Primary division' => [$divisionprimary, 'between(0,99)'],
-        'divisionsecondary|Secondary division' => [$divisionsecondary, 'between(0,99)'],
+    //  'divisionprimary|Primary division' => [$divisionprimary, 'between(0,99)'],
+    //  'divisionsecondary|Secondary division' => [$divisionsecondary, 'between(0,99)'],
     ]);
 
     if ($v->fails()) {
@@ -52,47 +52,47 @@ $app->post('/profile', function($request,$response,$args) use ($app)
     $app->auth->user->skillOTA = $skillOTA;
     $app->auth->user->donotnotifyme = $donotnotifyme;
 
-    if ($app->auth->user->divisionprimaryset == null) {
-        $app->auth->user->divisionprimaryset = 0;
-    }
-
-    if ($app->auth->user->divisionsecondaryset == null) {
-        $app->auth->user->divisionsecondaryset = 0;
-    }
-
-    if ($divisionprimary !== $app->auth->user->divisionprimary) {
-        if ($app->auth->user->divisionprimary == 0 && $app->auth->user->divisionprimaryset == 0) {
-            if ($divisionprimary !== $app->auth->user->divisionsecondary) {
-                $app->auth->user->divisionprimary = $divisionprimary;   
-                $app->auth->user->divisionprimaryset = 1;            
-            }
-        } else {
-            if ($app->auth->user->divisionprimaryset == 1) {
-                $app->auth->user->divisionprimary = $divisionprimary;
-                $app->auth->user->divisionprimaryset = 2; 
-            } else {
-                $this->get('flash')->addMessage('global_error', 'Profile NOT updated! Division can only be set once per season!');
-                return $response->withRedirect($this->get('router')->pathFor('profile'));
-            }
-        }
-    } 
-
-    if ($divisionsecondary !== $app->auth->user->divisionsecondary) {
-        if ($app->auth->user->divisionsecondary == 0 && $app->auth->user->divisionsecondaryset == 0) {
-            if ($divisionsecondary !== $app->auth->user->divisionprimary) {
-                $app->auth->user->divisionsecondary = $divisionsecondary;
-                $app->auth->user->divisionsecondaryset = 1;    
-            }
-        } else {
-            if ($app->auth->user->divisionsecondaryset == 1) {
-                $app->auth->user->divisionsecondary = $divisionsecondary;
-                $app->auth->user->divisionsecondaryset = 2; 
-            } else {
-                $this->get('flash')->addMessage('global_error', 'Profile NOT updated! Division can only be set once per season!');
-                return $response->withRedirect($this->get('router')->pathFor('profile'));
-            }
-        }
-    }
+//    if ($app->auth->user->divisionprimaryset == null) {
+//        $app->auth->user->divisionprimaryset = 0;
+//    }
+//
+//    if ($app->auth->user->divisionsecondaryset == null) {
+//        $app->auth->user->divisionsecondaryset = 0;
+//    }
+//
+//    if ($divisionprimary !== $app->auth->user->divisionprimary) {
+//        if ($app->auth->user->divisionprimary == 0 && $app->auth->user->divisionprimaryset == 0) {
+//            if ($divisionprimary !== $app->auth->user->divisionsecondary) {
+//                $app->auth->user->divisionprimary = $divisionprimary;
+//                $app->auth->user->divisionprimaryset = 1;
+//            }
+//        } else {
+//            if ($app->auth->user->divisionprimaryset == 1) {
+//                $app->auth->user->divisionprimary = $divisionprimary;
+//                $app->auth->user->divisionprimaryset = 2;
+//            } else {
+//                $this->get('flash')->addMessage('global_error', 'Profile NOT updated! Division can only be set once per season!');
+//                return $response->withRedirect($this->get('router')->pathFor('profile'));
+//            }
+//        }
+//    }
+//
+//    if ($divisionsecondary !== $app->auth->user->divisionsecondary) {
+//        if ($app->auth->user->divisionsecondary == 0 && $app->auth->user->divisionsecondaryset == 0) {
+//            if ($divisionsecondary !== $app->auth->user->divisionprimary) {
+//                $app->auth->user->divisionsecondary = $divisionsecondary;
+//                $app->auth->user->divisionsecondaryset = 1;
+//            }
+//        } else {
+//            if ($app->auth->user->divisionsecondaryset == 1) {
+//                $app->auth->user->divisionsecondary = $divisionsecondary;
+//                $app->auth->user->divisionsecondaryset = 2;
+//            } else {
+//                $this->get('flash')->addMessage('global_error', 'Profile NOT updated! Division can only be set once per season!');
+//                return $response->withRedirect($this->get('router')->pathFor('profile'));
+//            }
+//        }
+//    }
 
     $ret = $app->auth->storeBean($app->auth->user);
 

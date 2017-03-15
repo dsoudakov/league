@@ -3,7 +3,7 @@
 return [
 
 	'app' => [
-		'url' => 'http://www.catennisleague.com',
+		'url' => 'http://soduakov.com/league',
 		'hash' => [
 			'algo' => PASSWORD_BCRYPT,
 			'cost' => 10
@@ -18,8 +18,10 @@ return [
     ],
 	
 	'url' => [
-		'_dev' => 'http://localhost',
-		'_prod' => 'http://www.catennisleague.com',
+		'_dev' => 'http://localhost/league',
+		'_prod' => 'http://soduakov.com/league',
+		//'_prod' => 'http://localhost/league',
+		
 	],
 
 	'services' => [

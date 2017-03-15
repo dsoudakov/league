@@ -44,7 +44,7 @@ class Authcheck
             
             $user = new \CATL\Models\User($id);
 
-            if ($user) {
+            if ($user->exists) {
 
                 $app->auth = $user;
                 $app->user = $user->user;
@@ -54,7 +54,7 @@ class Authcheck
             } else {
 
                 unset($_SESSION[$c->config->get('auth.session')]);
-            	$this->response = $this->$response->withRedirect($c->get('router')->pathFor('login'));
+            	$this->response = $this->response->withRedirect($c->get('router')->pathFor('login'));
 
             }
         } else {
@@ -104,6 +104,12 @@ class Authcheck
 
                                 // $this->response = $this->response->withRedirect($c->get('router')->pathFor('home'));
                                 $this->response = $this->response->withRedirect($_SERVER['REQUEST_URI']);
+
+                            } else { // user deleted
+
+                                $this->response = $this->cookie->delete($this->cookieName);
+                                $this->response = $this->response->withRedirect($c->get('router')->pathFor('login'));
+
                             }
                     } else { // hash check failed, bad data
 

@@ -362,7 +362,7 @@ $app->get('/mychallengesjson2[/{yyyymmdd}]', function($request,$response,$args) 
 	if (!empty($args['yyyymmdd'])) {
 	} else {
 
-		$mychallenges = R::getAll( 'SELECT
+		$sql =  'SELECT
 					c.id AS challengeid,
 					concat(Date(challengedate), \' (\', dayname(Date(challengedate)), \') \') AS challengedate,
 					d.divisiondesc AS challengeddivision,
@@ -380,7 +380,10 @@ $app->get('/mychallengesjson2[/{yyyymmdd}]', function($request,$response,$args) 
 			LEFT JOIN acceptedchallenges ac on c.id = ac.acceptedchallengeid
 			WHERE challengerid = :challengerid
 			Group by challengeid, challengedate, challengeddivision, challengenote,challengecreatedat
-			', [
+			';
+			//echo $sql;
+			//echo $app->auth->id;
+		$mychallenges = R::getAll($sql, [
 				':challengerid' => $app->auth->id,
 			]);
 
@@ -440,7 +443,7 @@ $app->get('/myacceptedchallengesjson2[/{yyyymmdd}]', function($request,$response
 	if (!empty($args['yyyymmdd'])) {
 	} else {
 
-		$myacceptedchallenges = R::getAll( 'SELECT
+		$sql =  'SELECT
 								ac.acceptedchallengeid as challengeid,
 								ac.id as acceptedchallengeid,
 								concat(Date(c.challengedate), \' (\', dayname(Date(c.challengedate)), \') \') AS challengedate,
@@ -460,7 +463,10 @@ $app->get('/myacceptedchallengesjson2[/{yyyymmdd}]', function($request,$response
 								WHERE ac.acceptedbyuserid = :uid
 								-- AND c.cancelnote IS NULL
 
-								', [
+								';
+		//echo $sql;	
+		//echo $app->user->id;							
+		$myacceptedchallenges = R::getAll($sql, [
 								':uid' => $app->user->id,
 		]);
 
@@ -530,7 +536,7 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 
 	    if ($v->passes()) {
 
-			$challenges = R::getAll( 'SELECT
+			$sql = 'SELECT
 
 				c.id AS challengeid,
 				concat(u.first_name, \' \', u.last_name) as challenger,
@@ -572,7 +578,11 @@ $app->get('/challenge[/{action}[/{challengeid}]]', function($request,$response,$
 				LEFT JOIN users u on c.challengerid = u.id
 				LEFT JOIN users uu on ac.acceptedbyuserid = uu.id
 				LEFT JOIN divisions d on c.challenge_in_division = d.id
-				WHERE c.id = :cid ',
+				WHERE c.id = :cid ';
+				// echo "<pre>";
+				// echo $sql;
+				// echo "</pre>";
+			$challenges = R::getAll($sql,
 				[
 					':cid' => $args['challengeid'],
 				]);
@@ -1814,7 +1824,7 @@ $app->get('/challengesstatusmyjson2[/{yyyymmdd}]', function($request,$response,$
 	if (!empty($args['yyyymmdd'])) {
 	} else {
 
-		$challengesstatus = R::getAll( 'SELECT
+		$sql = 'SELECT
 								ac.id as acceptedchallengeid,
 								c.id as challengeid,
 								concat(u.first_name, \' \', u.last_name) as acceptedby,
@@ -1831,7 +1841,9 @@ $app->get('/challengesstatusmyjson2[/{yyyymmdd}]', function($request,$response,$
 								LEFT JOIN users u on u.id = ac.acceptedbyuserid
 								WHERE c.challengerid = :uid
 								AND c.cancelnote IS NULL
-								',
+								';
+		//echo $sql;
+		$challengesstatus = R::getAll( $sql,
                                 [
 								    ':uid' => $app->user->id,
 		                        ]);

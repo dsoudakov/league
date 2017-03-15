@@ -6,7 +6,7 @@ define('PREE', '</pre>');
 
 use Tracy\Debugger;
 
-if ($mode === '_dev') 
+if ($mode === '_prod') 
 {
     Debugger::enable(); 
     ini_set( 'error_reporting', E_ALL );
@@ -29,11 +29,18 @@ use RandomLib\Factory as RandomLib;
 
 // db setup
 $R = new R(require_once ROOT . 'config/db.php');
+//R::debug( TRUE, 2 ); //select MODE 2 to see parameters filled in
+//R::fancyDebug();
+
+$isConnected = R::testConnection();
+
+if(!$isConnected)die("db connect failed");
+
 require_once('RedBeanMysqlBackup.php');
 
 $configuration = [
     'settings' => [
-        'displayErrorDetails' => ($mode === '_dev' ? true : false),
+        'displayErrorDetails' => ($mode === '_prod' ? true : false),
     ],
     'mode' => $mode,
 ];
@@ -135,9 +142,9 @@ $c['view'] = function ($c)
 
     $hour_offset_mysql = '+ INTERVAL 3 HOUR';
 
-    if ($mode == '_dev') {
-        $hour_offset_mysql = '';
-    }
+    // if ($mode == '_dev') {
+    //     $hour_offset_mysql = '';
+    // }
 
     $addUsersOnlineCheck = new Twig_SimpleFunction('numOfUsersOnline', function () use ($app) {
 

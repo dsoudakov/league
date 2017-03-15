@@ -1,0 +1,67 @@
+{% extends 'templates/default.twig' %}
+{% use 'nav.inc' %}
+
+{% block head %}
+
+  {{parent()}}
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/datatables.min.css" />
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/responsive.dataTables.min.css" />
+  <link rel="stylesheet" type="text/css" href="{{SITEROOT}}/res/css/bootstrap-switch.min.css" />
+
+  <style type="text/css">
+    .modal-dialog {
+      width: 90%;
+    }
+  </style>
+{% endblock head %}
+
+{% block content %}
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-2">
+          {% if flash.getMessages() %}
+            {% for k, messages in flash.getMessages() %}
+              {% for message in flash.getMessages()[k] %}
+                {% if k == 'global' %}
+                  <div class="alert alert-success">{{ message }}</div>
+                {% else %}
+                  <div class="alert alert-danger">{{ message }}</div>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          {% endif %}
+
+          {% block nav %}
+            {{ parent() }}
+          {% endblock nav %}
+      </div>
+      <div class="col-md-8">
+        <div class="panel">
+            <div class="panel-body">
+              <h2>League settings</h2>
+              {{ path_for('admin.league.settings.post') }}
+              <form action="{{ path_for('admin.league.settings.post') }}">
+                
+
+              </form>
+            </div>
+        </div>
+      </div>
+      <div class="col-md-2">
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
+
+{% block js %}
+
+  <script type="text/javascript">
+
+    $(document).ready(function() {
+
+    });
+
+  </script>
+{% endblock js %}

@@ -516,7 +516,7 @@ $app->get('/challengesreportjson', function($request,$response,$args) use ($app)
 
 $app->get('/reportjson[/{challengeid}]', function($request,$response,$args) use ($app)
 {
-	$challengesreport = R::getAll( 'SELECT
+	$sql = 'SELECT
 						ac.id as challengeid,
 						c.id as challengeid2,
 						c.challengedate,
@@ -552,7 +552,14 @@ $app->get('/reportjson[/{challengeid}]', function($request,$response,$args) use 
 						AND ac.confirmed = 1
 						AND ac.id = :cid
 						-- AND ac.winnerid is null
-						',
+						';
+	// echo "<pre>";
+	// echo $sql;
+	// echo BR;
+	// echo $app->user->id . BR;
+	// echo $args['challengeid'] . BR;
+	// echo "</pre>";
+	$challengesreport = R::getAll( $sql,
                         [
 						    ':uid' => $app->user->id,
 						    ':cid' => $args['challengeid'],

@@ -11,9 +11,9 @@ return array(
 		'mysql_dev' => array(
 			'driver'    => 'mysql',
 			'host'      => 'localhost',
-			'database'  => 'test',
+			'database'  => 'league',
 			'username'  => 'root',
-			'password'  => '',
+			'password'  => '123123',
 			'charset'   => 'utf8',
 			'collation' => 'utf8_unicode_ci',
 			'prefix'    => 'dev_',
@@ -22,9 +22,9 @@ return array(
 
 		'mysql_prod' => array(
 			'driver'    => 'mysql',
-			'host' => '50.62.209.108',
-			'database' => 'CATennis',
-			'username' => 'dsoud',
+			'host' => '64.90.60.135',
+			'database' => 'fhtl_data',
+			'username' => 'fhtladmin',
 			'password' => 'Ojqd4&41',
 			'charset' => 'utf8',
 			'collation' => 'utf8_unicode_ci',

@@ -4,6 +4,7 @@ class R extends RedBeanPHP\Facade {
     
     static function loadConfig($config) {
         $conn = $config['connections'][$config['default'].$config['mode']];       
+        die($conn);
                 switch($conn['driver']) {
                     case 'mysql':
                         self::setup ($conn['driver'] . ':host=' . $conn['host'] . '; dbname=' . $conn['database'], $conn['username'], $conn['password']);

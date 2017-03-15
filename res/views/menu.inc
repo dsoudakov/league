@@ -18,8 +18,10 @@
 
   {% block admin_dropdown_contents %}
   <ul class="dropdown-menu" aria-labelledby="admindropdownmenu">
+    
     <li class=""><a href="#">Admin Users</a></li>
-    <li class=""><a href="#">League settings</a></li>
+    <li class="{{ path_for('admin.action.get', { 'action':'leaguesettings' }) |isActive }}">
+      <a href="{{ path_for('admin.action.get', { 'action':'leaguesettings' })  }}">League settings</a></li>
     <li class=""><a href="#">Divisions</a></li>
   </ul>
   {% endblock admin_dropdown_contents %}

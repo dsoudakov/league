@@ -63,7 +63,21 @@ $app->get('/admin[/{action}[/{userid}]]', function($request,$response,$args) use
 
 	}
 
+	if ($args['action'] == 'leaguesettings') {
+
+		return $this->view->render($response, 'admin/league.settings.twig');
+
+	}
+
 })->setName('admin.action.get')
   ->add($isAdmin)
-  ->add($isMember)
   ->add($authenticated);
+
+
+$app->post('/admin/leaguesettings', function($request,$response,$args) use ($app)
+{
+
+
+})->setName('admin.league.settings.post')
+  ->add($isAdmin)
+  ->add($authenticated);  

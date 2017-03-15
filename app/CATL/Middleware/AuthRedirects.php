@@ -51,6 +51,8 @@ $authenticated = function ($request, $response, $next) use ($app) {
     if ($app->auth) {
         if ($app->auth->exists) {
             $response = $next($request, $response);
+        } else {
+            $response = $response->withRedirect($this->get('router')->pathFor('login'));
         }
     } else {
         $response = $response->withRedirect($this->get('router')->pathFor('login'));

@@ -170,48 +170,6 @@
             </div>
 
             <div class="form-group">
-              <label class="col-xs-3 control-label" for="divisionprimary">Primary division</label>
-              <div class="col-xs-8 col-md-3">
-                    {{ auth.genDivisionSelect('divisionprimary', 'primary')|raw }}
-                    {% if not auth.user.divisionprimary and not auth.user.divisionprimaryset %}
-                    <div class="alert alert-sm alert-warning alert-dismissible">
-                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>                    
-
-                      WARNING: You will be able to join primary division once per season. Choose wisely.
-                    </div>
-                    {% endif %}
-                    {% if errors.has('divisionprimary') %}
-                    <div class="label label-danger">
-                     {{ errors.first('divisionprimary') }} 
-                    </div>
-                    {% endif %}                 
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="col-xs-3 control-label" for="divisionprimary">Secondary division</label>
-              <div class="col-xs-8 col-md-3">
-                    {{ auth.genDivisionSelect('divisionsecondary', 'secondary')|raw }}
-                    {% if not auth.user.divisionsecondary and not auth.user.divisionsecondaryset %}
-                    <div class="alert alert-sm alert-warning alert-dismissible">
-                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                      WARNING: You will be able to join secondary division once per season. Choose wisely.
-                    </div>
-                    {% endif %}                    
-                    
-                    {% if errors.has('divisionsecondary') %}
-                    <div class="label label-danger">
-                     {{ errors.first('divisionsecondary') }} 
-                    </div>
-                    {% endif %}                 
-              </div>
-            </div>
-
-            <div class="form-group">
               <label class="col-xs-3 control-label" for="donotnotifyme">On vacation</label>
               <div class="col-xs-8 col-md-3">
                 <select id="donotnotifyme" name="donotnotifyme" class="form-control">
@@ -248,7 +206,7 @@
 
 {% block js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.14.0/jquery.validate.min.js"></script>
-
+<script src="{{SITEROOT}}/res/js/jquery-validate.bootstrap-tooltip.min.js"></script>
 <script>
   $(function () {
 

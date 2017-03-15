@@ -423,13 +423,22 @@ class User
         global $c;
         $u = R::dispense('users');
 
-        $u->email = $identifier;
-        $u->password = $c->get('hash')->password($password);
-        $u->active_hash = $c->get('hash')->hash($c->get('randomlib')->generateString(128));
+        $m = R::findone('members', 'email = ?', [ $identifier ]);
 
-        $res = R::store($u);
+        if ($m) {
 
-        return new self($res);
+            $u->email = $identifier;
+            $u->divisionprimary = $m->division1;
+            $u->divisionsecondary = $m->division2;
+            $u->password = $c->get('hash')->password($password);
+            $u->active_hash = $c->get('hash')->hash($c->get('randomlib')->generateString(128));
+
+            $res = R::store($u);
+
+            return new self($res);
+        } else {
+            return null;
+        }
 
     }
 

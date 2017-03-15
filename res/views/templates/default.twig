@@ -138,20 +138,10 @@
     <script>
       $(function () {
 
-        // $('#usersonline').tooltip({
-         
-        //   placement: 'bottom',
-        //   trigger: 'hover focus',
-        //   content: "{{listOfUsersOnline() | raw}}", 
-        //   items: 'span',
-
-        // });
-
         Opentip.lastZIndex = 9999;
 
         var usersonlineOpentip = new Opentip("#usersonline", { target: "#usersonline", joint: "top", style: "dark", offset: [0,20] });
         usersonlineOpentip.setContent("{{listOfUsersOnline() | raw}}");
-       // $( "#usersonline" ).tooltip( "option", "content", "{{listOfUsersOnline() | raw}}" );
 
       });
     </script>
