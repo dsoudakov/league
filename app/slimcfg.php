@@ -32,9 +32,9 @@ $R = new R(require_once ROOT . 'config/db.php');
 //R::debug( TRUE, 2 ); //select MODE 2 to see parameters filled in
 //R::fancyDebug();
 
-$isConnected = R::testConnection();
+// $isConnected = R::testConnection();
 
-if(!$isConnected)die("db connect failed");
+// if(!$isConnected)die("db connect failed");
 
 require_once('RedBeanMysqlBackup.php');
 
@@ -143,15 +143,9 @@ $c['view'] = function ($c)
     });
 
     
-    $hour_offset_mysql = '+ INTERVAL 6 HOUR'; // edt(est wit dst), will be 5 if just est, dst = false
-
-    // if ($mode == '_dev') {
-    //     $hour_offset_mysql = '';
-    // }
-
     $addUsersOnlineCheck = new Twig_SimpleFunction('numOfUsersOnline', function () use ($app) {
 
-        $ua = R::getRow('SELECT count(*) as count FROM usersactive WHERE last_active > (NOW() '. $hour_offset_mysql  .' - INTERVAL 15 MINUTE)');
+        $ua = R::getRow('SELECT count(*) as count FROM usersactive WHERE last_active > (NOW() '. $app->hour_offset_mysql  .' - INTERVAL 15 MINUTE)');
         return $ua['count'];
     });
 
@@ -161,7 +155,7 @@ $c['view'] = function ($c)
                     concat(u.first_name, \' \', u.last_name, \' (\', u.email, \')\') as email 
                     FROM usersactive ua 
                     LEFT JOIN users u on u.id = ua.user_id 
-                    WHERE last_active > (NOW() '. $hour_offset_mysql  .' - INTERVAL 15 MINUTE)';
+                    WHERE last_active > (NOW() '. $app->hour_offset_mysql  .' - INTERVAL 15 MINUTE)';
 
         $ua = R::getAll($sql);
 
@@ -177,11 +171,11 @@ $c['view'] = function ($c)
 
         $sql = 'SELECT 
                     concat(u.first_name, \' \', u.last_name, \' (\', u.email, \')\') as email,
-                    (NOW() '. $hour_offset_mysql  .' - INTERVAL 15 MINUTE) as interval1,
+                    (NOW() '. $app->hour_offset_mysql  .' - INTERVAL 15 MINUTE) as interval1,
                     last_active 
                     FROM usersactive ua 
                     LEFT JOIN users u on u.id = ua.user_id 
-                    WHERE last_active > (NOW() '. $hour_offset_mysql  .' - INTERVAL 15 MINUTE)';
+                    WHERE last_active > (NOW() '. $app->hour_offset_mysql  .' - INTERVAL 15 MINUTE)';
 
         var_dump($sql);
 
@@ -227,6 +221,13 @@ $c['view'] = function ($c)
 };
 
 $app = new \Slim\App($c);
+
+$app->hour_offset_mysql = '+ INTERVAL 3 HOUR'; // edt(est wit dst), will be 5 if just est, dst = false
+
+if ($mode == '_dev') {
+    $app->hour_offset_mysql = '';
+}
+
 $app->auth = null;
 $app->user = null;
 $app->csrf_name = "";
