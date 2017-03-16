@@ -18,8 +18,8 @@ return [
     ],
 	
 	'url' => [
-		'_dev' => 'http://localhost/league',
-		'_prod' => 'http://soduakov.com/league',
+		'_dev' => 'http://localhost',
+		'_prod' => 'http://soduakov.com',
 		//'_prod' => 'http://localhost/league',
 		
 	],
