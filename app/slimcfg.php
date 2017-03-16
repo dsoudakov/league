@@ -141,6 +141,7 @@ $c['view'] = function ($c)
     });
 
     $hour_offset_mysql = '+ INTERVAL 3 HOUR';
+    $hour_offset_mysql = '';
 
     // if ($mode == '_dev') {
     //     $hour_offset_mysql = '';

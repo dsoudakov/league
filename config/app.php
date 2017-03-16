@@ -3,7 +3,7 @@
 return [
 
 	'app' => [
-		'url' => 'http://soduakov.com/league',
+		'url' => 'http://soudakov.com/league',
 		'hash' => [
 			'algo' => PASSWORD_BCRYPT,
 			'cost' => 10
@@ -19,7 +19,7 @@ return [
 	
 	'url' => [
 		'_dev' => 'http://localhost',
-		'_prod' => 'http://soduakov.com',
+		'_prod' => 'http://soudakov.com',
 		//'_prod' => 'http://localhost/league',
 		
 	],
