@@ -423,7 +423,9 @@ class User
         global $c;
         $u = R::dispense('users');
 
-        $m = R::findone('members', 'email = ?', [ $identifier ]);
+        //prevent anybody than members to be able to register
+        //$m = R::findone('members', 'email = ?', [ $identifier ]);
+        $m = true;
 
         if ($m) {
 

@@ -73,7 +73,7 @@ $app->post('/register', function($request,$response,$args) use ($app)
         } else {
             
             $_SESSION['v'] = false; 
-            $this->get('flash')->addMessage('global_error', 'Failed to create user! Please try again.');
+            $this->get('flash')->addMessage('global_error', 'Failed to create user! Are you a member of the league? Please use the same email address. Please try again.');
             $response = $response->withRedirect($this->get('router')->pathFor('register'));
             return $response;
 
