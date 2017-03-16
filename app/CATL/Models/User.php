@@ -171,7 +171,8 @@ class User
                 return true;
             }
         }
-        return false;
+        //changed for demo
+        return true;
     }
 
     public function getDivisionID()
