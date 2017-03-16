@@ -145,9 +145,9 @@ $c['view'] = function ($c)
     
     $hour_offset_mysql = '+ INTERVAL 6 HOUR'; // edt(est wit dst), will be 5 if just est, dst = false
 
-    if ($mode == '_dev') {
-        $hour_offset_mysql = '';
-    }
+    // if ($mode == '_dev') {
+    //     $hour_offset_mysql = '';
+    // }
 
     $addUsersOnlineCheck = new Twig_SimpleFunction('numOfUsersOnline', function () use ($app) {
 
