@@ -173,6 +173,29 @@ $c['view'] = function ($c)
 
     });
 
+    $addUsersOnlineList2 = new Twig_SimpleFunction('listOfUsersOnline2', function () use ($app) {
+
+        $sql = 'SELECT 
+                    concat(u.first_name, \' \', u.last_name, \' (\', u.email, \')\') as email,
+                    (NOW() '. $hour_offset_mysql  .' - INTERVAL 15 MINUTE) as interval1,
+                    last_active 
+                    FROM usersactive ua 
+                    LEFT JOIN users u on u.id = ua.user_id 
+                    WHERE last_active > (NOW() '. $hour_offset_mysql  .' - INTERVAL 15 MINUTE)';
+
+        var_dump($sql);
+
+        $ua = R::getAll($sql);
+
+        var_dump($ua);
+
+        foreach ($ua as $v) {
+            $out .= $v['email'] . BR;
+        }
+
+        return $out;
+
+    });
 
     $value_selected = new Twig_SimpleFunction('value_selected', function ($value, $field) use ($app) {
         
@@ -198,6 +221,7 @@ $c['view'] = function ($c)
     $view->getEnvironment()->addFunction($addActivityCheck);
     $view->getEnvironment()->addFunction($addUsersOnlineCheck);
     $view->getEnvironment()->addFunction($addUsersOnlineList);
+    $view->getEnvironment()->addFunction($addUsersOnlineList2);
 
     return $view;
 };
