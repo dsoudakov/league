@@ -31,20 +31,8 @@ $app->get('/aboutclub', function ($request,$response,$args) use ($app)
 
 $app->get('/abouttest', function ($request,$response,$args) use ($app)
 {
-		$hour_offset_mysql = '+ INTERVAL 3 HOUR';
+	$response = $this->view->render($response, 'abouttest.twig', []);
 
-        $sql = 'SELECT 
-                    concat(u.first_name, \' \', u.last_name, \' (\', u.email, \')\') as email 
-                    FROM usersactive ua 
-                    LEFT JOIN users u on u.id = ua.user_id 
-                    WHERE last_active > (NOW() '. $hour_offset_mysql  .' - INTERVAL 15 MINUTE)';
-
-        $ua = R::getAll($sql);
-
-        foreach ($ua as $v) {
-            $out .= $v['email'] . BR;
-        }
-
-        var_dump($out);		
+	return $response;		
 
 })->setName('about.test');
