@@ -143,7 +143,7 @@ $c['view'] = function ($c)
     });
 
     
-    $hour_offset_mysql = '+ INTERVAL 4 HOUR'; // edt(est wit dst), will be 5 if just est, dst = false
+    $hour_offset_mysql = '+ INTERVAL 3 HOUR'; // edt(est wit dst), will be 5 if just est, dst = false
 
     if ($mode == '_dev') {
         $hour_offset_mysql = '';
