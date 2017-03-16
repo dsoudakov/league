@@ -19,7 +19,7 @@ $app->get('/register', function($request,$response,$args) use ($app)
 
 $app->post('/register', function($request,$response,$args) use ($app) 
 {
-    $recaptcha = new \ReCaptcha\ReCaptcha('6LdhDBMTAAAAAHEznsShFPMIQpj8KVYwDhgqW198');
+    $recaptcha = new \ReCaptcha\ReCaptcha('6Lf1TRkUAAAAAEvhE3LmrGnsaFJGfN9BGP9eds19');
   
     $gRecaptchaResponse = $request->getParam('g-recaptcha-response');
     $resp = $recaptcha->verify($gRecaptchaResponse, null);
