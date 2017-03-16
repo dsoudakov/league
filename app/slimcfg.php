@@ -130,8 +130,10 @@ $c['view'] = function ($c)
             if (!$ua) {
                 $ua = R::dispense('usersactive');
             }
-
-            $ua->last_active = Carbon::now('America/Toronto')->toDateTimeString();
+            
+            $tz = 'America/Toronto';
+            
+            $ua->last_active = Carbon::now($tz)->toDateTimeString();
             $ua->user_id = $app->auth->id;
 
             $uaid = R::store($ua);
@@ -140,12 +142,12 @@ $c['view'] = function ($c)
         return null;
     });
 
-    $hour_offset_mysql = '+ INTERVAL 3 HOUR';
-    $hour_offset_mysql = '';
+    
+    $hour_offset_mysql = '+ INTERVAL 4 HOUR'; // edt(est wit dst), will be 5 if just est, dst = false
 
-    // if ($mode == '_dev') {
-    //     $hour_offset_mysql = '';
-    // }
+    if ($mode == '_dev') {
+        $hour_offset_mysql = '';
+    }
 
     $addUsersOnlineCheck = new Twig_SimpleFunction('numOfUsersOnline', function () use ($app) {
 
@@ -155,8 +157,12 @@ $c['view'] = function ($c)
 
     $addUsersOnlineList = new Twig_SimpleFunction('listOfUsersOnline', function () use ($app) {
 
-        $sql = 'SELECT concat(u.first_name, \' \', u.last_name, \' (\', u.email, \')\') as email FROM usersactive ua LEFT JOIN users u on u.id = ua.user_id WHERE last_active >(NOW() '. $hour_offset_mysql  .' - INTERVAL 15 MINUTE)';
-        die($sql);
+        $sql = 'SELECT 
+                    concat(u.first_name, \' \', u.last_name, \' (\', u.email, \')\') as email 
+                    FROM usersactive ua 
+                    LEFT JOIN users u on u.id = ua.user_id 
+                    WHERE last_active > (NOW() '. $hour_offset_mysql  .' - INTERVAL 15 MINUTE)';
+
         $ua = R::getAll($sql);
 
         foreach ($ua as $v) {
